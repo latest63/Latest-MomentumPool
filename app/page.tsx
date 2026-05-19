@@ -101,8 +101,7 @@ export default function Home() {
                   Enter the Arena
                 </button>
                 <div className="hero-hint powered-by-badge-row">
-                  <span>Powered by X Layer</span>
-                  <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge" />
+                  <img src="/assets/x-layer-powered.jpeg" alt="X Layer" className="xlayer-powered-badge" />
                   <span>&middot; 2% pool fee</span>
                 </div>
               </div>
@@ -205,8 +204,7 @@ export default function Home() {
           <section className="footer-section">
             <div className="footer-powered">
               <span>Momentum Pool</span>
-              <span className="footer-powered-text">Powered by X Layer</span>
-              <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge footer-powered-img" />
+              <img src="/assets/x-layer-powered.jpeg" alt="X Layer" className="xlayer-powered-badge footer-powered-img" />
             </div>
             <div className="footer-links">
               <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a>
@@ -222,10 +220,10 @@ export default function Home() {
       {page === 'app' && (
         <div ref={appRef}>
           <div className="top-bar">
-            <div className="top-bar-brand" style={{ cursor: 'pointer' }} onClick={() => setPage('landing')}>
+            <button type="button" className="top-bar-brand" onClick={() => setPage('landing')} aria-label="Back to home">
               <img className="top-bar-logo" src="/assets/momentum-logo-transparent.png" alt="Momentum Pool" />
               <div className="top-bar-title">Momentum<span>Pool</span></div>
-            </div>
+            </button>
           </div>
 
           <div className="main-content">

@@ -174,7 +174,7 @@ body {
   padding: var(--sp-4) 0;
 }
 
-.top-bar-brand { display: flex; align-items: center; gap: var(--sp-3); }
+.top-bar-brand { display: flex; align-items: center; gap: var(--sp-3); cursor: pointer; background: none; border: none; padding: 0; font: inherit; color: inherit; }
 .top-bar-logo { width: 42px; height: 42px; object-fit: contain; }
 .top-bar-title { font-family: var(--font-sports); font-size: 24px; letter-spacing: 1.5px; color: var(--text-primary); line-height: 1; }
 .top-bar-title span { color: var(--electric-blue); }
