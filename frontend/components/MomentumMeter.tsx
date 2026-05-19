@@ -20,7 +20,7 @@ export interface EventItem {
   player?: string;
 }
 
-/* ─── Icons per event type ─── */
+/* ─── Icons ─── */
 
 const EVENT_ICONS: Record<string, string> = {
   goal: '⚽',
@@ -42,14 +42,6 @@ const EVENT_LABELS: Record<string, string> = {
   red_card: 'RED',
 };
 
-/* ─── Color config per team ─── */
-
-const TEAM_COLORS: Record<string, { primary: string }> = {};
-
-function getTeamColor(team: string): string {
-  return TEAM_COLORS[team]?.primary || '#6366f1';
-}
-
 /* ══════════════════════════ MOMENTUM BAR ══════════════════════════ */
 
 interface MomentumBarProps {
@@ -59,42 +51,40 @@ interface MomentumBarProps {
 
 export function MomentumBar({ data, loading }: MomentumBarProps) {
   if (loading) {
-    return <div className="momentum-skeleton"><div className="skeleton-bar"/></div>;
+    return <div className="wc-skeleton"><div className="wc-skel-bar"/></div>;
   }
-
   if (!data) {
-    return <div className="momentum-empty">Waiting for kickoff...</div>;
+    return <div className="wc-empty">⏳ Waiting for kickoff...</div>;
   }
 
   const total = Math.abs(data.homeScore) + Math.abs(data.awayScore) || 1;
-  const homePct = ((data.homeScore / total) * 100) || 50;
-  const homeColor = getTeamColor(data.homeTeam);
-  const awayColor = getTeamColor(data.awayTeam);
+  const homePct = (data.homeScore / total) * 100 || 50;
 
   return (
-    <div className="mom-bar">
-      <div className="mom-teams">
-        <div className="mom-left">
-          <span className="mom-name">{data.homeTeam}</span>
-          <span className="mom-score">{data.homeScore}</span>
+    <div className="wc-bar">
+      <div className="wc-teams">
+        <div className="wc-left">
+          <span className="wc-name">{data.homeTeam}</span>
+          <span className="wc-score">{data.homeScore}</span>
         </div>
-        <span className="mom-half">{data.half}</span>
-        <div className="mom-right">
-          <span className="mom-score">{data.awayScore}</span>
-          <span className="mom-name">{data.awayTeam}</span>
+        <span className="wc-half-badge">{data.half} HALF</span>
+        <div className="wc-right">
+          <span className="wc-score">{data.awayScore}</span>
+          <span className="wc-name">{data.awayTeam}</span>
         </div>
       </div>
-      <div className="mom-track">
-        <div className="mom-fill" style={{ width: `${homePct}%`, background: homeColor }} />
-        <div className="mom-fill" style={{ width: `${100 - homePct}%`, background: awayColor }} />
-        <div className="mom-divider" />
+      <div className="wc-track">
+        <div className="wc-fill" style={{ width: `${homePct}%` }} />
+        <div className="wc-fill wc-fill-away" style={{ width: `${100 - homePct}%` }} />
+        <div className="wc-divider" />
+        <div className="wc-marker" style={{ left: `${homePct}%` }}>⚡</div>
       </div>
-      <div className="mom-label">
+      <div className="wc-dom">
         {data.homeScore > data.awayScore
-          ? `${data.homeTeam} dominant`
+          ? `🔥 ${data.homeTeam} on fire`
           : data.awayScore > data.homeScore
-            ? `${data.awayTeam} dominant`
-            : 'Dead even'}
+            ? `🔥 ${data.awayTeam} on fire`
+            : '🤝 Level'}
       </div>
     </div>
   );
@@ -109,28 +99,26 @@ interface EventFeedProps {
 }
 
 export function EventFeed({ events, homeTeam, awayTeam }: EventFeedProps) {
-  const feedRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    feedRef.current?.scrollTo(0, 0);
-  }, [events.length]);
+  useEffect(() => { ref.current?.scrollTo(0, 0); }, [events.length]);
 
   return (
-    <div className="ev-feed" ref={feedRef}>
-      <h3 className="ev-title">📊 Live Events</h3>
+    <div className="wc-feed" ref={ref}>
+      <h3 className="wc-feed-title">📊 Live Event Feed</h3>
       {events.length === 0 ? (
-        <p className="ev-empty">No events yet</p>
+        <p className="wc-feed-empty">No events yet — World Cup action incoming</p>
       ) : (
-        <div className="ev-list">
+        <div className="wc-events">
           {events.map((ev, i) => {
             const home = ev.team === 'home';
             return (
-              <div key={`${ev.minute}-${i}`} className={`ev-item ${home ? 'ev-home' : 'ev-away'}`}>
-                <span className="ev-min">{ev.minute}&apos;</span>
-                <span className="ev-icon">{EVENT_ICONS[ev.type] || '•'}</span>
-                <span className="ev-type">{EVENT_LABELS[ev.type] || ev.type}</span>
-                {ev.player && <span className="ev-player">{ev.player}</span>}
-                <span className="ev-team">{home ? homeTeam : awayTeam}</span>
+              <div key={`${ev.minute}-${i}`} className={`wc-ev ${home ? 'wc-ev-home' : 'wc-ev-away'}`}>
+                <span className="wc-ev-min">{ev.minute}&apos;</span>
+                <span className="wc-ev-icon">{EVENT_ICONS[ev.type] || '•'}</span>
+                <span className="wc-ev-type">{EVENT_LABELS[ev.type] || ev.type}</span>
+                {ev.player && <span className="wc-ev-player">{ev.player}</span>}
+                <span className="wc-ev-team">{home ? homeTeam : awayTeam}</span>
               </div>
             );
           })}
@@ -158,22 +146,33 @@ export function PoolCard({ matchId, homeTeam, awayTeam, depositDeadline, onDepos
   const timeLeft = depositDeadline ? depositDeadline - now : 0;
 
   return (
-    <div className="pool-card">
-      <div className="pool-vs-row">
-        <button className="pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 0)}>
-          <span className="pool-btn-name">{homeTeam}</span>
-          <span className="pool-btn-label">HOME</span>
+    <div className="wc-pool">
+      <div className="wc-pool-header">
+        <span>🏆 MOMENTUM POOL</span>
+        <span className="wc-pool-half">1ST HALF</span>
+      </div>
+      <div className="wc-pool-teams">
+        <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 0)}>
+          <span className="wc-pool-name">{homeTeam}</span>
+          <span className="wc-pool-label">HOME</span>
+          {isOpen && <span className="wc-pool-bet">PLACE BET</span>}
         </button>
-        <div className="pool-vs">VS</div>
-        <button className="pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 1)}>
-          <span className="pool-btn-name">{awayTeam}</span>
-          <span className="pool-btn-label">AWAY</span>
+        <div className="wc-pool-vs">
+          <span>VS</span>
+          <span className="wc-pool-vs-sub">2% FEE</span>
+        </div>
+        <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 1)}>
+          <span className="wc-pool-name">{awayTeam}</span>
+          <span className="wc-pool-label">AWAY</span>
+          {isOpen && <span className="wc-pool-bet">PLACE BET</span>}
         </button>
       </div>
       {isOpen ? (
-        <div className="pool-clock">Deposit: {Math.floor(timeLeft / 60)}m {timeLeft % 60}s</div>
+        <div className="wc-pool-clock">
+          ⏰ Deposit closes in {Math.floor(timeLeft / 60)}m {timeLeft % 60}s
+        </div>
       ) : (
-        <div className="pool-clock closed">Deposit closed</div>
+        <div className="wc-pool-clock wc-pool-closed">🔒 Pool closed — waiting for settlement</div>
       )}
     </div>
   );

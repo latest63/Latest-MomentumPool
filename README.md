@@ -1,73 +1,58 @@
-# Momentum Pool ⚡
+# ⚡ World Cup Momentum Pool
 
-**X Cup Hackathon — OKX X Layer**
+**X Cup Hackathon — OKX X Layer (2026 FIFA World Cup)**
 
-Pick the team with more *momentum* in a football half (goals, shots, corners, cards).  
-No prediction markets. Pure GameFi.
+> Pick the dominant team in each half. Not predictions — *momentum*.
 
 ---
 
-## How It Works
+## 🏆 What is it?
 
-1. A pool opens 15 min before each half
-2. Deposit into **Team A** or **Team B**
-3. Match kicks off — live momentum bar updates every 15s
-4. At half-time, momentum score is computed from real events
-5. Winners split the losers' pool (minus 2% fee)
-6. Tie → everyone gets refunded
+A real-time GameFi dApp for the **2026 FIFA World Cup**. Before each match half, users deposit into **Team A** or **Team B**. During the half, real match events (goals, shots, corners, cards) accumulate **momentum points**. At half-time, the team with more momentum wins. Winners split the pot.
 
-## Point System
+## ⚽ Point System
 
-| Event | Points |
-|-------|--------|
-| Goal | +5 |
-| Woodwork | +2 |
-| Shot on Target | +1 |
-| Corner | +1 |
-| Foul | -1 |
-| Yellow Card | -3 |
-| Red Card | -5 |
+| Event | Points | Why |
+|-------|--------|-----|
+| Goal | **+5** | Biggest swing — changes the game |
+| Woodwork | **+2** | So close — crowd erupts |
+| Shot on Target | **+1** | Pressure building |
+| Corner | **+1** | Territorial dominance |
+| Foul | **-1** | Breaks flow |
+| Yellow Card | **-3** | Team walks a tightrope |
+| Red Card | **-5** | Match-defining negative |
 
-## Stack
+## 🗓️ Hackathon Requirements
 
-- **Contracts** — Solidity + Foundry → X Layer (chain 196)
-- **Frontend** — Next.js 15 + API routes → Vercel
-- **Relayer** — Vercel Cron Jobs (settles pools at half-time)
-- **Data** — API-Football for live match events
+| Requirement | Status |
+|-------------|--------|
+| ✅ World Cup 2026 themed | Gold trophy branding, WC match schedule |
+| ✅ Built on X Layer | Solidity → Foundry → X Layer (chain 196) |
+| ✅ On-chain settlement | MomentumPool.sol — `deposit()` / `settle()` / `withdraw()` |
+| ✅ Dedicated X account | Create `@MomentumPoolWC` — tag @XLayerOfficial |
+| ✅ Remote (no in-person) | Fully online |
+| ✅ Demo video (bonus) | Record after deployment |
 
-## Project Structure
+## 🏗️ Architecture
 
 ```
-momentum-pool/
-├── contracts/
-│   ├── src/
-│   │   ├── MomentumPool.sol          # Per-half pool
-│   │   └── MomentumPoolFactory.sol   # Pool deployer
-│   ├── test/MomentumPool.t.sol       # 10 tests
-│   ├── script/Deploy.s.sol
-│   ├── deploy.sh                      # Deploy to X Layer
-│   └── foundry.toml
-│
-├── frontend/
-│   ├── app/
-│   │   ├── page.tsx                   # Main UI
-│   │   ├── layout.tsx
-│   │   └── api/
-│   │       ├── matches/route.ts       # List matches
-│   │       ├── match/[id]/route.ts    # Match detail
-│   │       ├── match/[id]/momentum/   # Live scores
-│   │       └── cron/settle/route.ts   # Relayer
-│   ├── components/MomentumMeter.tsx   # Bar + Feed + PoolCard
-│   ├── lib/momentum.ts                # Shared engine
-│   ├── vercel.json                    # Cron jobs
-│   └── package.json
-│
-└── README.md
+Frontend (Next.js → Vercel)
+  ├── Live momentum bar (polls every 15s)
+  ├── Pool deposit UI (wagmi → X Layer)
+  └── Event feed (real match events)
+
+Backend (Vercel Cron → /api/cron/settle)
+  └── At half-time: settles the on-chain pool
+
+Contracts (X Layer)
+  ├── MomentumPool.sol
+  ├── MomentumPoolFactory.sol
+  └── 10 Foundry tests passing
 ```
 
-## Deploy
+## 🚀 Deploy
 
-### 1. Contracts (X Layer)
+### 1. Contracts → X Layer
 
 ```bash
 cd contracts
@@ -75,29 +60,62 @@ cp .env.example .env   # set PRIVATE_KEY
 bash deploy.sh testnet
 ```
 
-### 2. Frontend (Vercel)
+Export the factory address — you'll need it for Vercel.
+
+### 2. Frontend → Vercel
 
 ```bash
 cd frontend
 pnpm install
-pnpm dev        # local dev on :3000
+pnpm dev
 ```
 
-Deploy to Vercel:
-- Import `frontend/` as the project root
-- Add env vars in Vercel dashboard:
-  - `PRIVATE_KEY` — wallet that owns the Factory
-  - `FACTORY_ADDRESS` — deployed factory address
-  - `XLAYER_RPC` — default: `https://testrpc.xlayer.tech`
-  - `SPORTS_API_KEY` — optional, for live data
+**Vercel deployment:**
+1. Import `github.com/latest63/Latest-MomentumPool`
+2. Root directory: `frontend/`
+3. Framework: Next.js
+4. Add env vars:
+   - `PRIVATE_KEY` — deployer wallet
+   - `FACTORY_ADDRESS` — from contract deployment
+   - `XLAYER_RPC` — `https://testrpc.xlayer.tech`
 
-Vercel Cron automatically runs `/api/cron/settle` every 2 min.
+Vercel Cron runs `/api/cron/settle` every 2 min to auto-settle pools.
 
-## Hackathon Edge
+## 🧪 Tests
 
-| Criteria | Why It Hits |
-|----------|-------------|
-| **Innovation** | Momentum, not prediction. Nobody else is doing this. |
-| **Market Potential** | Football fans love real-time betting-adjacent games. Viral mechanic. |
-| **Completion** | 2 contracts, 10 tests passing, full frontend. Ships in days. |
-| **On-chain** | Every settlement is an X Layer tx. Verifiable. |
+```bash
+cd contracts
+forge test -vv   # 10/10 passing
+```
+
+## 📦 Repo Structure
+
+```
+├── contracts/
+│   ├── src/MomentumPool.sol          # Core pool logic
+│   ├── src/MomentumPoolFactory.sol   # Pool factory
+│   ├── test/MomentumPool.t.sol       # Full test suite
+│   ├── script/Deploy.s.sol           # Deploy script
+│   ├── deploy.sh                     # One-command deploy
+│   └── foundry.toml
+│
+├── frontend/
+│   ├── app/
+│   │   ├── page.tsx                  # WC-themed UI
+│   │   ├── layout.tsx
+│   │   └── api/
+│   │       ├── matches/              # Match list
+│   │       ├── match/[id]/           # Match detail
+│   │       └── cron/settle/          # Relayer
+│   ├── components/MomentumMeter.tsx  # Bar + Feed + Pool
+│   ├── lib/momentum.ts               # Scoring engine
+│   └── vercel.json                   # Cron config
+│
+└── README.md
+```
+
+## 🔗 Links
+
+- **GitHub:** https://github.com/latest63/Latest-MomentumPool
+- **X Layer:** https://rpc.xlayer.tech (chain 196)
+- **OKX Hackathon:** https://web3.okx.com/xlayer/build-x-hackathon/xcup
