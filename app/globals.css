@@ -551,11 +551,40 @@ body {
   border-top: 1px solid var(--border-glass);
 }
 
-.footer-section p {
+.footer-powered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.footer-powered span {
   font-family: var(--font-sports);
   font-size: 18px; letter-spacing: 3px;
   color: var(--text-tertiary); text-transform: uppercase;
-  margin-bottom: var(--sp-3);
+}
+
+.powered-by-badge-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.xlayer-powered-badge {
+  width: 118px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.footer-powered-img {
+  width: 132px;
+  height: 38px;
 }
 
 .footer-links { display: flex; justify-content: center; gap: var(--sp-6); }

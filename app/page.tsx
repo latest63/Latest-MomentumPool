@@ -100,7 +100,10 @@ export default function Home() {
                 <button className="hero-cta" onClick={handleEnter}>
                   Enter the Arena
                 </button>
-                <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
+                <div className="hero-hint powered-by-badge-row">
+                  <img src="/assets/x-layer-powered.jpeg" alt="Powered by X Layer" className="xlayer-powered-badge" />
+                  <span>&middot; 2% pool fee</span>
+                </div>
               </div>
 
               <div className="hero-player-panel" aria-hidden="true">
@@ -192,7 +195,10 @@ export default function Home() {
 
           {/* ────────── FOOTER ────────── */}
           <section className="footer-section">
-            <p>Momentum Pool &mdash; Powered by X Layer</p>
+            <div className="footer-powered">
+              <span>Momentum Pool</span>
+              <img src="/assets/x-layer-powered.jpeg" alt="Powered by X Layer" className="xlayer-powered-badge footer-powered-img" />
+            </div>
             <div className="footer-links">
               <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a>
               <a href="https://github.com/latest63/Latest-MomentumPool" target="_blank" rel="noopener">GitHub</a>
