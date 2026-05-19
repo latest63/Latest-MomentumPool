@@ -26,24 +26,7 @@ export default function Home() {
   const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [playerIdx, setPlayerIdx] = useState(0);
-  const [playerImgs] = useState(() => {
-    // Only include images that exist
-    const imgs = ['/assets/hero-player-gen-1.png', '/assets/hero-player-cutout.png'];
-    return imgs;
-  });
   const appRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (playerImgs.length < 2) return;
-    const t = setInterval(() => setPlayerIdx(i => (i + 1) % playerImgs.length), 4000);
-    return () => clearInterval(t);
-  }, [playerImgs.length]);
-
-  const imgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.target as HTMLImageElement;
-    target.style.display = 'none';
-  };
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -105,7 +88,6 @@ export default function Home() {
             <div className="hero-split-inner">
               <div className="hero-content hero-content-split">
                 <div className="hero-tag">
-                  <img src="/assets/hero-player-gen-1.png" alt="" className="hero-tag-img" />
                   <span className="dot" /> WORLD CUP 2026
                 </div>
                 <h1 className="hero-title">
@@ -123,12 +105,6 @@ export default function Home() {
                   <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge" />
                   <span>&middot; 2% pool fee</span>
                 </div>
-              </div>
-
-              <div className="hero-player-panel" aria-hidden="true">
-                <div className="hero-player-glow" />
-                <img src={playerImgs[playerIdx]} alt="Football player in action" className="hero-player-real hero-fade" onError={imgError} />
-                <div className="hero-player-ground" />
               </div>
             </div>
           </div>
