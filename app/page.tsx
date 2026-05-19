@@ -29,10 +29,7 @@ export default function Home() {
   const appRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/matches')
-      .then(r => r.json())
-      .then(d => { if (d.matches?.length) setMatches(d.matches); })
-      .catch(() => {});
+    fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -43,10 +40,7 @@ export default function Home() {
     if (!selected) return;
     const fetchLive = async () => {
       try {
-        const [momRes, evRes] = await Promise.all([
-          fetch(`/api/match/${selected}/momentum`),
-          fetch(`/api/match/${selected}`),
-        ]);
+        const [momRes, evRes] = await Promise.all([fetch(`/api/match/${selected}/momentum`), fetch(`/api/match/${selected}`)]);
         if (momRes.ok) setMomentum(await momRes.json());
         if (evRes.ok) { const d = await evRes.json(); setEvents(d.recentEvents || []); }
       } catch {}
@@ -62,67 +56,64 @@ export default function Home() {
 
   return (
     <main className="app-shell">
+      {/* ═══════════════ UNIFIED COLORED BACKGROUND — runs behind EVERYTHING ═══════════════ */}
+      <div className="color-bg">
+        <div className="bg-blob bg-blob-1" />
+        <div className="bg-blob bg-blob-2" />
+        <div className="bg-blob bg-blob-3" />
+        <div className="bg-blob bg-blob-4" />
+        <div className="bg-blob bg-blob-5" />
+        <div className="bg-blob bg-blob-6" />
+        <div className="bg-streak" />
+        <div className="bg-streak bg-streak-2" />
+      </div>
 
-      {/* ═══════════════════════════════ LANDING ═══════════════════════════════ */}
+      {/* ═══════════════ LANDING PAGE ═══════════════ */}
 
       {page === 'landing' && (
+
         <>
-
-          {/* ──────────── SECTION 1: ELECTRIC BLUE HERO ──────────── */}
-          <section className="section-wrap hero-section">
-            <div className="hero-blob-1" />
-            <div className="hero-blob-2" />
-            <div className="hero-blob-3" />
-            <div className="hero-ring-1" />
-            <div className="hero-ring-2" />
-
-            <nav className="hero-nav">
-              <div className="top-bar-brand">
-                <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
-                <div className="top-bar-title">
-                  Momentum<span>Pool</span>
-                </div>
+          {/* ─── HERO (no bg — lets color-bg show through) ─── */}
+          <nav className="hero-nav">
+            <div className="top-bar-brand">
+              <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
+              <div className="top-bar-title">
+                Momentum<span>Pool</span>
               </div>
-            </nav>
-
-            <div className="hero-center">
-              <div className="hero-tag">
-                <span className="dot" /> WORLD CUP 2026
-              </div>
-              <h1 className="hero-title">
-                Pick the<br /><span className="hl">Momentum</span>
-              </h1>
-              <p className="hero-sub">
-                Deposit on who controls the half.<br />
-                More momentum points wins the pool.
-              </p>
-              <button className="hero-cta" onClick={handleEnter}>
-                Enter the Arena
-              </button>
-              <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
             </div>
-          </section>
+          </nav>
 
-          {/* ──────────── SECTION 2: NEON GREEN — How It Works ──────────── */}
-          <section className="section-wrap section-green">
-            <div className="green-blob" />
-            <div className="green-blob-2" />
+          <div className="hero-center">
+            <div className="hero-tag">
+              <span className="dot" /> WORLD CUP 2026
+            </div>
+            <h1 className="hero-title">
+              Pick the<br /><span className="hl">Momentum</span>
+            </h1>
+            <p className="hero-sub">
+              Deposit on who controls the half.<br />
+              More momentum points wins the pool.
+            </p>
+            <button className="hero-cta" onClick={handleEnter}>
+              Enter the Arena
+            </button>
+            <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
+          </div>
 
+          {/* ─── HOW IT WORKS (glass overlay on color-bg) ─── */}
+          <section className="section">
             <div className="section-inner">
               <div className="section-label">How It Works</div>
               <div className="section-title">Three Steps to Own the Half</div>
-              <div className="section-desc" style={{ marginBottom: 'var(--sp-8)' }}>
-                Pick your side, watch the momentum shift, and win the pool at half-time.
-              </div>
-
-              <div className="green-grid">
+              <div className="section-desc">Pick your side, watch the momentum shift, and win the pool at half-time.</div>
+              <div className="features-grid">
                 {[
-                  { icon: '⏱️', title: 'Pick a Side', desc: 'Deposit into Team A or B before the half starts. Simple.' },
-                  { icon: '📊', title: 'Live Momentum', desc: 'Goals, shots, cards — every event updates the bar in real time.' },
-                  { icon: '🏆', title: 'Win the Pool', desc: 'Winners split the pot. Settled on-chain at half-time.' },
+                  { icon: '⏱️', title: 'Pick a Side', desc: 'Deposit into Team A or B before the half starts. Your pick, your call.' },
+                  { icon: '📊', title: 'Live Momentum', desc: 'Goals, shots, cards, corners — every event updates the bar in real time.' },
+                  { icon: '🏆', title: 'Win the Pool', desc: 'Winners split the losers&apos; pool. All settled on-chain at half-time.' },
                 ].map((c, i) => (
                   <div key={i} className="feature-card">
-                    <div className="feature-icon" style={{ fontSize: 24 }}>{c.icon}</div>
+                    <div className="feature-icon">{c.icon}</div>
                     <h3>{c.title}</h3>
                     <p>{c.desc}</p>
                   </div>
@@ -131,18 +122,12 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ──────────── SECTION 3: ORANGE — Match Schedule ──────────── */}
-          <section className="section-wrap section-orange">
-            <div className="orange-blob" />
-            <div className="orange-blob-2" />
-
+          {/* ─── MATCHES ─── */}
+          <section className="section">
             <div className="section-inner">
               <div className="section-label">Schedule</div>
               <div className="section-title">World Cup 2026 Fixtures</div>
-              <div className="section-desc" style={{ marginBottom: 'var(--sp-6)' }}>
-                Open matches. Pick your side before the half starts.
-              </div>
-
+              <div className="section-desc">Open matches. Pick your side before the half starts.</div>
               <div className="match-grid">
                 {FALLBACK.map((m) => (
                   <div key={m.matchId} className="match-card" onClick={handleEnter}>
@@ -158,18 +143,12 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ──────────── SECTION 4: CYAN — Stats ──────────── */}
-          <section className="section-wrap section-cyan">
-            <div className="cyan-blob" />
-            <div className="cyan-circles" />
-
+          {/* ─── STATS ─── */}
+          <section className="section">
             <div className="section-inner">
               <div className="section-label">Built on X Layer</div>
               <div className="section-title">Live on Chain</div>
-              <div className="section-desc" style={{ marginBottom: 'var(--sp-6)' }}>
-                Fully on-chain settlement. No oracles. Just pure momentum.
-              </div>
-
+              <div className="section-desc">Fully on-chain settlement. No oracles. Just pure momentum.</div>
               <div className="stats-row">
                 {[
                   { num: '0', label: 'Active Pools' },
@@ -185,48 +164,37 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ──────────── SECTION 5: RED — CTA ──────────── */}
-          <section className="section-wrap section-red">
-            <div className="red-blob" />
-            <div className="red-blob-2" />
-            <div className="red-lines" />
-
+          {/* ─── CTA ─── */}
+          <section className="section">
             <div className="section-inner">
               <div className="cta-content">
                 <h2>Ready to Play?</h2>
                 <p>Connect your wallet and start depositing. The next half is coming.</p>
-                <button className="cta-btn" onClick={handleEnter}>
-                  Launch App
-                </button>
+                <button className="cta-btn" onClick={handleEnter}>Launch App</button>
               </div>
             </div>
           </section>
 
-          {/* ──────────── SECTION 6: YELLOW — Footer strip ──────────── */}
-          <section className="section-wrap section-yellow">
-            <div className="yellow-shapes" />
-            <div className="yellow-content">
-              <p>Momentum Pool &mdash; Powered by X Layer</p>
-              <div className="social-links">
-                <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">X Layer</a>
-                <a href="https://github.com/latest63/Latest-MomentumPool" target="_blank" rel="noopener">GitHub</a>
-              </div>
+          {/* ─── FOOTER ─── */}
+          <section className="footer-section">
+            <p>Momentum Pool &mdash; Powered by X Layer</p>
+            <div className="footer-links">
+              <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a>
+              <a href="https://github.com/latest63/Latest-MomentumPool" target="_blank" rel="noopener">GitHub</a>
+              <a href="https://www.xlayer.tech/" target="_blank" rel="noopener">X Layer</a>
             </div>
           </section>
-
         </>
       )}
 
-      {/* ═══════════════════════════════ APP ═══════════════════════════════ */}
+      {/* ═══════════════ APP PAGE ═══════════════ */}
 
       {page === 'app' && (
         <div ref={appRef}>
           <div className="top-bar">
             <div className="top-bar-brand">
               <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
-              <div className="top-bar-title">
-                Momentum<span>Pool</span>
-              </div>
+              <div className="top-bar-title">Momentum<span>Pool</span></div>
             </div>
             <button className="app-back-btn" onClick={() => setPage('landing')}>&larr; Back</button>
           </div>
@@ -238,9 +206,8 @@ export default function Home() {
                 <div className="live-indicator">LIVE</div>
               </div>
               <div className="match-tabs">
-                {matches.map((m) => (
-                  <button key={m.matchId} className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
-                    onClick={() => setSelected(m.matchId)}>
+                {matches.map(m => (
+                  <button key={m.matchId} className={`match-tab ${selected === m.matchId ? 'active' : ''}`} onClick={() => setSelected(m.matchId)}>
                     <div className="tab-team-row"><span>{FLAGS[m.homeTeam] || '🏳️'}</span><span>{m.homeTeam}</span></div>
                     <div className="tab-vs-label">vs</div>
                     <div className="tab-team-row"><span>{FLAGS[m.awayTeam] || '🏳️'}</span><span>{m.awayTeam}</span></div>
