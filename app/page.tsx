@@ -105,6 +105,7 @@ export default function Home() {
             <div className="hero-split-inner">
               <div className="hero-content hero-content-split">
                 <div className="hero-tag">
+                  <img src="/assets/hero-player-gen-1.png" alt="" className="hero-tag-img" />
                   <span className="dot" /> WORLD CUP 2026
                 </div>
                 <h1 className="hero-title">
@@ -236,7 +237,6 @@ export default function Home() {
               <img className="top-bar-logo" src="/assets/momentum-logo-transparent.png" alt="Momentum Pool" />
               <div className="top-bar-title">Momentum<span>Pool</span></div>
             </div>
-            <button className="app-back-btn" onClick={() => setPage('landing')}>&larr; Back</button>
           </div>
 
           <div className="main-content">
