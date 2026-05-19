@@ -26,7 +26,20 @@ export default function Home() {
   const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [playerIdx, setPlayerIdx] = useState(0);
   const appRef = useRef<HTMLDivElement>(null);
+
+  const HERO_PLAYERS = [
+    '/assets/hero-player-gen-1.png',
+    '/assets/hero-player-gen-2.png',
+    '/assets/hero-player-gen-3.png',
+    '/assets/hero-player-cutout.png',
+  ];
+
+  useEffect(() => {
+    const t = setInterval(() => setPlayerIdx(i => (i + 1) % HERO_PLAYERS.length), 4000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -109,7 +122,7 @@ export default function Home() {
 
               <div className="hero-player-panel" aria-hidden="true">
                 <div className="hero-player-glow" />
-                <img src="/assets/hero-player-cutout.png" alt="Football player in action" className="hero-player-real" />
+                <img src={HERO_PLAYERS[playerIdx]} alt="Football player in action" className="hero-player-real hero-fade" />
                 <div className="hero-player-ground" />
               </div>
             </div>

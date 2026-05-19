@@ -85,6 +85,15 @@
     drop-shadow(0 0 52px rgba(190,238,79,.16));
 }
 
+.hero-fade {
+  animation: heroCrossfade 1s ease;
+}
+
+@keyframes heroCrossfade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 .hero-player-ground {
   position: absolute;
   z-index: 1;
