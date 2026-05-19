@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+.next/
+
+# Env files
+.env
+.env.local
+
+# Foundry build artifacts
+contracts/out/
+contracts/cache/
+contracts/lib/
+
+# OS
+.DS_Store
+Thumbs.db
