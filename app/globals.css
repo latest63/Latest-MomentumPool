@@ -221,17 +221,7 @@ body {
 
 /* Hero overlay gradient */
 .hero-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(90deg,
-    rgba(5, 5, 16, 0.95) 0%,
-    rgba(5, 5, 16, 0.6) 30%,
-    rgba(5, 5, 16, 0.3) 50%,
-    rgba(5, 5, 16, 0.6) 70%,
-    rgba(5, 5, 16, 0.95) 100%
-  );
-  pointer-events: none;
+  display: none;
 }
 
 .hero-nav {
