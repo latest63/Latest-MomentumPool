@@ -39,7 +39,7 @@ interface MomentumBarProps {
 export function MomentumBar({ data, loading }: MomentumBarProps) {
   if (loading) {
     return (
-      <div className="wc-bar wc-skeleton">
+      <div className="wc-bar wc-skeleton" style={{ padding: 0 }}>
         <div className="wc-skel-bar" />
       </div>
     );
@@ -71,9 +71,9 @@ export function MomentumBar({ data, loading }: MomentumBarProps) {
       </div>
       <div className="wc-dom">
         {data.homeScore > data.awayScore
-          ? `${data.homeTeam} leading`
+          ? `${data.homeTeam} Leading`
           : data.awayScore > data.homeScore
-            ? `${data.awayTeam} leading`
+            ? `${data.awayTeam} Leading`
             : 'Level'}
       </div>
     </div>
@@ -93,7 +93,10 @@ export function EventFeed({ events, homeTeam, awayTeam }: EventFeedProps) {
 
   return (
     <div className="wc-feed" ref={ref}>
-      <h3 className="wc-feed-title">Live Events</h3>
+      <h3 className="wc-feed-title">
+        Events
+        {events.length > 0 && <span className="feed-live">LIVE</span>}
+      </h3>
       {events.length === 0 ? (
         <p className="wc-feed-empty">No events yet — match action incoming</p>
       ) : (
@@ -103,7 +106,7 @@ export function EventFeed({ events, homeTeam, awayTeam }: EventFeedProps) {
             return (
               <div key={`${ev.minute}-${i}`} className={`wc-ev ${home ? '' : 'wc-ev-away'}`}>
                 <span className="wc-ev-min">{ev.minute}&apos;</span>
-                <span>{EVENT_ICONS[ev.type] || '•'}</span>
+                <span className="wc-ev-icon">{EVENT_ICONS[ev.type] || '•'}</span>
                 <span className="wc-ev-type">{EVENT_LABELS[ev.type] || ev.type}</span>
                 {ev.player && <span className="wc-ev-player">{ev.player}</span>}
                 <span className="wc-ev-team">{home ? homeTeam : awayTeam}</span>
@@ -135,23 +138,27 @@ export function PoolCard({ matchId, homeTeam, awayTeam, depositDeadline, onDepos
   return (
     <div className="wc-pool">
       <div className="wc-pool-header">
-        <span>Momentum Pool</span>
+        <h3>Deposit Pool</h3>
         <span className="wc-pool-half">1ST HALF</span>
       </div>
       <div className="wc-pool-teams">
         <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 0)}>
-          <span className="wc-pool-name">{homeTeam}</span>
-          <span className="wc-pool-label">Home</span>
-          {isOpen && <span className="wc-pool-bet">PLACE BET</span>}
+          <div className="btn-content">
+            <span className="wc-pool-name">{homeTeam}</span>
+            <span className="wc-pool-label">Home</span>
+            {isOpen && <span className="wc-pool-bet">PLACE BET</span>}
+          </div>
         </button>
         <div className="wc-pool-vs">
           <span>VS</span>
-          <span className="wc-pool-vs-sub">2% fee</span>
+          <span className="wc-pool-vs-sub">2% Fee</span>
         </div>
         <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 1)}>
-          <span className="wc-pool-name">{awayTeam}</span>
-          <span className="wc-pool-label">Away</span>
-          {isOpen && <span className="wc-pool-bet">PLACE BET</span>}
+          <div className="btn-content">
+            <span className="wc-pool-name">{awayTeam}</span>
+            <span className="wc-pool-label">Away</span>
+            {isOpen && <span className="wc-pool-bet">PLACE BET</span>}
+          </div>
         </button>
       </div>
       {isOpen ? (

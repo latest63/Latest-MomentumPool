@@ -87,90 +87,151 @@ export default function Home() {
 
   return (
     <main className="app-shell">
-      {/* ─── Top Bar ─── */}
-      <div className="top-bar">
-        <div className="top-bar-brand">
-          <img className="top-bar-logo" src="/assets/logo.svg" alt="Momentum Pool" />
-          <div className="top-bar-title">
-            Momentum<span>Pool</span>
-          </div>
-        </div>
-        <div className="top-bar-hosts">
-          <span>🇺🇸 USA</span>
-          <span>🇨🇦 Canada</span>
-          <span>🇲🇽 Mexico</span>
-          <span style={{ opacity: 0.4 }}>· 2026</span>
-        </div>
+      {/* ─── Stadium Lights ─── */}
+      <div className="stadium-lights">
+        <div className="stadium-beam" />
+        <div className="stadium-beam" />
+        <div className="stadium-beam" />
       </div>
 
-      {/* ─── Hero ─── */}
-      <div className="hero">
-        <div className="hero-badge">⚽ World Cup 2026</div>
-        <h1>
-          Pick the half.<br />
-          <span>Win the pool.</span>
-        </h1>
-        <p>
-          Deposit into Team A or Team B before each half. At half-time,
-          the team with more momentum points wins — and you take the pool.
-        </p>
-      </div>
-
-      {/* ─── Match Selector ─── */}
-      <div className="match-tabs">
-        {matches.map((m) => (
-          <button
-            key={m.matchId}
-            className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
-            onClick={() => setSelected(m.matchId)}
-          >
-            <div className="tab-teams">
-              <span>{FLAGS[m.homeTeam] || '🏳️'} {m.homeTeam}</span>
-              <span className="tab-vs">vs</span>
-              <span>{FLAGS[m.awayTeam] || '🏳️'} {m.awayTeam}</span>
+      <div className="main-content">
+        {/* ─── Top Bar ─── */}
+        <div className="top-bar">
+          <div className="top-bar-brand">
+            <img className="top-bar-logo" src="/assets/logo.svg" alt="Momentum Pool" />
+            <div className="top-bar-title">
+              Momentum<span>Pool</span>
             </div>
-            <small>{m.venue || 'World Cup 2026'}</small>
-          </button>
-        ))}
-      </div>
+          </div>
+          <div className="top-bar-hosts">
+            <span className="host-pill active">🇺🇸 USA</span>
+            <span className="host-pill">🇨🇦 Canada</span>
+            <span className="host-pill">🇲🇽 Mexico</span>
+          </div>
+        </div>
 
-      {/* ─── Match Detail ─── */}
-      {selectedMatch && (
-        <div className="match-view">
-          <div className="match-header">
-            <span>{FLAGS[selectedMatch.homeTeam] || '🏳️'} {selectedMatch.homeTeam}</span>
-            <span className="match-header-vs">vs</span>
-            <span>{FLAGS[selectedMatch.awayTeam] || '🏳️'} {selectedMatch.awayTeam}</span>
+        {/* ─── Hero ─── */}
+        <section className="hero-section">
+          <div className="hero-glow" />
+
+          {/* Flowing curved lines */}
+          <div className="hero-curves">
+            <svg viewBox="0 0 1200 240" preserveAspectRatio="none">
+              <path
+                d="M0,120 C300,200 600,40 1200,120 L1200,0 L0,0 Z"
+                fill="url(#heroGrad)"
+                opacity="0.06"
+              />
+              <path
+                d="M0,160 C400,80 800,200 1200,100 L1200,0 L0,0 Z"
+                fill="url(#heroGrad2)"
+                opacity="0.04"
+              />
+              <defs>
+                <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="var(--electric-blue)" />
+                  <stop offset="50%" stopColor="var(--cyan-flare)" />
+                  <stop offset="100%" stopColor="var(--neon-green)" />
+                </linearGradient>
+                <linearGradient id="heroGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="var(--energy-orange)" />
+                  <stop offset="50%" stopColor="var(--bright-red)" />
+                  <stop offset="100%" stopColor="var(--stadium-yellow)" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
 
-          <MomentumBar data={momentum} loading={!momentum} />
+          <div className="hero-content">
+            <div className="hero-tag">
+              <span /> FIFA WORLD CUP 2026
+            </div>
+            <h1 className="hero-title">
+              Pick the<br />
+              <span className="gradient-text">Momentum</span>
+            </h1>
+            <p className="hero-sub">
+              Deposit on the team that controls the half. At half-time,
+              the team with more momentum points wins. You take the pool.
+            </p>
+          </div>
+        </section>
 
-          <PoolCard
-            matchId={selectedMatch.matchId}
-            homeTeam={selectedMatch.homeTeam}
-            awayTeam={selectedMatch.awayTeam}
-            onDeposit={handleDeposit}
-          />
+        {/* ─── Match Selector ─── */}
+        <div className="match-selector">
+          <div className="match-selector-header">
+            <h2>Live Matches</h2>
+            <div className="live-dot">LIVE</div>
+          </div>
 
-          <EventFeed
-            events={events}
-            homeTeam={selectedMatch.homeTeam}
-            awayTeam={selectedMatch.awayTeam}
-          />
+          <div className="match-tabs">
+            {matches.map((m) => (
+              <button
+                key={m.matchId}
+                className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
+                onClick={() => setSelected(m.matchId)}
+              >
+                <div className="tab-teams">
+                  <div className="tab-team-row">
+                    <span>{FLAGS[m.homeTeam] || '🏳️'}</span>
+                    <span>{m.homeTeam}</span>
+                  </div>
+                  <div className="tab-vs-label">vs</div>
+                  <div className="tab-team-row">
+                    <span>{FLAGS[m.awayTeam] || '🏳️'}</span>
+                    <span>{m.awayTeam}</span>
+                  </div>
+                </div>
+                <small>{m.venue || 'World Cup 2026'}</small>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
 
-      {/* ─── Footer ─── */}
-      <footer className="app-footer">
-        <p>
-          Built on{' '}
-          <a href="https://www.xlayer.tech/" target="_blank" rel="noopener">X Layer</a>
-          {' · '}
-          <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a>
-          {' · '}
-          <a href="https://github.com/latest63/Latest-MomentumPool" target="_blank" rel="noopener">GitHub</a>
-        </p>
-      </footer>
+        {/* ─── Match Detail ─── */}
+        {selectedMatch && (
+          <div className="match-view">
+            <div className="match-header">
+              <div className="match-header-team">
+                <span className="flag">{FLAGS[selectedMatch.homeTeam] || '🏳️'}</span>
+                <span>{selectedMatch.homeTeam}</span>
+              </div>
+              <div className="match-header-vs">VS</div>
+              <div className="match-header-team">
+                <span className="flag">{FLAGS[selectedMatch.awayTeam] || '🏳️'}</span>
+                <span>{selectedMatch.awayTeam}</span>
+              </div>
+            </div>
+
+            <MomentumBar data={momentum} loading={!momentum} />
+
+            <PoolCard
+              matchId={selectedMatch.matchId}
+              homeTeam={selectedMatch.homeTeam}
+              awayTeam={selectedMatch.awayTeam}
+              onDeposit={handleDeposit}
+            />
+
+            <EventFeed
+              events={events}
+              homeTeam={selectedMatch.homeTeam}
+              awayTeam={selectedMatch.awayTeam}
+            />
+          </div>
+        )}
+
+        {/* ─── Footer ─── */}
+        <footer className="app-footer">
+          <p>
+            Built on{' '}
+            <a href="https://www.xlayer.tech/" target="_blank" rel="noopener">X Layer</a>
+            {' · '}
+            <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a>
+            {' · '}
+            <a href="https://github.com/latest63/Latest-MomentumPool" target="_blank" rel="noopener">GitHub</a>
+          </p>
+        </footer>
+      </div>
     </main>
   );
 }
