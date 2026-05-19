@@ -1,16 +1,16 @@
-# Dependencies
 node_modules/
 .next/
+out/
 
-# Env files
-.env
-.env.local
-
-# Foundry build artifacts
+# Contracts
 contracts/out/
 contracts/cache/
 contracts/lib/
 
-# OS
-.DS_Store
-Thumbs.db
+# Env
+.env
+.env.local
+
+# Auto-generated
+*.tsbuildinfo
+next-env.d.ts
