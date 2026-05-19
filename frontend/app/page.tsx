@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
+import { WORLD_CUP_MATCHES } from '@/lib/momentum';
 
 interface MomentumData {
   homeScore: number;
@@ -19,44 +20,54 @@ interface EventItem {
   player?: string;
 }
 
-// 2026 FIFA World Cup matches (first round of group stage)
-const WORLD_CUP_MATCHES = [
-  { matchId: 'wc01', homeTeam: 'USA', awayTeam: 'Canada', kickoff: 1750000000 },
-  { matchId: 'wc02', homeTeam: 'Mexico', awayTeam: 'Ghana', kickoff: 1750086400 },
-  { matchId: 'wc03', homeTeam: 'Brazil', awayTeam: 'Nigeria', kickoff: 1750172800 },
-  { matchId: 'wc04', homeTeam: 'Argentina', awayTeam: 'Japan', kickoff: 1750259200 },
-  { matchId: 'wc05', homeTeam: 'England', awayTeam: 'Senegal', kickoff: 1750345600 },
-  { matchId: 'wc06', homeTeam: 'France', awayTeam: 'Morocco', kickoff: 1750432000 },
-];
+interface MatchSummary {
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  venue?: string;
+  host?: string;
+}
+
+const FLAGS: Record<string, string> = {
+  USA: '🇺🇸',
+  Canada: '🇨🇦',
+  Mexico: '🇲🇽',
+  Brazil: '🇧🇷',
+  Nigeria: '🇳🇬',
+  Ghana: '🇬🇭',
+  Argentina: '🇦🇷',
+  Japan: '🇯🇵',
+};
 
 export default function Home() {
-  const [matches, setMatches] = useState(WORLD_CUP_MATCHES);
-  const [selected, setSelected] = useState(WORLD_CUP_MATCHES[0].matchId);
+  const fallbackMatches = WORLD_CUP_MATCHES.map((m) => ({
+    matchId: m.matchId,
+    homeTeam: m.homeTeam,
+    awayTeam: m.awayTeam,
+    venue: m.venue,
+    host: m.host,
+  }));
+
+  const [matches, setMatches] = useState<MatchSummary[]>(fallbackMatches);
+  const [selected, setSelected] = useState(fallbackMatches[0].matchId);
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Try loading matches from API, fallback to static data
   useEffect(() => {
-    setLoading(true);
     fetch('/api/matches')
       .then((r) => r.json())
       .then((data) => {
         if (data.matches?.length) setMatches(data.matches);
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
 
-  // Auto-select first match
   useEffect(() => {
     if (matches.length > 0 && !matches.find((m) => m.matchId === selected)) {
       setSelected(matches[0].matchId);
     }
   }, [matches, selected]);
 
-  // Poll every 15s
   useEffect(() => {
     if (!selected) return;
 
@@ -71,10 +82,7 @@ export default function Home() {
           const data = await evRes.json();
           setEvents(data.recentEvents || []);
         }
-        setError(null);
-      } catch {
-        // silent for now
-      }
+      } catch {}
     };
 
     fetchLive();
@@ -90,20 +98,29 @@ export default function Home() {
 
   return (
     <main className="app-shell">
-      {/* Hero */}
-      <header className="hero">
-        <div className="hero-badge">2026 FIFA WORLD CUP</div>
-        <h1 className="hero-title">⚡ Momentum Pool</h1>
-        <p className="hero-sub">
-          Pick the dominant team in each half. No predictions — pure momentum.
-        </p>
-        <div className="hero-cta">
-          <span>🏆</span>
-          <span>Built on X Layer for OKX Build-X</span>
+      <section className="wc-hero">
+        <div className="wc-pattern" />
+        <div className="wc-kicker">WE ARE 26</div>
+        <div className="wc26-mark">
+          <span>2</span><span>6</span>
         </div>
-      </header>
+        <h1>Momentum Pool</h1>
+        <p>World Cup 2026 energy. Pick the team controlling the half — built on X Layer.</p>
+        <div className="host-row">
+          <span>WE ARE 26</span>
+          <span>🇺🇸 USA</span>
+          <span>🇨🇦 CANADA</span>
+          <span>🇲🇽 MEXICO</span>
+        </div>
+      </section>
 
-      {/* Match selector */}
+      <section className="xlayer-strip">
+        <span>⚡ X Layer native</span>
+        <span>WE ARE 26 theme</span>
+        <span>Half-time settlement</span>
+        <span>No prediction market</span>
+      </section>
+
       <div className="match-tabs">
         {matches.map((m) => (
           <button
@@ -111,15 +128,23 @@ export default function Home() {
             className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
             onClick={() => setSelected(m.matchId)}
           >
-            <span className="flag">{m.homeTeam === 'USA' ? '🇺🇸' : m.homeTeam === 'Mexico' ? '🇲🇽' : m.homeTeam === 'Brazil' ? '🇧🇷' : m.homeTeam === 'Argentina' ? '🇦🇷' : m.homeTeam === 'England' ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' : m.homeTeam === 'France' ? '🇫🇷' : '🏳️'}</span>
-            {m.homeTeam} vs {m.awayTeam}
+            <div className="tab-teams">
+              <span>{FLAGS[m.homeTeam] || '🏳️'} {m.homeTeam}</span>
+              <span className="tab-vs">vs</span>
+              <span>{FLAGS[m.awayTeam] || '🏳️'} {m.awayTeam}</span>
+            </div>
+            <small>{m.venue || 'World Cup 2026'}</small>
           </button>
         ))}
       </div>
 
-      {/* Main content */}
       {selectedMatch && (
         <div className="match-view">
+          <div className="match-title">
+            <span>{FLAGS[selectedMatch.homeTeam] || '🏳️'} {selectedMatch.homeTeam}</span>
+            <b>VS</b>
+            <span>{FLAGS[selectedMatch.awayTeam] || '🏳️'} {selectedMatch.awayTeam}</span>
+          </div>
           <MomentumBar data={momentum} loading={!momentum} />
           <PoolCard
             matchId={selectedMatch.matchId}
@@ -127,299 +152,222 @@ export default function Home() {
             awayTeam={selectedMatch.awayTeam}
             onDeposit={handleDeposit}
           />
-          <EventFeed
-            events={events}
-            homeTeam={selectedMatch.homeTeam}
-            awayTeam={selectedMatch.awayTeam}
-          />
+          <EventFeed events={events} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />
         </div>
       )}
 
-      {/* Footer */}
       <footer className="app-footer">
-        <p>🇺🇸🇨🇦🇲🇽 FIFA World Cup 2026 • Hosted by USA • Canada • Mexico</p>
-        <p className="footer-twitter">
-          Follow{' '}
-          <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">
-            @XLayerOfficial
-          </a>{' '}
-          • #BuildX • #XLayer
-        </p>
+        <p>2026 World Cup theme • Built on X Layer • OKX Build-X Hackathon</p>
+        <p><a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a> • #BuildX • #XLayer</p>
       </footer>
 
       <style>{`
+        :root {
+          --wc-black: #030303;
+          --wc-white: #f7f7f2;
+          --wc-blue: #0047ff;
+          --wc-red: #e4162b;
+          --wc-green: #00a651;
+          --wc-yellow: #ffce00;
+          --wc-cyan: #00b7ff;
+        }
         .app-shell {
           min-height: 100vh;
-          background: linear-gradient(180deg, #0a0a1a 0%, #0f172a 100%);
-          color: #e2e8f0;
-          max-width: 640px;
+          background:
+            radial-gradient(circle at 15% 8%, rgba(0, 71, 255, 0.18), transparent 30%),
+            radial-gradient(circle at 85% 12%, rgba(228, 22, 43, 0.16), transparent 28%),
+            radial-gradient(circle at 50% 100%, rgba(0, 166, 81, 0.14), transparent 35%),
+            #050505;
+          color: var(--wc-white);
+          max-width: 680px;
           margin: 0 auto;
-          padding: 0 20px 40px;
+          padding: 0 18px 40px;
+          font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-
-        /* ── Hero ── */
-        .hero {
-          text-align: center;
-          padding: 40px 20px 24px;
+        .wc-hero {
           position: relative;
+          overflow: hidden;
+          text-align: center;
+          padding: 36px 18px 24px;
+          border-radius: 0 0 28px 28px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+          border: 1px solid rgba(255,255,255,0.08);
+          border-top: 0;
         }
-        .hero::after {
-          content: '';
+        .wc-pattern {
           position: absolute;
-          bottom: 0;
-          left: 10%;
-          width: 80%;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, #f59e0b, transparent);
+          inset: 0;
+          opacity: 0.25;
+          background:
+            linear-gradient(135deg, transparent 0 18%, var(--wc-blue) 18% 22%, transparent 22% 38%, var(--wc-red) 38% 42%, transparent 42% 58%, var(--wc-green) 58% 62%, transparent 62%),
+            repeating-linear-gradient(90deg, transparent 0 24px, rgba(255,255,255,0.08) 24px 26px);
+          pointer-events: none;
         }
-        .hero-badge {
+        .wc-kicker {
+          position: relative;
           display: inline-block;
-          background: linear-gradient(135deg, #1e3a5f, #0f172a);
-          border: 1px solid #f59e0b44;
-          color: #fbbf24;
-          padding: 4px 16px;
-          border-radius: 20px;
-          font-size: 0.7rem;
+          color: #111;
+          background: var(--wc-white);
+          padding: 5px 14px;
+          border-radius: 999px;
+          font-size: 0.68rem;
           letter-spacing: 2px;
-          font-weight: 700;
-          margin-bottom: 12px;
+          font-weight: 900;
         }
-        .hero-title {
+        .wc26-mark {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          gap: 4px;
+          margin: 12px auto 4px;
+          font-size: 5rem;
+          line-height: 0.85;
+          font-weight: 950;
+          letter-spacing: -10px;
+          color: var(--wc-white);
+          text-shadow: 0 0 24px rgba(255,255,255,0.2);
+        }
+        .wc26-mark span:first-child { color: var(--wc-white); }
+        .wc26-mark span:last-child {
+          color: transparent;
+          -webkit-text-stroke: 3px var(--wc-white);
+        }
+        .wc-hero h1 {
+          position: relative;
           margin: 0;
           font-size: 2rem;
+          font-weight: 950;
+          text-transform: uppercase;
+          letter-spacing: -1px;
+        }
+        .wc-hero p {
+          position: relative;
+          margin: 8px auto 14px;
+          color: rgba(247,247,242,0.72);
+          font-size: 0.92rem;
+          max-width: 420px;
+        }
+        .host-row {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 8px;
+          font-size: 0.72rem;
           font-weight: 800;
-          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
         }
-        .hero-sub {
-          margin: 8px 0;
-          color: #94a3b8;
-          font-size: 0.9rem;
+        .host-row span {
+          border: 1px solid rgba(255,255,255,0.16);
+          border-radius: 999px;
+          padding: 5px 10px;
+          background: rgba(0,0,0,0.3);
         }
-        .hero-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          margin-top: 8px;
-          padding: 6px 16px;
-          border-radius: 20px;
-          background: #1e293b;
-          font-size: 0.75rem;
-          color: #64748b;
-        }
-
-        /* ── Match Tabs ── */
-        .match-tabs {
+        .xlayer-strip {
           display: flex;
           gap: 8px;
           overflow-x: auto;
-          padding: 16px 0 12px;
-          margin-bottom: 16px;
+          margin: 14px 0;
+          scrollbar-width: none;
+        }
+        .xlayer-strip::-webkit-scrollbar { display: none; }
+        .xlayer-strip span {
+          flex-shrink: 0;
+          padding: 7px 10px;
+          border-radius: 8px;
+          color: #0b0b0b;
+          font-size: 0.72rem;
+          font-weight: 900;
+          background: linear-gradient(90deg, var(--wc-yellow), var(--wc-cyan));
+        }
+        .match-tabs {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding: 8px 0 14px;
           scrollbar-width: none;
         }
         .match-tabs::-webkit-scrollbar { display: none; }
         .match-tab {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 14px;
-          border-radius: 8px;
-          border: 1px solid #334155;
-          background: transparent;
-          color: #94a3b8;
+          min-width: 175px;
+          text-align: left;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.055);
+          color: var(--wc-white);
+          border-radius: 16px;
+          padding: 12px;
           cursor: pointer;
-          white-space: nowrap;
-          font-size: 0.8rem;
-          transition: all 0.2s;
-          flex-shrink: 0;
+          transition: 0.2s ease;
         }
         .match-tab.active {
-          background: linear-gradient(135deg, #1e3a5f, #0f172a);
-          border-color: #f59e0b;
-          color: #fbbf24;
+          background: var(--wc-white);
+          color: #050505;
+          box-shadow: 0 0 0 2px var(--wc-blue), 0 12px 30px rgba(0,71,255,0.18);
         }
-        .match-tab:hover:not(.active) {
-          border-color: #6366f1;
-          color: #e2e8f0;
-        }
-        .flag { font-size: 1rem; }
-
-        /* ── Match View ── */
-        .match-view {
+        .tab-teams { display: flex; flex-direction: column; gap: 2px; font-weight: 900; font-size: 0.82rem; }
+        .tab-vs { color: var(--wc-red); font-size: 0.62rem; text-transform: uppercase; }
+        .match-tab small { display: block; margin-top: 8px; opacity: 0.65; font-size: 0.68rem; }
+        .match-view { display: flex; flex-direction: column; gap: 14px; }
+        .match-title {
           display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        /* ── Momentum Bar ── */
-        .wc-bar {
-          background: linear-gradient(135deg, #1a1a3e, #0f172a);
-          border: 1px solid #334155;
-          border-radius: 16px;
-          padding: 24px;
-          position: relative;
-          overflow: hidden;
-        }
-        .wc-bar::before {
-          content: '🏆';
-          position: absolute;
-          top: -10px;
-          right: -10px;
-          font-size: 3rem;
-          opacity: 0.08;
-        }
-        .wc-teams {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 16px;
-        }
-        .wc-left, .wc-right {
-          display: flex;
+          justify-content: center;
           align-items: center;
           gap: 12px;
+          font-weight: 950;
+          font-size: 1rem;
+          padding: 12px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 16px;
         }
+        .match-title b { color: var(--wc-yellow); font-size: 0.75rem; }
+
+        .wc-bar, .wc-pool, .wc-feed {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 20px;
+          padding: 18px;
+          backdrop-filter: blur(8px);
+        }
+        .wc-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .wc-left, .wc-right { display: flex; align-items: center; gap: 8px; }
         .wc-right { flex-direction: row-reverse; }
-        .wc-name { font-weight: 700; font-size: 1rem; color: #e2e8f0; }
-        .wc-score {
-          font-size: 2rem; font-weight: 800;
-          min-width: 36px; text-align: center;
-        }
-        .wc-left .wc-score { color: #fbbf24; }
-        .wc-right .wc-score { color: #fbbf24; }
-        .wc-half-badge {
-          background: #1e3a5f; color: #fbbf24;
-          padding: 4px 12px; border-radius: 20px;
-          font-size: 0.65rem; letter-spacing: 1px; font-weight: 700;
-          border: 1px solid #f59e0b33;
-        }
-        .wc-track {
-          position: relative; height: 28px;
-          border-radius: 14px; overflow: hidden;
-          background: #1e293b; display: flex;
-        }
-        .wc-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #2563eb, #3b82f6);
-          transition: width 0.5s ease-out;
-        }
-        .wc-fill-away {
-          background: linear-gradient(90deg, #dc2626, #ef4444);
-        }
-        .wc-divider {
-          position: absolute; left: 50%; top: 0;
-          width: 3px; height: 100%;
-          background: #fbbf24; transform: translateX(-50%);
-          z-index: 2;
-        }
-        .wc-marker {
-          position: absolute; top: -8px;
-          transform: translateX(-50%);
-          font-size: 0.8rem; z-index: 3;
-          transition: left 0.5s ease-out;
-        }
-        .wc-dom { text-align: center; font-size: 0.8rem; color: #94a3b8; margin-top: 10px; }
-        .wc-skeleton .wc-skel-bar {
-          height: 28px; border-radius: 14px;
-          background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-          background-size: 200% 100%; animation: shimmer 1.5s infinite;
-        }
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        .wc-empty { text-align: center; color: #64748b; padding: 40px; font-size: 1rem; }
+        .wc-name { font-weight: 900; font-size: 0.92rem; }
+        .wc-score { font-size: 2rem; font-weight: 950; color: var(--wc-yellow); min-width: 36px; text-align: center; }
+        .wc-half-badge { background: var(--wc-white); color: #050505; padding: 4px 10px; border-radius: 999px; font-size: 0.6rem; font-weight: 950; }
+        .wc-track { position: relative; height: 30px; border-radius: 999px; overflow: hidden; display: flex; background: #111; }
+        .wc-fill { background: linear-gradient(90deg, var(--wc-blue), var(--wc-cyan)); transition: width .5s ease; }
+        .wc-fill-away { background: linear-gradient(90deg, var(--wc-red), var(--wc-yellow)); }
+        .wc-divider { position: absolute; left: 50%; top: 0; width: 3px; height: 100%; background: var(--wc-white); transform: translateX(-50%); }
+        .wc-marker { position: absolute; top: -8px; transform: translateX(-50%); transition: left .5s ease; }
+        .wc-dom { text-align: center; margin-top: 10px; color: rgba(247,247,242,.72); font-size: .78rem; }
+        .wc-empty { text-align: center; color: rgba(247,247,242,.6); padding: 30px; }
+        .wc-skel-bar { height: 30px; border-radius: 999px; background: rgba(255,255,255,.12); }
 
-        /* ── Pool Card ── */
-        .wc-pool {
-          background: linear-gradient(135deg, #1a1a3e, #0f172a);
-          border: 1px solid #334155;
-          border-radius: 16px; padding: 20px;
-        }
-        .wc-pool-header {
-          display: flex; justify-content: space-between; align-items: center;
-          margin-bottom: 16px;
-          font-size: 0.75rem; color: #fbbf24; font-weight: 700; letter-spacing: 1px;
-        }
-        .wc-pool-half {
-          background: #1e293b; color: #64748b;
-          padding: 2px 10px; border-radius: 10px; font-size: 0.65rem;
-        }
-        .wc-pool-teams { display: flex; align-items: center; gap: 12px; }
-        .wc-pool-btn {
-          flex: 1; padding: 16px; border-radius: 12px;
-          border: 2px solid #334155; background: transparent;
-          color: #e2e8f0; cursor: pointer;
-          display: flex; flex-direction: column; align-items: center; gap: 4px;
-          transition: all 0.2s; position: relative;
-        }
-        .wc-pool-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .wc-pool-btn:not(:disabled):hover {
-          border-color: #f59e0b;
-          background: rgba(245, 158, 11, 0.08);
-          box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
-        }
-        .wc-pool-name { font-size: 1.1rem; font-weight: 700; }
-        .wc-pool-label { font-size: 0.65rem; color: #64748b; letter-spacing: 1px; }
-        .wc-pool-bet {
-          font-size: 0.6rem; color: #fbbf24;
-          background: rgba(245, 158, 11, 0.15);
-          padding: 2px 10px; border-radius: 10px;
-          margin-top: 4px;
-        }
-        .wc-pool-vs {
-          display: flex; flex-direction: column; align-items: center;
-          gap: 2px; font-weight: 800; font-size: 1.1rem;
-          color: #475569; min-width: 40px;
-        }
-        .wc-pool-vs-sub { font-size: 0.55rem; color: #334155; }
-        .wc-pool-clock {
-          text-align: center; font-size: 0.8rem;
-          margin-top: 14px; color: #94a3b8;
-          font-family: monospace;
-        }
-        .wc-pool-closed { color: #ef4444; }
+        .wc-pool-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 950; color: var(--wc-yellow); font-size: .72rem; letter-spacing: 1px; }
+        .wc-pool-half { color: #050505; background: var(--wc-white); border-radius: 999px; padding: 3px 9px; font-size: .6rem; }
+        .wc-pool-teams { display: flex; align-items: center; gap: 10px; }
+        .wc-pool-btn { flex: 1; border: 1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.25); color: var(--wc-white); border-radius: 16px; padding: 15px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; align-items: center; transition: .2s; }
+        .wc-pool-btn:hover { background: var(--wc-white); color: #050505; transform: translateY(-1px); }
+        .wc-pool-name { font-weight: 950; }
+        .wc-pool-label { font-size: .62rem; opacity: .65; }
+        .wc-pool-bet { font-size: .6rem; background: var(--wc-yellow); color: #050505; padding: 2px 8px; border-radius: 999px; font-weight: 950; }
+        .wc-pool-vs { min-width: 42px; text-align: center; font-weight: 950; color: var(--wc-yellow); }
+        .wc-pool-vs-sub { display: block; color: rgba(247,247,242,.45); font-size: .55rem; }
+        .wc-pool-clock { text-align: center; margin-top: 12px; color: rgba(247,247,242,.65); font-family: monospace; font-size: .78rem; }
 
-        /* ── Event Feed ── */
-        .wc-feed {
-          background: linear-gradient(135deg, #1a1a3e, #0f172a);
-          border: 1px solid #334155;
-          border-radius: 16px; padding: 16px;
-          max-height: 350px; overflow-y: auto;
-        }
-        .wc-feed-title { margin: 0 0 12px; font-size: 0.9rem; color: #e2e8f0; }
-        .wc-feed-empty { color: #64748b; text-align: center; padding: 20px; font-size: 0.85rem; }
-        .wc-events { display: flex; flex-direction: column; gap: 4px; }
-        .wc-ev {
-          display: flex; align-items: center; gap: 8px;
-          padding: 6px 10px; border-radius: 8px; font-size: 0.8rem;
-        }
-        .wc-ev-home { background: rgba(37, 99, 235, 0.1); }
-        .wc-ev-away { background: rgba(220, 38, 38, 0.1); flex-direction: row-reverse; }
-        .wc-ev-min { color: #64748b; font-family: monospace; font-size: 0.75rem; min-width: 28px; }
-        .wc-ev-icon { font-size: 0.9rem; }
-        .wc-ev-type { color: #e2e8f0; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; }
-        .wc-ev-player { color: #94a3b8; font-size: 0.75rem; }
-        .wc-ev-team { color: #475569; font-size: 0.65rem; margin-left: auto; }
+        .wc-feed-title { margin: 0 0 10px; font-size: .9rem; }
+        .wc-feed-empty { color: rgba(247,247,242,.55); text-align: center; padding: 18px; }
+        .wc-events { display: flex; flex-direction: column; gap: 5px; }
+        .wc-ev { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 10px; background: rgba(255,255,255,.06); font-size: .78rem; }
+        .wc-ev-away { flex-direction: row-reverse; }
+        .wc-ev-min { font-family: monospace; color: var(--wc-yellow); min-width: 28px; }
+        .wc-ev-type { font-weight: 950; }
+        .wc-ev-player, .wc-ev-team { color: rgba(247,247,242,.55); }
+        .wc-ev-team { margin-left: auto; }
         .wc-ev-away .wc-ev-team { margin-left: 0; margin-right: auto; }
 
-        /* ── Footer ── */
-        .app-footer {
-          text-align: center;
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #1e293b;
-          font-size: 0.75rem;
-          color: #475569;
-        }
-        .app-footer a {
-          color: #f59e0b;
-          text-decoration: none;
-        }
-        .app-footer a:hover { text-decoration: underline; }
-        .footer-twitter { margin-top: 4px; }
+        .app-footer { text-align: center; margin-top: 34px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.1); font-size: .72rem; color: rgba(247,247,242,.55); }
+        .app-footer a { color: var(--wc-yellow); text-decoration: none; }
       `}</style>
     </main>
   );

@@ -12,6 +12,8 @@ export async function GET() {
     awayScore: m.awayScore,
     half: m.half,
     kickoff: m.kickoff,
+    venue: m.venue,
+    host: m.host,
     poolAddress: m.poolAddress,
   }));
 

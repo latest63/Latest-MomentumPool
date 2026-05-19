@@ -1,6 +1,8 @@
-# ⚡ World Cup Momentum Pool
+# ⚡ World Cup Momentum Pool — WE ARE 26
 
 **X Cup Hackathon — OKX X Layer (2026 FIFA World Cup)**
+
+**Slogan:** WE ARE 26
 
 > Pick the dominant team in each half. Not predictions — *momentum*.
 
@@ -8,7 +10,7 @@
 
 ## 🏆 What is it?
 
-A real-time GameFi dApp for the **2026 FIFA World Cup**. Before each match half, users deposit into **Team A** or **Team B**. During the half, real match events (goals, shots, corners, cards) accumulate **momentum points**. At half-time, the team with more momentum wins. Winners split the pot.
+A real-time GameFi dApp for the **2026 FIFA World Cup**, themed around the official **WE ARE 26** campaign. Before each match half, users deposit into **Team A** or **Team B**. During the half, real match events (goals, shots, corners, cards) accumulate **momentum points**. At half-time, the team with more momentum wins. Winners split the pot.
 
 ## ⚽ Point System
 
@@ -26,7 +28,7 @@ A real-time GameFi dApp for the **2026 FIFA World Cup**. Before each match half,
 
 | Requirement | Status |
 |-------------|--------|
-| ✅ World Cup 2026 themed | Gold trophy branding, WC match schedule |
+| ✅ World Cup 2026 themed | WE ARE 26 slogan, 26 mark, host-nation color system |
 | ✅ Built on X Layer | Solidity → Foundry → X Layer (chain 196) |
 | ✅ On-chain settlement | MomentumPool.sol — `deposit()` / `settle()` / `withdraw()` |
 | ✅ Dedicated X account | Create `@MomentumPoolWC` — tag @XLayerOfficial |

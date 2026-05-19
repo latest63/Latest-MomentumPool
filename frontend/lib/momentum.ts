@@ -1,8 +1,6 @@
 /**
  * Momentum Engine — shared between API routes and cron
- *
- * Maps real football events to momentum points.
- * Score is computed from the full event list per match.
+ * 2026 World Cup themed sample data + scoring engine.
  */
 
 export type EventType =
@@ -40,13 +38,15 @@ export interface MatchState {
   awayScore: number;
   events: MatchEvent[];
   half: 'pre' | 'first' | 'halftime' | 'second' | 'fulltime';
+  venue?: string;
+  host?: 'USA' | 'Canada' | 'Mexico';
   poolAddress?: string;
 }
 
 export interface MomentumResult {
   homeScore: number;
   awayScore: number;
-  winner: 0 | 1 | null; // null = tie
+  winner: 0 | 1 | null;
 }
 
 export function computeMomentum(events: MatchEvent[]): MomentumResult {
@@ -66,7 +66,79 @@ export function computeMomentum(events: MatchEvent[]): MomentumResult {
   };
 }
 
-/* ─── Event type mapping from API-Football ─── */
+export const WORLD_CUP_MATCHES: MatchState[] = [
+  {
+    matchId: 'wc26-01',
+    homeTeam: 'USA',
+    awayTeam: 'Canada',
+    kickoff: 1781085600,
+    venue: 'Los Angeles',
+    host: 'USA',
+    homeScore: 8,
+    awayScore: 5,
+    half: 'first',
+    events: [
+      { type: 'shot_on_target', team: 'home', minute: 6, player: 'Pulisic' },
+      { type: 'corner', team: 'home', minute: 11 },
+      { type: 'goal', team: 'away', minute: 18, player: 'David' },
+      { type: 'goal', team: 'home', minute: 31, player: 'Pulisic' },
+      { type: 'foul', team: 'away', minute: 38 },
+    ],
+  },
+  {
+    matchId: 'wc26-02',
+    homeTeam: 'Mexico',
+    awayTeam: 'Ghana',
+    kickoff: 1781172000,
+    venue: 'Mexico City',
+    host: 'Mexico',
+    homeScore: 6,
+    awayScore: 4,
+    half: 'first',
+    events: [
+      { type: 'corner', team: 'home', minute: 7 },
+      { type: 'shot_on_target', team: 'away', minute: 14 },
+      { type: 'goal', team: 'home', minute: 26, player: 'Giménez' },
+      { type: 'yellow_card', team: 'away', minute: 42 },
+    ],
+  },
+  {
+    matchId: 'wc26-03',
+    homeTeam: 'Brazil',
+    awayTeam: 'Nigeria',
+    kickoff: 1781258400,
+    venue: 'Dallas',
+    host: 'USA',
+    homeScore: 7,
+    awayScore: 9,
+    half: 'first',
+    events: [
+      { type: 'shot_on_target', team: 'away', minute: 3, player: 'Osimhen' },
+      { type: 'corner', team: 'home', minute: 12 },
+      { type: 'woodwork', team: 'away', minute: 21, player: 'Lookman' },
+      { type: 'goal', team: 'home', minute: 28, player: 'Viní Jr' },
+      { type: 'goal', team: 'away', minute: 37, player: 'Osimhen' },
+    ],
+  },
+  {
+    matchId: 'wc26-04',
+    homeTeam: 'Argentina',
+    awayTeam: 'Japan',
+    kickoff: 1781344800,
+    venue: 'Toronto',
+    host: 'Canada',
+    homeScore: 5,
+    awayScore: 6,
+    half: 'first',
+    events: [
+      { type: 'corner', team: 'away', minute: 9 },
+      { type: 'shot_on_target', team: 'home', minute: 17 },
+      { type: 'goal', team: 'away', minute: 33, player: 'Mitoma' },
+    ],
+  },
+];
+
+const store = new Map<string, MatchState>(WORLD_CUP_MATCHES.map((m) => [m.matchId, { ...m }]));
 
 export const API_FOOTBALL_TYPE_MAP: Record<string, EventType> = {
   Goal: 'goal',
@@ -75,10 +147,6 @@ export const API_FOOTBALL_TYPE_MAP: Record<string, EventType> = {
   subst: 'foul',
   Var: 'foul',
 };
-
-/* ─── In-memory store (replaced by DB in production) ─── */
-
-const store = new Map<string, MatchState>();
 
 export function registerMatch(
   matchId: string,
@@ -117,7 +185,6 @@ export function updateMatch(matchId: string, events: MatchEvent[]): MatchState |
   match.awayScore = result.awayScore;
   match.events = events;
 
-  // Detect half based on time
   const elapsed = Math.floor(Date.now() / 1000) - match.kickoff;
   if (elapsed < 0) match.half = 'pre';
   else if (elapsed < 45 * 60) match.half = 'first';
