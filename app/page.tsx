@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
-import { WORLD_CUP_MATCHES } from '@/lib/momentum';
 
 interface MomentumData {
   homeScore: number;
@@ -27,6 +26,13 @@ interface MatchSummary {
   venue?: string;
 }
 
+const FALLBACK: MatchSummary[] = [
+  { matchId: 'usa-canada', homeTeam: 'USA', awayTeam: 'Canada', venue: 'SoFi Stadium' },
+  { matchId: 'brazil-nigeria', homeTeam: 'Brazil', awayTeam: 'Nigeria', venue: 'Estadio Azteca' },
+  { matchId: 'argentina-ghana', homeTeam: 'Argentina', awayTeam: 'Ghana', venue: 'BC Place' },
+  { matchId: 'mexico-japan', homeTeam: 'Mexico', awayTeam: 'Japan', venue: 'NRG Stadium' },
+];
+
 const FLAGS: Record<string, string> = {
   USA: '🇺🇸', Canada: '🇨🇦', Mexico: '🇲🇽',
   Brazil: '🇧🇷', Nigeria: '🇳🇬', Ghana: '🇬🇭',
@@ -34,15 +40,8 @@ const FLAGS: Record<string, string> = {
 };
 
 export default function Home() {
-  const fallbackMatches = WORLD_CUP_MATCHES.map((m) => ({
-    matchId: m.matchId,
-    homeTeam: m.homeTeam,
-    awayTeam: m.awayTeam,
-    venue: m.venue,
-  }));
-
-  const [matches, setMatches] = useState<MatchSummary[]>(fallbackMatches);
-  const [selected, setSelected] = useState(fallbackMatches[0]?.matchId ?? '');
+  const [matches, setMatches] = useState<MatchSummary[]>(FALLBACK);
+  const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
 
@@ -94,6 +93,37 @@ export default function Home() {
         <div className="stadium-beam" />
       </div>
 
+      {/* ─── Hero Wrap — full-width colored background ─── */}
+      <div className="hero-wrap">
+        <div className="hero-glow" />
+
+        <div className="hero-curves">
+          <svg viewBox="0 0 1200 280" preserveAspectRatio="none">
+            <path
+              d="M0,140 C300,220 700,60 1200,140 L1200,0 L0,0 Z"
+              fill="rgba(55,88,237,0.08)"
+            />
+            <path
+              d="M0,180 C400,100 800,220 1200,120 L1200,0 L0,0 Z"
+              fill="rgba(43,37,111,0.06)"
+            />
+          </svg>
+        </div>
+
+        <div className="hero-section">
+          <div className="hero-tag">
+            <span className="live-dot" /> WORLDCUP 2026
+          </div>
+          <h1 className="hero-title">
+            Pick the<br />Momentum
+          </h1>
+          <p className="hero-sub">
+            Deposit on the team that controls the half. At half-time,
+            the team with more momentum points wins. You take the pool.
+          </p>
+        </div>
+      </div>
+
       <div className="main-content">
         {/* ─── Top Bar ─── */}
         <div className="top-bar">
@@ -110,58 +140,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ─── Hero ─── */}
-        <section className="hero-section">
-          <div className="hero-glow" />
-
-          {/* Flowing curved lines */}
-          <div className="hero-curves">
-            <svg viewBox="0 0 1200 240" preserveAspectRatio="none">
-              <path
-                d="M0,120 C300,200 600,40 1200,120 L1200,0 L0,0 Z"
-                fill="url(#heroGrad)"
-                opacity="0.06"
-              />
-              <path
-                d="M0,160 C400,80 800,200 1200,100 L1200,0 L0,0 Z"
-                fill="url(#heroGrad2)"
-                opacity="0.04"
-              />
-              <defs>
-                <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="var(--electric-blue)" />
-                  <stop offset="50%" stopColor="var(--cyan-flare)" />
-                  <stop offset="100%" stopColor="var(--neon-green)" />
-                </linearGradient>
-                <linearGradient id="heroGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="var(--energy-orange)" />
-                  <stop offset="50%" stopColor="var(--bright-red)" />
-                  <stop offset="100%" stopColor="var(--stadium-yellow)" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-
-          <div className="hero-content">
-            <div className="hero-tag">
-              <span /> FIFA WORLD CUP 2026
-            </div>
-            <h1 className="hero-title">
-              Pick the<br />
-              <span className="gradient-text">Momentum</span>
-            </h1>
-            <p className="hero-sub">
-              Deposit on the team that controls the half. At half-time,
-              the team with more momentum points wins. You take the pool.
-            </p>
-          </div>
-        </section>
-
         {/* ─── Match Selector ─── */}
         <div className="match-selector">
           <div className="match-selector-header">
             <h2>Live Matches</h2>
-            <div className="live-dot">LIVE</div>
+            <div className="live-indicator">LIVE</div>
           </div>
 
           <div className="match-tabs">
