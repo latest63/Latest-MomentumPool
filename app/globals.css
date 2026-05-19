@@ -695,6 +695,36 @@ body {
 .wc-skel-bar { height: 20px; border-radius: var(--radius-round); background: rgba(255,255,255,0.05); }
 .wc-empty { text-align: center; color: var(--text-tertiary); padding: var(--sp-8); font-family: var(--font-sports); font-size: 18px; letter-spacing: 1.5px; }
 
+.ai-insight-card {
+  background: rgba(0,0,0,0.46);
+  border: 1px solid var(--border-glass);
+  border-left: 5px solid var(--electric-blue);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-5);
+  backdrop-filter: blur(10px);
+}
+.ai-insight-label {
+  font-family: var(--font-sports);
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: var(--sp-2);
+}
+.ai-insight-card p {
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.55;
+  margin-bottom: var(--sp-3);
+}
+.ai-insight-card span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .wc-pool { background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: var(--sp-6); }
 .wc-pool-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4); }
 .wc-pool-header h3 { font-family: var(--font-sports); font-size: 16px; letter-spacing: 2px; color: var(--text-secondary); text-transform: uppercase; }

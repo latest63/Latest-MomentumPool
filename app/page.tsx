@@ -6,6 +6,7 @@ import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
 interface MomentumData { homeScore: number; awayScore: number; homeTeam: string; awayTeam: string; half: string; diff: number; }
 interface EventItem { type: string; team: 'home' | 'away'; minute: number; player?: string; }
 interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
+interface InsightData { insight: string; source: 'openai' | 'fallback'; }
 
 const FALLBACK: MatchSummary[] = [
   { matchId: 'usa-canada', homeTeam: 'USA', awayTeam: 'Canada', venue: 'SoFi Stadium' },
@@ -26,6 +27,7 @@ export default function Home() {
   const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [insight, setInsight] = useState<InsightData | null>(null);
   const appRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,9 +42,14 @@ export default function Home() {
     if (!selected) return;
     const fetchLive = async () => {
       try {
-        const [momRes, evRes] = await Promise.all([fetch(`/api/match/${selected}/momentum`), fetch(`/api/match/${selected}`)]);
+        const [momRes, evRes, insightRes] = await Promise.all([
+          fetch(`/api/match/${selected}/momentum`),
+          fetch(`/api/match/${selected}`),
+          fetch(`/api/match/${selected}/insight`),
+        ]);
         if (momRes.ok) setMomentum(await momRes.json());
         if (evRes.ok) { const d = await evRes.json(); setEvents(d.recentEvents || []); }
+        if (insightRes.ok) setInsight(await insightRes.json());
       } catch {}
     };
     const interval = setInterval(fetchLive, 15_000);
@@ -248,6 +255,11 @@ export default function Home() {
                   <div className="match-header-team"><span className="flag">{FLAGS[selectedMatch.awayTeam] || '🏳️'}</span><span>{selectedMatch.awayTeam}</span></div>
                 </div>
                 <MomentumBar data={momentum} loading={!momentum} />
+                <div className="ai-insight-card">
+                  <div className="ai-insight-label">AI Match Analyst</div>
+                  <p>{insight?.insight || 'Reading the tempo of the half...'}</p>
+                  <span>{insight?.source === 'openai' ? 'Powered by OpenAI' : 'Fallback analysis'}</span>
+                </div>
                 <PoolCard matchId={selectedMatch.matchId} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} onDeposit={handleDeposit} />
                 <EventFeed events={events} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />
               </div>
