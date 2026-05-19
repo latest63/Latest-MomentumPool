@@ -171,7 +171,7 @@ body {
 }
 
 .top-bar-brand { display: flex; align-items: center; gap: var(--sp-3); }
-.top-bar-logo { width: 34px; height: 34px; border-radius: var(--radius-sm); }
+.top-bar-logo { width: 42px; height: 42px; object-fit: contain; }
 .top-bar-title { font-family: var(--font-sports); font-size: 24px; letter-spacing: 1.5px; color: var(--text-primary); line-height: 1; }
 .top-bar-title span { color: var(--electric-blue); }
 

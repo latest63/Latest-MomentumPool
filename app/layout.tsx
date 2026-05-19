@@ -38,7 +38,8 @@ export const metadata: Metadata = {
     images: ['/social/og.svg'],
   },
   icons: {
-    icon: '/assets/logo.svg',
+    icon: '/assets/momentum-logo-original.png',
+    apple: '/assets/momentum-logo-original.png',
   },
 };
 

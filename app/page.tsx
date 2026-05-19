@@ -78,7 +78,7 @@ export default function Home() {
             {/* Nav */}
             <nav className="hero-nav">
               <div className="top-bar-brand">
-                <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
+                <img className="top-bar-logo" src="/assets/momentum-logo-transparent.png" alt="Momentum Pool" />
                 <div className="top-bar-title">
                   Momentum<span>Pool</span>
                 </div>
@@ -101,7 +101,8 @@ export default function Home() {
                   Enter the Arena
                 </button>
                 <div className="hero-hint powered-by-badge-row">
-                  <img src="/assets/x-layer-powered.jpeg" alt="Powered by X Layer" className="xlayer-powered-badge" />
+                  <span>Powered by X Layer</span>
+                  <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge" />
                   <span>&middot; 2% pool fee</span>
                 </div>
               </div>
@@ -197,7 +198,8 @@ export default function Home() {
           <section className="footer-section">
             <div className="footer-powered">
               <span>Momentum Pool</span>
-              <img src="/assets/x-layer-powered.jpeg" alt="Powered by X Layer" className="xlayer-powered-badge footer-powered-img" />
+              <span className="footer-powered-text">Powered by X Layer</span>
+              <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge footer-powered-img" />
             </div>
             <div className="footer-links">
               <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a>
@@ -214,7 +216,7 @@ export default function Home() {
         <div ref={appRef}>
           <div className="top-bar">
             <div className="top-bar-brand">
-              <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
+              <img className="top-bar-logo" src="/assets/momentum-logo-transparent.png" alt="Momentum Pool" />
               <div className="top-bar-title">Momentum<span>Pool</span></div>
             </div>
             <button className="app-back-btn" onClick={() => setPage('landing')}>&larr; Back</button>
