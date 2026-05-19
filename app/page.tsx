@@ -27,19 +27,23 @@ export default function Home() {
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [playerIdx, setPlayerIdx] = useState(0);
+  const [playerImgs] = useState(() => {
+    // Only include images that exist
+    const imgs = ['/assets/hero-player-gen-1.png', '/assets/hero-player-cutout.png'];
+    return imgs;
+  });
   const appRef = useRef<HTMLDivElement>(null);
 
-  const HERO_PLAYERS = [
-    '/assets/hero-player-gen-1.png',
-    '/assets/hero-player-gen-2.png',
-    '/assets/hero-player-gen-3.png',
-    '/assets/hero-player-cutout.png',
-  ];
-
   useEffect(() => {
-    const t = setInterval(() => setPlayerIdx(i => (i + 1) % HERO_PLAYERS.length), 4000);
+    if (playerImgs.length < 2) return;
+    const t = setInterval(() => setPlayerIdx(i => (i + 1) % playerImgs.length), 4000);
     return () => clearInterval(t);
-  }, []);
+  }, [playerImgs.length]);
+
+  const imgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    target.style.display = 'none';
+  };
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -122,7 +126,7 @@ export default function Home() {
 
               <div className="hero-player-panel" aria-hidden="true">
                 <div className="hero-player-glow" />
-                <img src={HERO_PLAYERS[playerIdx]} alt="Football player in action" className="hero-player-real hero-fade" />
+                <img src={playerImgs[playerIdx]} alt="Football player in action" className="hero-player-real hero-fade" onError={imgError} />
                 <div className="hero-player-ground" />
               </div>
             </div>
