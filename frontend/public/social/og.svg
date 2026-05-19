@@ -1,0 +1,27 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="host" x1="0" y1="0" x2="1200" y2="630">
+      <stop offset="0" stop-color="#0047FF"/>
+      <stop offset=".24" stop-color="#00B7FF"/>
+      <stop offset=".48" stop-color="#00A651"/>
+      <stop offset=".72" stop-color="#FFCE00"/>
+      <stop offset="1" stop-color="#E4162B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#050505"/>
+  <path d="M0 0H1200V630H0V0Z" fill="url(#host)" opacity=".08"/>
+  <path d="M-80 120L190 -80M-70 340L420 -80M1280 100L970 710M1280 360L1150 710" stroke="url(#host)" stroke-width="26" opacity=".58"/>
+  <text x="690" y="520" text-anchor="middle" font-family="Inter, Arial Black, Arial, sans-serif" font-size="520" font-weight="950" letter-spacing="-55" fill="#F7F7F2" opacity=".10">26</text>
+  <text x="72" y="110" font-family="Inter, Arial Black, Arial, sans-serif" font-size="38" font-weight="950" fill="#F7F7F2" letter-spacing="7">WE ARE 26</text>
+  <text x="70" y="255" font-family="Inter, Arial Black, Arial, sans-serif" font-size="92" font-weight="950" fill="#F7F7F2" letter-spacing="-4">Momentum Pool</text>
+  <text x="76" y="318" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800" fill="#C8CED8">World Cup 2026 GameFi • Built on X Layer</text>
+  <rect x="76" y="376" width="470" height="68" rx="34" fill="#F7F7F2"/>
+  <text x="112" y="421" font-family="Inter, Arial Black, Arial, sans-serif" font-size="27" font-weight="950" fill="#050505">PICK THE DOMINANT HALF</text>
+  <rect x="76" y="484" width="340" height="26" rx="13" fill="#111" stroke="#F7F7F2" stroke-opacity=".25"/>
+  <rect x="76" y="484" width="230" height="26" rx="13" fill="url(#host)"/>
+  <text x="76" y="548" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900" fill="#F7F7F2" opacity=".8">No prediction market. Pure momentum.</text>
+  <circle cx="950" cy="322" r="122" fill="#F7F7F2"/>
+  <path d="M950 204L1022 257L995 341H905L878 257L950 204Z" fill="#050505"/>
+  <path d="M905 341L842 378M995 341L1058 378M878 257L815 232M1022 257L1085 232M950 204V140" stroke="#050505" stroke-width="18" stroke-linecap="round"/>
+  <path d="M1004 178L902 356H997L842 552L910 394H822L1004 178Z" fill="url(#host)"/>
+</svg>

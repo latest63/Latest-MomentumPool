@@ -100,6 +100,7 @@ export default function Home() {
     <main className="app-shell">
       <section className="wc-hero">
         <div className="wc-pattern" />
+        <img className="brand-logo" src="/assets/logo.svg" alt="Momentum Pool logo" />
         <div className="wc-kicker">WE ARE 26</div>
         <div className="wc26-mark">
           <span>2</span><span>6</span>
@@ -202,6 +203,14 @@ export default function Home() {
             linear-gradient(135deg, transparent 0 18%, var(--wc-blue) 18% 22%, transparent 22% 38%, var(--wc-red) 38% 42%, transparent 42% 58%, var(--wc-green) 58% 62%, transparent 62%),
             repeating-linear-gradient(90deg, transparent 0 24px, rgba(255,255,255,0.08) 24px 26px);
           pointer-events: none;
+        }
+        .brand-logo {
+          position: relative;
+          width: 86px;
+          height: 86px;
+          border-radius: 22px;
+          margin-bottom: 12px;
+          box-shadow: 0 18px 50px rgba(0,0,0,.35);
         }
         .wc-kicker {
           position: relative;

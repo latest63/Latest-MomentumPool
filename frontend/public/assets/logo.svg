@@ -1,0 +1,38 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024">
+      <stop offset="0" stop-color="#030303"/>
+      <stop offset="1" stop-color="#121212"/>
+    </linearGradient>
+    <linearGradient id="host" x1="130" y1="140" x2="880" y2="890">
+      <stop offset="0" stop-color="#0047FF"/>
+      <stop offset="0.28" stop-color="#00B7FF"/>
+      <stop offset="0.5" stop-color="#00A651"/>
+      <stop offset="0.72" stop-color="#FFCE00"/>
+      <stop offset="1" stop-color="#E4162B"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.0 0 0 0 0 0.55 0 0 0 0 1 0 0 0 .55 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+  <path d="M98 222C210 126 343 73 512 73C683 73 821 128 926 222" stroke="url(#host)" stroke-width="28" stroke-linecap="round" opacity=".95"/>
+  <path d="M98 802C210 898 343 951 512 951C683 951 821 896 926 802" stroke="url(#host)" stroke-width="28" stroke-linecap="round" opacity=".95"/>
+  <g opacity=".18">
+    <path d="M145 170L292 315" stroke="#fff" stroke-width="8"/>
+    <path d="M879 170L732 315" stroke="#fff" stroke-width="8"/>
+    <path d="M145 854L292 709" stroke="#fff" stroke-width="8"/>
+    <path d="M879 854L732 709" stroke="#fff" stroke-width="8"/>
+  </g>
+  <text x="512" y="520" text-anchor="middle" font-family="Inter, Arial Black, Arial, sans-serif" font-size="360" font-weight="950" letter-spacing="-38" fill="#F7F7F2">26</text>
+  <text x="512" y="520" text-anchor="middle" font-family="Inter, Arial Black, Arial, sans-serif" font-size="360" font-weight="950" letter-spacing="-38" fill="none" stroke="url(#host)" stroke-width="10" opacity=".55">26</text>
+  <circle cx="512" cy="594" r="96" fill="#F7F7F2"/>
+  <path d="M512 498L566 537L546 600H478L458 537L512 498Z" fill="#030303"/>
+  <path d="M478 600L431 629M546 600L593 629M458 537L411 518M566 537L613 518M512 498V449" stroke="#030303" stroke-width="16" stroke-linecap="round"/>
+  <path d="M590 410L502 567H586L460 733L511 610H436L590 410Z" fill="url(#host)" filter="url(#glow)"/>
+  <text x="512" y="780" text-anchor="middle" font-family="Inter, Arial Black, Arial, sans-serif" font-size="58" font-weight="950" fill="#F7F7F2" letter-spacing="3">MOMENTUM</text>
+  <text x="512" y="840" text-anchor="middle" font-family="Inter, Arial Black, Arial, sans-serif" font-size="46" font-weight="950" fill="url(#host)" letter-spacing="2">POOL</text>
+  <text x="512" y="910" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="900" fill="#F7F7F2" opacity=".8" letter-spacing="5">WE ARE 26</text>
+</svg>

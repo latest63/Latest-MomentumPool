@@ -1,0 +1,33 @@
+<svg width="1600" height="600" viewBox="0 0 1600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="host" x1="0" y1="0" x2="1600" y2="600">
+      <stop offset="0" stop-color="#0047FF"/>
+      <stop offset=".25" stop-color="#00B7FF"/>
+      <stop offset=".48" stop-color="#00A651"/>
+      <stop offset=".72" stop-color="#FFCE00"/>
+      <stop offset="1" stop-color="#E4162B"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="70%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="600" fill="#050505"/>
+  <rect width="1600" height="600" fill="url(#glow)"/>
+  <path d="M0 100H1600" stroke="#fff" stroke-opacity=".06"/>
+  <path d="M0 500H1600" stroke="#fff" stroke-opacity=".06"/>
+  <path d="M180 0L0 180M390 0L0 390M1600 90L1090 600M1600 300L1300 600" stroke="url(#host)" stroke-width="20" opacity=".45"/>
+  <circle cx="1320" cy="300" r="210" stroke="#F7F7F2" stroke-opacity=".1" stroke-width="2"/>
+  <circle cx="1320" cy="300" r="108" fill="#F7F7F2"/>
+  <path d="M1320 205L1381 249L1358 321H1282L1259 249L1320 205Z" fill="#050505"/>
+  <path d="M1282 321L1229 354M1358 321L1411 354M1259 249L1206 228M1381 249L1434 228M1320 205V150" stroke="#050505" stroke-width="16" stroke-linecap="round"/>
+  <text x="880" y="505" text-anchor="middle" font-family="Inter, Arial Black, Arial, sans-serif" font-size="470" font-weight="950" letter-spacing="-52" fill="#F7F7F2" opacity=".09">26</text>
+  <text x="95" y="142" font-family="Inter, Arial Black, Arial, sans-serif" font-size="36" font-weight="950" letter-spacing="6" fill="#F7F7F2">WE ARE 26</text>
+  <text x="92" y="285" font-family="Inter, Arial Black, Arial, sans-serif" font-size="92" font-weight="950" fill="#F7F7F2" letter-spacing="-3">Momentum Pool</text>
+  <text x="98" y="350" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800" fill="#BFC7D5">Pick the dominant team in each half — built on X Layer.</text>
+  <rect x="96" y="402" width="530" height="58" rx="29" fill="url(#host)"/>
+  <text x="132" y="440" font-family="Inter, Arial Black, Arial, sans-serif" font-size="24" font-weight="950" fill="#050505">WORLD CUP 2026 GAMEFI</text>
+  <path d="M705 406H1120" stroke="#F7F7F2" stroke-opacity=".25" stroke-width="4" stroke-linecap="round"/>
+  <path d="M705 406H975" stroke="url(#host)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M980 362L900 430H970L900 512L1030 392H958L980 362Z" fill="url(#host)"/>
+</svg>

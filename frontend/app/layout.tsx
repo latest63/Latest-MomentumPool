@@ -1,11 +1,22 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://latest-momentum-pool.vercel.app'),
   title: 'World Cup Momentum Pool — Built on X Layer',
   description: 'A 2026 World Cup-themed GameFi dApp built on X Layer. Pick the dominant team in each half.',
   openGraph: {
     title: 'World Cup Momentum Pool',
     description: 'Pick the dominant team in each half. Built on X Layer.',
+    images: ['/social/og.svg'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'World Cup Momentum Pool',
+    description: 'WE ARE 26. Pick the dominant team in each half — built on X Layer.',
+    images: ['/social/og.svg'],
+  },
+  icons: {
+    icon: '/assets/logo.svg',
   },
 };
 
