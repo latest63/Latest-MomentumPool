@@ -53,9 +53,9 @@ body {
   75% { transform: translate(18px, -15px) scale(1.01); }
 }
 
-@keyframes sweep-beam {
-  0% { transform: translateX(-150vw); }
-  100% { transform: translateX(150vw); }
+@keyframes flare-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.08); }
 }
 
 @keyframes float-up {
@@ -249,29 +249,36 @@ body {
 .hero-beams {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
 }
 
+/* Light flare — static glow spots instead of sweeping beams */
 .hero-beams::before {
   content: '';
   position: absolute;
-  width: 300px; height: 100%;
-  background: linear-gradient(180deg, rgba(255,255,200,0.04) 0%, transparent 80%);
-  left: 20%;
-  transform: skewX(-10deg);
-  animation: sweep-beam 6s linear infinite;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,200,0.12) 0%, transparent 70%);
+  top: 10%;
+  left: 15%;
+  filter: blur(60px);
+  animation: flare-pulse 4s ease-in-out infinite;
 }
 
 .hero-beams::after {
   content: '';
   position: absolute;
-  width: 200px; height: 100%;
-  background: linear-gradient(180deg, rgba(0,229,255,0.03) 0%, transparent 80%);
-  right: 30%;
-  transform: skewX(10deg);
-  animation: sweep-beam 8s linear infinite 2s;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+  bottom: 20%;
+  right: 25%;
+  filter: blur(50px);
+  animation: flare-pulse 5s ease-in-out infinite 1s;
 }
 
 /* Hero content overlay */
