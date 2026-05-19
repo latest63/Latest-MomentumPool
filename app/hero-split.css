@@ -25,7 +25,7 @@
 
 .hero-content-split {
   flex: 0 0 48%;
-  min-height: auto;
+  min-height: auto !important;
   max-width: 590px;
   margin: 0;
   padding: 0;
