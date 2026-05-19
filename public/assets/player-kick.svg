@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none">
+  <defs>
+    <linearGradient id="pk" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2453BE"/><stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Kicking pose -->
+  <path d="M200,120 C215,120 230,140 230,165 C230,190 215,210 200,210 C185,210 170,190 170,165 C170,140 185,120 200,120Z" fill="url(#pk)" opacity="0.9"/>
+  <circle cx="200" cy="100" r="25" fill="url(#pk)" opacity="0.9"/>
+  <path d="M190,210 L185,300 L175,380 L190,385 L200,300 L205,210" fill="url(#pk)" opacity="0.85"/>
+  <path d="M200,210 L240,260 L290,290 L295,280 L250,250 L210,210" fill="url(#pk)" opacity="0.85"/>
+  <path d="M185,170 L160,210 L150,215 L155,225 L175,210 L195,175" fill="url(#pk)" opacity="0.7"/>
+  <path d="M215,170 L240,190 L270,195 L272,185 L245,180 L220,165" fill="url(#pk)" opacity="0.7"/>
+  <circle cx="320" cy="275" r="10" fill="white" opacity="0.8"/>
+  <circle cx="320" cy="275" r="10" fill="none" stroke="#111" stroke-width="1.5"/>
+  <line x1="310" y1="275" x2="290" y2="275" stroke="white" stroke-width="1.5" opacity="0.4"/>
+  <line x1="312" y1="265" x2="295" y2="260" stroke="white" stroke-width="1" opacity="0.3"/>
+  <line x1="312" y1="285" x2="295" y2="290" stroke="white" stroke-width="1" opacity="0.3"/>
+</svg>

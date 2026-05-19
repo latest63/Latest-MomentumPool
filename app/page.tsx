@@ -26,7 +26,14 @@ export default function Home() {
   const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [playerIdx, setPlayerIdx] = useState(0);
   const appRef = useRef<HTMLDivElement>(null);
+
+  // Rotate player every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => setPlayerIdx(i => (i + 1) % 3), 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -54,126 +61,151 @@ export default function Home() {
   const handleDeposit = (id: string, t: number) => console.log(`deposit ${id} team ${t}`);
   const handleEnter = () => { setPage('app'); setTimeout(() => appRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); };
 
+  const playerPoses = [
+    { label: 'Kicking', svg: '/assets/players.svg#player-kick' },
+    { label: 'Dribbling', svg: '/assets/players.svg#player-dribble' },
+    { label: 'Celebrating', svg: '/assets/players.svg#player-celebrate' },
+  ];
+
   return (
     <main className="app-shell">
-      {/* ═══════════════ UNIFIED COLORED BACKGROUND ═══════════════ */}
+      {/* ══════════ UNIFIED COLOR BG ══════════ */}
       <div className="color-bg">
-        <div className="bg-blob bg-blob-1" />
-        <div className="bg-blob bg-blob-2" />
-        <div className="bg-blob bg-blob-3" />
-        <div className="bg-blob bg-blob-4" />
-        <div className="bg-blob bg-blob-5" />
-        <div className="bg-blob bg-blob-6" />
-        <div className="bg-streak" />
-        <div className="bg-streak bg-streak-2" />
+        <div className="bg-blob bg-blob-1" /><div className="bg-blob bg-blob-2" />
+        <div className="bg-blob bg-blob-3" /><div className="bg-blob bg-blob-4" />
+        <div className="bg-blob bg-blob-5" /><div className="bg-blob bg-blob-6" />
       </div>
 
-      {/* ═══════════════ ABSTRACT CURVED LINES — football energy ═══════════════ */}
-      {/* These span the full page from hero to footer */}
+      {/* ══════════ BOLD ABSTRACT LINES — thick, energetic ══════════ */}
       <div className="abs-lines">
         <svg viewBox="0 0 1200 3000" preserveAspectRatio="xMidYMax slice" className="abs-lines-svg">
-          {/* Line 1 — Electric Blue — far left wave */}
-          <path d="M0,0 C80,400 60,800 0,1200 C-60,1600 -40,2000 0,3000"
-            stroke="rgba(36, 83, 190, 0.3)" fill="none" strokeWidth="3" />
-          <path d="M60,0 C140,500 120,900 60,1300 C0,1700 20,2100 60,3000"
-            stroke="rgba(36, 83, 190, 0.15)" fill="none" strokeWidth="1.5" />
+          {/* Thick electric blue curve */}
+          <path d="M0,0 C100,500 0,1000 100,1500 C200,2000 50,2500 100,3000"
+            stroke="rgba(36, 83, 190, 0.25)" fill="none" strokeWidth="12" strokeLinecap="round" />
+          <path d="M0,0 C100,500 0,1000 100,1500 C200,2000 50,2500 100,3000"
+            stroke="rgba(36, 83, 190, 0.08)" fill="none" strokeWidth="24" strokeLinecap="round" />
 
-          {/* Line 2 — Bright Red — mid-left wave */}
-          <path d="M200,0 C300,300 150,700 200,1100 C250,1500 100,2000 200,3000"
-            stroke="rgba(230, 26, 10, 0.25)" fill="none" strokeWidth="2.5" />
+          {/* Thick red curve */}
+          <path d="M250,0 C400,400 200,900 350,1400 C500,1900 280,2400 350,3000"
+            stroke="rgba(230, 26, 10, 0.2)" fill="none" strokeWidth="10" strokeLinecap="round" />
+          <path d="M250,0 C400,400 200,900 350,1400 C500,1900 280,2400 350,3000"
+            stroke="rgba(230, 26, 10, 0.06)" fill="none" strokeWidth="22" strokeLinecap="round" />
 
-          {/* Line 3 — Cyan — center wave */}
-          <path d="M500,0 C600,500 400,1000 500,1500 C600,2000 450,2500 500,3000"
-            stroke="rgba(0, 229, 255, 0.2)" fill="none" strokeWidth="2" />
+          {/* Thick cyan curve */}
+          <path d="M500,0 C650,600 450,1200 600,1800 C750,2400 550,2700 600,3000"
+            stroke="rgba(0, 229, 255, 0.18)" fill="none" strokeWidth="10" strokeLinecap="round" />
+          <path d="M500,0 C650,600 450,1200 600,1800 C750,2400 550,2700 600,3000"
+            stroke="rgba(0, 229, 255, 0.06)" fill="none" strokeWidth="20" strokeLinecap="round" />
 
-          {/* Line 4 — Orange — center-right wave */}
-          <path d="M700,0 C800,400 650,900 700,1400 C750,1900 680,2400 700,3000"
-            stroke="rgba(255, 71, 2, 0.2)" fill="none" strokeWidth="2" />
+          {/* Thick orange curve */}
+          <path d="M750,0 C850,400 700,1000 800,1500 C900,2000 780,2500 800,3000"
+            stroke="rgba(255, 71, 2, 0.18)" fill="none" strokeWidth="10" strokeLinecap="round" />
+          <path d="M750,0 C850,400 700,1000 800,1500 C900,2000 780,2500 800,3000"
+            stroke="rgba(255, 71, 2, 0.06)" fill="none" strokeWidth="20" strokeLinecap="round" />
 
-          {/* Line 5 — Neon Green — right wave */}
-          <path d="M950,0 C1020,350 900,800 950,1200 C1000,1600 920,2200 950,3000"
-            stroke="rgba(40, 193, 108, 0.2)" fill="none" strokeWidth="2" />
+          {/* Thick neon green curve */}
+          <path d="M950,0 C1050,500 920,1100 980,1700 C1040,2300 960,2600 980,3000"
+            stroke="rgba(40, 193, 108, 0.18)" fill="none" strokeWidth="10" strokeLinecap="round" />
+          <path d="M950,0 C1050,500 920,1100 980,1700 C1040,2300 960,2600 980,3000"
+            stroke="rgba(40, 193, 108, 0.06)" fill="none" strokeWidth="20" strokeLinecap="round" />
 
-          {/* Line 6 — Yellow — far right wave */}
-          <path d="M1100,0 C1180,500 1080,1000 1100,1500 C1120,2000 1090,2500 1100,3000"
-            stroke="rgba(190, 238, 79, 0.15)" fill="none" strokeWidth="2.5" />
-          <path d="M1150,0 C1200,600 1140,1100 1150,1600 C1160,2100 1145,2600 1150,3000"
-            stroke="rgba(190, 238, 79, 0.08)" fill="none" strokeWidth="1.5" />
+          {/* Thick yellow curve */}
+          <path d="M1100,0 C1180,600 1080,1200 1150,1800 C1220,2400 1120,2700 1150,3000"
+            stroke="rgba(190, 238, 79, 0.15)" fill="none" strokeWidth="10" strokeLinecap="round" />
+          <path d="M1100,0 C1180,600 1080,1200 1150,1800 C1220,2400 1120,2700 1150,3000"
+            stroke="rgba(190, 238, 79, 0.05)" fill="none" strokeWidth="20" strokeLinecap="round" />
 
-          {/* Thicker accent curves */}
-          <path d="M120,0 C260,600 100,1200 200,1800 C300,2400 150,2700 180,3000"
-            stroke="rgba(36, 83, 190, 0.12)" fill="none" strokeWidth="6" />
-
-          <path d="M850,0 C950,500 800,1100 900,1700 C1000,2300 880,2600 900,3000"
-            stroke="rgba(230, 26, 10, 0.1)" fill="none" strokeWidth="5" />
-
-          <path d="M550,0 C650,600 500,1200 600,1800 C700,2400 580,2700 600,3000"
-            stroke="rgba(0, 229, 255, 0.08)" fill="none" strokeWidth="4" />
+          {/* Extra bold accent streaks */}
+          <path d="M120,0 C250,700 80,1400 200,2100 C320,2800 180,2900 200,3000"
+            stroke="rgba(36, 83, 190, 0.07)" fill="none" strokeWidth="30" strokeLinecap="round" />
+          <path d="M850,0 C1000,800 800,1600 950,2400 C1050,2800 920,2900 950,3000"
+            stroke="rgba(230, 26, 10, 0.06)" fill="none" strokeWidth="25" strokeLinecap="round" />
+          <path d="M450,0 C580,700 420,1400 550,2100 C680,2800 520,2900 550,3000"
+            stroke="rgba(0, 229, 255, 0.05)" fill="none" strokeWidth="18" strokeLinecap="round" />
         </svg>
-
-        {/* Animated flowing dots along the paths */}
-        <div className="abs-dot" style={{ left: '4%', top: '0%', background: 'var(--electric-blue)', animationDelay: '0s' }} />
-        <div className="abs-dot" style={{ left: '17%', top: '10%', background: 'var(--bright-red)', animationDelay: '-3s' }} />
-        <div className="abs-dot" style={{ left: '42%', top: '20%', background: 'var(--cyan)', animationDelay: '-6s' }} />
-        <div className="abs-dot" style={{ left: '58%', top: '5%', background: 'var(--orange)', animationDelay: '-2s' }} />
-        <div className="abs-dot" style={{ left: '79%', top: '15%', background: 'var(--neon-green)', animationDelay: '-5s' }} />
-        <div className="abs-dot" style={{ left: '92%', top: '8%', background: 'var(--yellow)', animationDelay: '-8s' }} />
       </div>
 
-      {/* ═══════════════ LANDING PAGE ═══════════════ */}
+      {/* ══════════ LANDING PAGE ══════════ */}
 
       {page === 'landing' && (
         <>
-          {/* ─── HERO ─── */}
-          <nav className="hero-nav">
-            <div className="top-bar-brand">
-              <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
-              <div className="top-bar-title">
-                Momentum<span>Pool</span>
+          {/* ────────── HERO with player rotation ────────── */}
+          <div className="hero-wrap">
+            {/* Player showcase — switching every 5s */}
+            <div className="player-showcase">
+              <div className={`player-fig ${playerIdx === 0 ? 'active' : ''}`} style={{ opacity: playerIdx === 0 ? 1 : 0 }}>
+                <img src="/assets/player-kick.svg" alt="Kicking" />
+              </div>
+              <div className={`player-fig ${playerIdx === 1 ? 'active' : ''}`} style={{ opacity: playerIdx === 1 ? 1 : 0 }}>
+                <img src="/assets/player-dribble.svg" alt="Dribbling" />
+              </div>
+              <div className={`player-fig ${playerIdx === 2 ? 'active' : ''}`} style={{ opacity: playerIdx === 2 ? 1 : 0 }}>
+                <img src="/assets/player-celebrate.svg" alt="Celebrating" />
               </div>
             </div>
-          </nav>
 
-          <div className="hero-center">
-            <div className="hero-tag">
-              <span className="dot" /> WORLD CUP 2026
+            {/* Hero overlay gradient */}
+            <div className="hero-overlay" />
+
+            {/* Stadium beams */}
+            <div className="hero-beams" />
+
+            {/* Nav */}
+            <nav className="hero-nav">
+              <div className="top-bar-brand">
+                <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
+                <div className="top-bar-title">
+                  Momentum<span>Pool</span>
+                </div>
+              </div>
+            </nav>
+
+            {/* Hero text */}
+            <div className="hero-content">
+              <div className="hero-tag">
+                <span className="dot" /> WORLD CUP 2026
+              </div>
+              <h1 className="hero-title">
+                Pick the<br /><span className="hl">Momentum</span>
+              </h1>
+              <p className="hero-sub">
+                Deposit on who controls the half.<br />
+                More momentum points wins the pool.
+              </p>
+              <button className="hero-cta" onClick={handleEnter}>
+                Enter the Arena
+              </button>
+              <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
             </div>
-            <h1 className="hero-title">
-              Pick the<br /><span className="hl">Momentum</span>
-            </h1>
-            <p className="hero-sub">
-              Deposit on who controls the half.<br />
-              More momentum points wins the pool.
-            </p>
-            <button className="hero-cta" onClick={handleEnter}>
-              Enter the Arena
-            </button>
-            <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
           </div>
 
-          {/* ─── HOW IT WORKS ─── */}
+          {/* ────────── HOW IT WORKS with stadium image ────────── */}
           <section className="section">
             <div className="section-inner">
               <div className="section-label">How It Works</div>
               <div className="section-title">Three Steps to Own the Half</div>
               <div className="section-desc">Pick your side, watch the momentum shift, and win the pool at half-time.</div>
               <div className="features-grid">
-                {[
-                  { icon: '⏱️', title: 'Pick a Side', desc: 'Deposit into Team A or B before the half starts. Your pick, your call.' },
-                  { icon: '📊', title: 'Live Momentum', desc: 'Goals, shots, cards, corners — every event updates the bar in real time.' },
-                  { icon: '🏆', title: 'Win the Pool', desc: 'Winners split the losers&apos; pool. All settled on-chain at half-time.' },
-                ].map((c, i) => (
-                  <div key={i} className="feature-card">
-                    <div className="feature-icon">{c.icon}</div>
-                    <h3>{c.title}</h3>
-                    <p>{c.desc}</p>
-                  </div>
-                ))}
+                <div className="feature-card">
+                  <img src="/assets/stadium.svg" alt="Stadium" className="feature-img" />
+                  <h3>Pick a Side</h3>
+                  <p>Deposit into Team A or B before the half starts. Your pick, your call.</p>
+                </div>
+                <div className="feature-card">
+                  <img src="/assets/football.svg" alt="Football" className="feature-img" style={{ objectFit: 'contain', background: 'rgba(0,0,0,0.3)', padding: '20px' }} />
+                  <h3>Live Momentum</h3>
+                  <p>Goals, shots, cards, corners — every event updates the momentum bar in real time.</p>
+                </div>
+                <div className="feature-card">
+                  <img src="/assets/stadium.svg" alt="Celebration" className="feature-img" />
+                  <h3>Win the Pool</h3>
+                  <p>Winners split the losers&apos; pool. All settled on-chain at half-time.</p>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* ─── MATCHES ─── */}
+          {/* ────────── MATCHES ────────── */}
           <section className="section">
             <div className="section-inner">
               <div className="section-label">Schedule</div>
@@ -194,7 +226,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ─── STATS ─── */}
+          {/* ────────── STATS ────────── */}
           <section className="section">
             <div className="section-inner">
               <div className="section-label">Built on X Layer</div>
@@ -215,7 +247,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ─── CTA ─── */}
+          {/* ────────── CTA ────────── */}
           <section className="section">
             <div className="section-inner">
               <div className="cta-content">
@@ -226,7 +258,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ─── FOOTER ─── */}
+          {/* ────────── FOOTER ────────── */}
           <section className="footer-section">
             <p>Momentum Pool &mdash; Powered by X Layer</p>
             <div className="footer-links">
@@ -238,7 +270,7 @@ export default function Home() {
         </>
       )}
 
-      {/* ═══════════════ APP PAGE ═══════════════ */}
+      {/* ══════════ APP PAGE ══════════ */}
 
       {page === 'app' && (
         <div ref={appRef}>

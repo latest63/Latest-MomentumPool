@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none">
+  <!-- Player silhouette -->
+  <defs>
+    <linearGradient id="p1g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2453BE"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
+    </linearGradient>
+    <linearGradient id="p2g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E61A0A"/>
+      <stop offset="100%" stop-color="#FF4702"/>
+    </linearGradient>
+    <linearGradient id="p3g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#28C16C"/>
+      <stop offset="100%" stop-color="#BEEE4F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Player 1: Kicking pose -->
+  <g id="player-kick" opacity="1">
+    <!-- Body -->
+    <path d="M200,120 C215,120 230,140 230,165 C230,190 215,210 200,210 C185,210 170,190 170,165 C170,140 185,120 200,120Z" fill="url(#p1g)" opacity="0.9"/>
+    <!-- Head -->
+    <circle cx="200" cy="100" r="25" fill="url(#p1g)" opacity="0.9"/>
+    <!-- Left leg (standing) -->
+    <path d="M190,210 L185,300 L175,380 L190,385 L200,300 L205,210" fill="url(#p1g)" opacity="0.85"/>
+    <!-- Right leg (kicking - extended) -->
+    <path d="M200,210 L240,260 L290,290 L295,280 L250,250 L210,210" fill="url(#p1g)" opacity="0.85"/>
+    <!-- Left arm -->
+    <path d="M185,170 L160,210 L150,215 L155,225 L175,210 L195,175" fill="url(#p1g)" opacity="0.7"/>
+    <!-- Right arm (extended for balance) -->
+    <path d="M215,170 L240,190 L270,195 L272,185 L245,180 L220,165" fill="url(#p1g)" opacity="0.7"/>
+    <!-- Football -->
+    <circle cx="320" cy="275" r="10" fill="white" opacity="0.8"/>
+    <circle cx="320" cy="275" r="10" fill="none" stroke="#111" stroke-width="1.5"/>
+    <!-- Motion lines -->
+    <line x1="310" y1="275" x2="290" y2="275" stroke="white" stroke-width="1.5" opacity="0.4"/>
+    <line x1="312" y1="265" x2="295" y2="260" stroke="white" stroke-width="1" opacity="0.3"/>
+    <line x1="312" y1="285" x2="295" y2="290" stroke="white" stroke-width="1" opacity="0.3"/>
+  </g>
+
+  <!-- Player 2: Dribbling pose -->
+  <g id="player-dribble" opacity="0">
+    <!-- Body -->
+    <path d="M200,130 C218,130 235,148 235,170 C235,192 218,210 200,210 C182,210 165,192 165,170 C165,148 182,130 200,130Z" fill="url(#p2g)" opacity="0.9"/>
+    <!-- Head -->
+    <circle cx="200" cy="108" r="25" fill="url(#p2g)" opacity="0.9"/>
+    <!-- Left leg -->
+    <path d="M188,210 L180,290 L170,370 L185,375 L195,290 L200,210" fill="url(#p2g)" opacity="0.85"/>
+    <!-- Right leg (running) -->
+    <path d="M212,210 L230,280 L245,350 L232,355 L218,280 L208,210" fill="url(#p2g)" opacity="0.85"/>
+    <!-- Arms (running motion) -->
+    <path d="M180,170 L150,200 L142,205 L148,215 L165,200 L190,180" fill="url(#p2g)" opacity="0.7"/>
+    <path d="M220,170 L245,195 L255,200 L250,210 L235,200 L215,180" fill="url(#p2g)" opacity="0.7"/>
+    <!-- Football at feet -->
+    <circle cx="240" cy="350" r="9" fill="white" opacity="0.8"/>
+    <circle cx="240" cy="350" r="9" fill="none" stroke="#111" stroke-width="1.5"/>
+  </g>
+
+  <!-- Player 3: Celebrating -->
+  <g id="player-celebrate" opacity="0">
+    <!-- Body -->
+    <path d="M200,125 C216,125 232,145 232,168 C232,191 216,210 200,210 C184,210 168,191 168,168 C168,145 184,125 200,125Z" fill="url(#p3g)" opacity="0.9"/>
+    <!-- Head -->
+    <circle cx="200" cy="103" r="25" fill="url(#p3g)" opacity="0.9"/>
+    <!-- Arms raised up -->
+    <path d="M178,170 L145,130 L140,125 L148,118 L160,130 L185,165" fill="url(#p3g)" opacity="0.7"/>
+    <path d="M222,170 L255,130 L260,125 L252,118 L240,130 L215,165" fill="url(#p3g)" opacity="0.7"/>
+    <!-- Legs -->
+    <path d="M190,210 L185,290 L180,380 L195,385 L200,290 L205,210" fill="url(#p3g)" opacity="0.85"/>
+    <path d="M210,210 L215,290 L220,380 L205,385 L203,290 L200,210" fill="url(#p3g)" opacity="0.85"/>
+    <!-- Star particles -->
+    <text x="130" y="110" font-size="16" opacity="0.6" fill="#BEEE4F">✦</text>
+    <text x="260" y="120" font-size="12" opacity="0.4" fill="#00E5FF">✦</text>
+    <text x="150" y="90" font-size="10" opacity="0.5" fill="#BEEE4F">✦</text>
+  </g>
+</svg>

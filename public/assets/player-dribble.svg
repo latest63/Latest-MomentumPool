@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none">
+  <defs>
+    <linearGradient id="pd" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E61A0A"/><stop offset="100%" stop-color="#FF4702"/>
+    </linearGradient>
+  </defs>
+  <!-- Dribbling pose -->
+  <path d="M200,130 C218,130 235,148 235,170 C235,192 218,210 200,210 C182,210 165,192 165,170 C165,148 182,130 200,130Z" fill="url(#pd)" opacity="0.9"/>
+  <circle cx="200" cy="108" r="25" fill="url(#pd)" opacity="0.9"/>
+  <path d="M188,210 L180,290 L170,370 L185,375 L195,290 L200,210" fill="url(#pd)" opacity="0.85"/>
+  <path d="M212,210 L230,280 L245,350 L232,355 L218,280 L208,210" fill="url(#pd)" opacity="0.85"/>
+  <path d="M180,170 L150,200 L142,205 L148,215 L165,200 L190,180" fill="url(#pd)" opacity="0.7"/>
+  <path d="M220,170 L245,195 L255,200 L250,210 L235,200 L215,180" fill="url(#pd)" opacity="0.7"/>
+  <circle cx="240" cy="350" r="9" fill="white" opacity="0.8"/>
+  <circle cx="240" cy="350" r="9" fill="none" stroke="#111" stroke-width="1.5"/>
+</svg>
