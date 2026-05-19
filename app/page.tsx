@@ -76,55 +76,6 @@ export default function Home() {
         <div className="bg-blob bg-blob-5" /><div className="bg-blob bg-blob-6" />
       </div>
 
-      {/* ══════════ BOLD ABSTRACT LINES — thick, energetic ══════════ */}
-      <div className="abs-lines">
-        <svg viewBox="0 0 1200 3000" preserveAspectRatio="xMidYMax slice" className="abs-lines-svg">
-          {/* Thick electric blue curve */}
-          <path d="M0,0 C100,500 0,1000 100,1500 C200,2000 50,2500 100,3000"
-            stroke="rgba(36, 83, 190, 0.25)" fill="none" strokeWidth="12" strokeLinecap="round" />
-          <path d="M0,0 C100,500 0,1000 100,1500 C200,2000 50,2500 100,3000"
-            stroke="rgba(36, 83, 190, 0.08)" fill="none" strokeWidth="24" strokeLinecap="round" />
-
-          {/* Thick red curve */}
-          <path d="M250,0 C400,400 200,900 350,1400 C500,1900 280,2400 350,3000"
-            stroke="rgba(230, 26, 10, 0.2)" fill="none" strokeWidth="10" strokeLinecap="round" />
-          <path d="M250,0 C400,400 200,900 350,1400 C500,1900 280,2400 350,3000"
-            stroke="rgba(230, 26, 10, 0.06)" fill="none" strokeWidth="22" strokeLinecap="round" />
-
-          {/* Thick cyan curve */}
-          <path d="M500,0 C650,600 450,1200 600,1800 C750,2400 550,2700 600,3000"
-            stroke="rgba(0, 229, 255, 0.18)" fill="none" strokeWidth="10" strokeLinecap="round" />
-          <path d="M500,0 C650,600 450,1200 600,1800 C750,2400 550,2700 600,3000"
-            stroke="rgba(0, 229, 255, 0.06)" fill="none" strokeWidth="20" strokeLinecap="round" />
-
-          {/* Thick orange curve */}
-          <path d="M750,0 C850,400 700,1000 800,1500 C900,2000 780,2500 800,3000"
-            stroke="rgba(255, 71, 2, 0.18)" fill="none" strokeWidth="10" strokeLinecap="round" />
-          <path d="M750,0 C850,400 700,1000 800,1500 C900,2000 780,2500 800,3000"
-            stroke="rgba(255, 71, 2, 0.06)" fill="none" strokeWidth="20" strokeLinecap="round" />
-
-          {/* Thick neon green curve */}
-          <path d="M950,0 C1050,500 920,1100 980,1700 C1040,2300 960,2600 980,3000"
-            stroke="rgba(40, 193, 108, 0.18)" fill="none" strokeWidth="10" strokeLinecap="round" />
-          <path d="M950,0 C1050,500 920,1100 980,1700 C1040,2300 960,2600 980,3000"
-            stroke="rgba(40, 193, 108, 0.06)" fill="none" strokeWidth="20" strokeLinecap="round" />
-
-          {/* Thick yellow curve */}
-          <path d="M1100,0 C1180,600 1080,1200 1150,1800 C1220,2400 1120,2700 1150,3000"
-            stroke="rgba(190, 238, 79, 0.15)" fill="none" strokeWidth="10" strokeLinecap="round" />
-          <path d="M1100,0 C1180,600 1080,1200 1150,1800 C1220,2400 1120,2700 1150,3000"
-            stroke="rgba(190, 238, 79, 0.05)" fill="none" strokeWidth="20" strokeLinecap="round" />
-
-          {/* Extra bold accent streaks */}
-          <path d="M120,0 C250,700 80,1400 200,2100 C320,2800 180,2900 200,3000"
-            stroke="rgba(36, 83, 190, 0.07)" fill="none" strokeWidth="30" strokeLinecap="round" />
-          <path d="M850,0 C1000,800 800,1600 950,2400 C1050,2800 920,2900 950,3000"
-            stroke="rgba(230, 26, 10, 0.06)" fill="none" strokeWidth="25" strokeLinecap="round" />
-          <path d="M450,0 C580,700 420,1400 550,2100 C680,2800 520,2900 550,3000"
-            stroke="rgba(0, 229, 255, 0.05)" fill="none" strokeWidth="18" strokeLinecap="round" />
-        </svg>
-      </div>
-
       {/* ══════════ LANDING PAGE ══════════ */}
 
       {page === 'landing' && (

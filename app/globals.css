@@ -117,22 +117,6 @@ body {
 .bg-blob-5 { width: 250px; height: 250px; background: var(--orange); top: 60%; right: 30%; opacity: 0.15; animation-delay: -6s; }
 .bg-blob-6 { width: 200px; height: 200px; background: var(--yellow); top: 10%; left: 40%; opacity: 0.12; animation-delay: -10s; }
 
-/* ═════════════════════ BOLD ABSTRACT LINES ═════════════════════ */
-
-.abs-lines {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.abs-lines-svg {
-  width: 100%;
-  height: 100%;
-  animation: line-wave 6s ease-in-out infinite;
-}
-
 /* ═════════════════════ APP SHELL ═════════════════════ */
 
 .app-shell { min-height: 100vh; min-height: 100dvh; position: relative; z-index: 1; }
