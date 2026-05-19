@@ -1,31 +1,20 @@
 # Momentum Pool ⚡
 
-**X Cup Hackathon — Build on X Layer**
+**X Cup Hackathon — OKX X Layer**
 
-Pick the team with more *momentum* in a half (goals, shots, corners, cards).  
-No prediction markets — pure GameFi.
-
----
-
-## Architecture
-
-```
-┌─────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Frontend   │ ──▶ │   Backend    │ ──▶ │   Contract   │
-│  (Next.js)  │     │  (Express)   │     │  (X Layer)   │
-│             │     │              │     │              │
-│ Live meter  │     │ Sports API   │     │ deposit()    │
-│ Event feed  │     │ Momentum     │     │ settle()     │
-│ Deposit UI  │     │ calculator   │     │ withdraw()   │
-└─────────────┘     └──────────────┘     └──────────────┘
-       │                    │                    │
-   reads API            cron 60s             half-time
-   every 15s            settle pool          single tx
-```
-
-**Key insight:** Contract only touches money. Real-time fun is all frontend + sports API.
+Pick the team with more *momentum* in a football half (goals, shots, corners, cards).  
+No prediction markets. Pure GameFi.
 
 ---
+
+## How It Works
+
+1. A pool opens 15 min before each half
+2. Deposit into **Team A** or **Team B**
+3. Match kicks off — live momentum bar updates every 15s
+4. At half-time, momentum score is computed from real events
+5. Winners split the losers' pool (minus 2% fee)
+6. Tie → everyone gets refunded
 
 ## Point System
 
@@ -39,9 +28,12 @@ No prediction markets — pure GameFi.
 | Yellow Card | -3 |
 | Red Card | -5 |
 
-A goal + a red card in the same half ≈ wash. Realistic.
+## Stack
 
----
+- **Contracts** — Solidity + Foundry → X Layer (chain 196)
+- **Frontend** — Next.js 15 + API routes → Vercel
+- **Relayer** — Vercel Cron Jobs (settles pools at half-time)
+- **Data** — API-Football for live match events
 
 ## Project Structure
 
@@ -49,75 +41,63 @@ A goal + a red card in the same half ≈ wash. Realistic.
 momentum-pool/
 ├── contracts/
 │   ├── src/
-│   │   ├── MomentumPool.sol        # Per half pool
-│   │   └── MomentumPoolFactory.sol # Pool deployer
+│   │   ├── MomentumPool.sol          # Per-half pool
+│   │   └── MomentumPoolFactory.sol   # Pool deployer
+│   ├── test/MomentumPool.t.sol       # 10 tests
 │   ├── script/Deploy.s.sol
-│   ├── foundry.toml
-│   └── .env.example
-│
-├── backend/
-│   ├── src/
-│   │   ├── relayer.ts              # Cron + settlement
-│   │   └── server.ts               # API for frontend
-│   └── package.json
+│   ├── deploy.sh                      # Deploy to X Layer
+│   └── foundry.toml
 │
 ├── frontend/
-│   ├── app/page.tsx
-│   ├── components/MomentumMeter.tsx # Bar + feed + pool card
+│   ├── app/
+│   │   ├── page.tsx                   # Main UI
+│   │   ├── layout.tsx
+│   │   └── api/
+│   │       ├── matches/route.ts       # List matches
+│   │       ├── match/[id]/route.ts    # Match detail
+│   │       ├── match/[id]/momentum/   # Live scores
+│   │       └── cron/settle/route.ts   # Relayer
+│   ├── components/MomentumMeter.tsx   # Bar + Feed + PoolCard
+│   ├── lib/momentum.ts                # Shared engine
+│   ├── vercel.json                    # Cron jobs
 │   └── package.json
 │
 └── README.md
 ```
 
----
+## Deploy
 
-## Quick Start
-
-### 1. Deploy Contracts
+### 1. Contracts (X Layer)
 
 ```bash
 cd contracts
-cp .env.example .env  # fill PRIVATE_KEY + RPC
-forge install
-forge script script/Deploy.s.sol --rpc-url xlayer_testnet --broadcast
+cp .env.example .env   # set PRIVATE_KEY
+bash deploy.sh testnet
 ```
 
-### 2. Create a Pool
-
-```bash
-cast send $FACTORY \
-  'createPool(string,uint8,string,string,uint256,uint256)' \
-  '12345' 1 'Nigeria' 'Brazil' \
-  $(date +%s -d '+10 minutes') \
-  $(date +%s -d '+55 minutes') \
-  --rpc-url $RPC --private-key $PK
-```
-
-### 3. Run Backend
-
-```bash
-cd backend
-pnpm install
-pnpm server     # API for frontend on :3001
-pnpm relayer    # settles pools at half-time
-```
-
-### 4. Run Frontend
+### 2. Frontend (Vercel)
 
 ```bash
 cd frontend
 pnpm install
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3001 pnpm dev
+pnpm dev        # local dev on :3000
 ```
 
----
+Deploy to Vercel:
+- Import `frontend/` as the project root
+- Add env vars in Vercel dashboard:
+  - `PRIVATE_KEY` — wallet that owns the Factory
+  - `FACTORY_ADDRESS` — deployed factory address
+  - `XLAYER_RPC` — default: `https://testrpc.xlayer.tech`
+  - `SPORTS_API_KEY` — optional, for live data
 
-## Hackathon Scoring Advantage
+Vercel Cron automatically runs `/api/cron/settle` every 2 min.
 
-| Criteria | How Momentum Pool hits it |
-|----------|--------------------------|
-| **Innovation** | Nobody else does this. It's not prediction, not fantasy. It's *momentum*. |
-| **Market Potential** | Football fans love real-time gambling-adjacent mechanics. Easy to share. |
-| **Completion** | 3 contracts + 1 relayer + 1 meter component. Ships in 5 days. |
-| **On-chain verifiability** | Every settlement is a tx on X Layer explorer. |
-| **Demo video** | Live momentum bar + settling a pool = great 2-min clip. |
+## Hackathon Edge
+
+| Criteria | Why It Hits |
+|----------|-------------|
+| **Innovation** | Momentum, not prediction. Nobody else is doing this. |
+| **Market Potential** | Football fans love real-time betting-adjacent games. Viral mechanic. |
+| **Completion** | 2 contracts, 10 tests passing, full frontend. Ships in days. |
+| **On-chain** | Every settlement is an X Layer tx. Verifiable. |
