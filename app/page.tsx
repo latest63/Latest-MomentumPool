@@ -109,6 +109,19 @@ export default function Home() {
             </div>
           </div>
 
+          {/* ────────── INTRODUCTION ────────── */}
+          <section className="section">
+            <div className="section-inner">
+              <div className="section-label">Momentum Pool</div>
+              <div className="section-title">World Cup 2026 on X Layer</div>
+              <div className="section-desc">
+                The first on-chain momentum pool built for football. Pick who controls each half,
+                watch live events shift the momentum bar, and split the pot at half-time.
+                No oracles. No brackets. Just pure half-by-half action.
+              </div>
+            </div>
+          </section>
+
           {/* ────────── HOW IT WORKS with stadium image ────────── */}
           <section className="section">
             <div className="section-inner">
