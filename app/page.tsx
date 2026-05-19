@@ -26,14 +26,7 @@ export default function Home() {
   const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [playerIdx, setPlayerIdx] = useState(0);
   const appRef = useRef<HTMLDivElement>(null);
-
-  // Rotate player every 5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => setPlayerIdx(i => (i + 1) % 3), 5000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -61,12 +54,6 @@ export default function Home() {
   const handleDeposit = (id: string, t: number) => console.log(`deposit ${id} team ${t}`);
   const handleEnter = () => { setPage('app'); setTimeout(() => appRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); };
 
-  const playerPoses = [
-    { label: 'Kicking', svg: '/assets/players.svg#player-kick' },
-    { label: 'Dribbling', svg: '/assets/players.svg#player-dribble' },
-    { label: 'Celebrating', svg: '/assets/players.svg#player-celebrate' },
-  ];
-
   return (
     <main className="app-shell">
       {/* ══════════ UNIFIED COLOR BG ══════════ */}
@@ -80,21 +67,8 @@ export default function Home() {
 
       {page === 'landing' && (
         <>
-          {/* ────────── HERO with player rotation ────────── */}
-          <div className="hero-wrap">
-            {/* Player showcase — switching every 5s */}
-            <div className="player-showcase">
-              <div className={`player-fig ${playerIdx === 0 ? 'active' : ''}`} style={{ opacity: playerIdx === 0 ? 1 : 0 }}>
-                <img src="/assets/player-kick.svg" alt="Kicking" />
-              </div>
-              <div className={`player-fig ${playerIdx === 1 ? 'active' : ''}`} style={{ opacity: playerIdx === 1 ? 1 : 0 }}>
-                <img src="/assets/player-dribble.svg" alt="Dribbling" />
-              </div>
-              <div className={`player-fig ${playerIdx === 2 ? 'active' : ''}`} style={{ opacity: playerIdx === 2 ? 1 : 0 }}>
-                <img src="/assets/player-celebrate.svg" alt="Celebrating" />
-              </div>
-            </div>
-
+          {/* ────────── HERO split layout with real player image ────────── */}
+          <div className="hero-wrap split-hero">
             {/* Hero overlay gradient */}
             <div className="hero-overlay" />
 
@@ -111,22 +85,29 @@ export default function Home() {
               </div>
             </nav>
 
-            {/* Hero text */}
-            <div className="hero-content">
-              <div className="hero-tag">
-                <span className="dot" /> WORLD CUP 2026
+            <div className="hero-split-inner">
+              <div className="hero-content hero-content-split">
+                <div className="hero-tag">
+                  <span className="dot" /> WORLD CUP 2026
+                </div>
+                <h1 className="hero-title">
+                  Pick the<br /><span className="hl">Momentum</span>
+                </h1>
+                <p className="hero-sub">
+                  Deposit on who controls the half.<br />
+                  More momentum points wins the pool.
+                </p>
+                <button className="hero-cta" onClick={handleEnter}>
+                  Enter the Arena
+                </button>
+                <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
               </div>
-              <h1 className="hero-title">
-                Pick the<br /><span className="hl">Momentum</span>
-              </h1>
-              <p className="hero-sub">
-                Deposit on who controls the half.<br />
-                More momentum points wins the pool.
-              </p>
-              <button className="hero-cta" onClick={handleEnter}>
-                Enter the Arena
-              </button>
-              <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
+
+              <div className="hero-player-panel" aria-hidden="true">
+                <div className="hero-player-glow" />
+                <img src="/assets/hero-player-real.jpg" alt="Football player in action" className="hero-player-real" />
+                <div className="hero-player-ground" />
+              </div>
             </div>
           </div>
 
