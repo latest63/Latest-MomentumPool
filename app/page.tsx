@@ -75,18 +75,13 @@ export default function Home() {
         }
       } catch {}
     };
-    fetchLive();
     const interval = setInterval(fetchLive, 15_000);
     if (page === 'app') fetchLive();
     return () => clearInterval(interval);
   }, [selected, page]);
 
   const selectedMatch = matches.find((m) => m.matchId === selected);
-
-  const handleDeposit = async (_matchId: string, _teamId: number) => {
-    console.log(`[Deposit] match=${_matchId} team=${_teamId}`);
-  };
-
+  const handleDeposit = async (id: string, t: number) => console.log(`[Deposit] match=${id} team=${t}`);
   const handleEnter = () => {
     setPage('app');
     setTimeout(() => appRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -94,125 +89,122 @@ export default function Home() {
 
   return (
     <main className="app-shell">
-      {/* ─── Stadium Lights (global) ─── */}
-      <div className="stadium-lights">
-        <div className="stadium-beam" />
-        <div className="stadium-beam" />
-        <div className="stadium-beam" />
+      <div className="stadium-bg">
+        <div className="stadium-beam" /><div className="stadium-beam" /><div className="stadium-beam" />
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          LANDING PAGE
-          ══════════════════════════════════════════════════ */}
+      {/* ════════════════════ LANDING ════════════════════ */}
       {page === 'landing' && (
         <>
-          {/* ─── Full-screen Hero Wrap ─── */}
-          <div className="hero-wrap landing-hero">
-            <div className="hero-glow" />
+          {/* ─── HERO — Indigo → Navy → Teal gradient ─── */}
+          <header className="landing-hero">
             <div className="hero-curves">
-              <svg viewBox="0 0 1200 600" preserveAspectRatio="none">
-                <path d="M0,280 C300,400 700,120 1200,280 L1200,0 L0,0 Z" fill="rgba(55,88,237,0.08)" />
-                <path d="M0,360 C400,200 800,400 1200,240 L1200,0 L0,0 Z" fill="rgba(43,37,111,0.06)" />
-                <path d="M0,440 C200,320 600,480 1200,300 L1200,0 L0,0 Z" fill="rgba(2,69,58,0.05)" />
+              <svg viewBox="0 0 1200 800" preserveAspectRatio="none">
+                <path d="M0,300 C200,420 600,160 1200,300 L1200,0 L0,0 Z" fill="rgba(54,89,252,0.1)" />
+                <path d="M0,420 C300,280 800,480 1200,260 L1200,0 L0,0 Z" fill="rgba(181,224,82,0.05)" />
+                <path d="M0,500 C400,380 700,540 1200,340 L1200,0 L0,0 Z" fill="rgba(230,26,10,0.04)" />
               </svg>
             </div>
 
-            {/* Nav */}
-            <div className="landing-nav">
+            <nav className="landing-nav">
               <div className="top-bar-brand">
-                <img className="top-bar-logo" src="/assets/logo.svg" alt="Momentum Pool" />
+                <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
                 <div className="top-bar-title">
                   Momentum<span>Pool</span>
                 </div>
               </div>
-            </div>
+            </nav>
 
-            {/* Hero Content */}
             <div className="landing-center">
-              <div className="hero-tag landing-tag">
-                <span className="live-dot" /> FIFA WORLD CUP 2026
+              <div className="landing-tag">
+                <span className="live-dot" /> WORLD CUP 2026
               </div>
-              <h1 className="hero-title landing-title">
+              <h1 className="landing-title">
                 Pick the<br />
-                <span className="wc-title-highlight">Momentum</span>
+                <span className="highlight">Momentum</span>
               </h1>
               <p className="landing-sub">
                 Deposit on the team that controls the half.<br />
-                At half-time, the team with more momentum points wins.
+                At half-time, the team with more momentum points wins the pool.
               </p>
               <button className="landing-cta" onClick={handleEnter}>
                 Enter the Arena
               </button>
-              <p className="landing-hint">Powered by X Layer · 2% pool fee</p>
+              <p className="landing-hint">Powered by X Layer · Winners split the pool</p>
             </div>
-          </div>
+          </header>
 
-          {/* ─── Features Section ─── */}
-          <div className="features-wrap">
-            <div className="features-section">
-              <div className="features-grid">
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="10" stroke="#3758ED" strokeWidth="2"/>
-                      <path d="M12 6v6l4 2" stroke="#3758ED" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                  <h3>Pick a Side</h3>
-                  <p>Deposit into Team A or Team B before the half starts. Simple.</p>
+          {/* ─── HOW IT WORKS — Indigo → Navy section ─── */}
+          <section className="section-indigo">
+            <div className="section-header">
+              <h2>How It Works</h2>
+              <p>Three simple steps to own the half</p>
+            </div>
+            <div className="features-grid">
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="#708FD1" strokeWidth="2"/>
+                    <path d="M12 6v6l4 2" stroke="#708FD1" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
                 </div>
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#17CB49" strokeWidth="2" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <h3>Live Momentum</h3>
-                  <p>Goals, shots, cards — every event shifts the momentum bar in real time.</p>
+                <h3>Pick a Side</h3>
+                <p>Deposit into Team A or Team B before the half starts. You&apos;re betting on which team controls the momentum.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#40C08F" strokeWidth="2" strokeLinejoin="round"/>
+                  </svg>
                 </div>
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <rect x="2" y="7" width="20" height="14" rx="2" stroke="#E61A0A" strokeWidth="2"/>
-                      <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="#E61A0A" strokeWidth="2"/>
-                    </svg>
-                  </div>
-                  <h3>Win the Pool</h3>
-                  <p>Winners split the losers&apos; pool. All settled on-chain at half-time.</p>
+                <h3>Live Scoreboard</h3>
+                <p>Goals, shots, cards, corners — every event updates the momentum bar in real time before half-time.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <rect x="2" y="7" width="20" height="14" rx="2" stroke="#E61A0A" strokeWidth="2"/>
+                    <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="#E61A0A" strokeWidth="2"/>
+                  </svg>
                 </div>
+                <h3>Win the Pool</h3>
+                <p>Winners split the losers&apos; pool. All settled on-chain instantly at half-time. The momentum never stops.</p>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* ─── Host Cities ─── */}
-          <div className="hosts-wrap">
-            <div className="hosts-section">
-              <h2>Host Nations</h2>
-              <div className="hosts-grid">
-                <div className="host-card host-usa">
-                  <span className="host-flag">🇺🇸</span>
-                  <span className="host-name">USA</span>
-                  <span className="host-venue">11 Stadiums</span>
-                </div>
-                <div className="host-card host-canada">
-                  <span className="host-flag">🇨🇦</span>
-                  <span className="host-name">Canada</span>
-                  <span className="host-venue">3 Stadiums</span>
-                </div>
-                <div className="host-card host-mexico">
-                  <span className="host-flag">🇲🇽</span>
-                  <span className="host-name">Mexico</span>
-                  <span className="host-venue">6 Stadiums</span>
-                </div>
+          {/* ─── MATCHES PREVIEW — Black section ─── */}
+          <section className="section-black">
+            <div className="matches-preview">
+              <div className="section-header">
+                <h2>Match Schedule</h2>
+                <p>Upcoming World Cup 2026 fixtures</p>
               </div>
+              {FALLBACK.map((m) => (
+                <div key={m.matchId} className="match-row" onClick={handleEnter}>
+                  <div className="match-row-teams">
+                    <span>{FLAGS[m.homeTeam] || '🏳️'} {m.homeTeam}</span>
+                    <span className="vs">VS</span>
+                    <span>{FLAGS[m.awayTeam] || '🏳️'} {m.awayTeam}</span>
+                  </div>
+                  <span className="match-row-venue">{m.venue}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ─── CTA — Dark Teal section ─── */}
+          <section className="section-dark-teal">
+            <div className="cta-section">
+              <h2>Ready to Play?</h2>
+              <p>Connect your wallet and start depositing. The next half is coming.</p>
               <button className="landing-cta landing-cta-secondary" onClick={handleEnter}>
                 Launch App
               </button>
             </div>
-          </div>
+          </section>
 
-          {/* ─── Footer ─── */}
-          <footer className="app-footer">
+          <footer className="app-footer" style={{ background: '#000' }}>
             <p>
               Built on{' '}
               <a href="https://www.xlayer.tech/" target="_blank" rel="noopener">X Layer</a>
@@ -225,32 +217,27 @@ export default function Home() {
         </>
       )}
 
-      {/* ══════════════════════════════════════════════════
-          APP PAGE
-          ══════════════════════════════════════════════════ */}
+      {/* ════════════════════ APP ════════════════════ */}
       {page === 'app' && (
         <div ref={appRef}>
-          {/* ─── Top Bar ─── */}
           <div className="top-bar">
             <div className="top-bar-brand">
-              <img className="top-bar-logo" src="/assets/logo.svg" alt="Momentum Pool" />
+              <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
               <div className="top-bar-title">
                 Momentum<span>Pool</span>
               </div>
             </div>
             <button className="app-back-btn" onClick={() => setPage('landing')}>
-              ← Back
+              &larr; Back
             </button>
           </div>
 
           <div className="main-content">
-            {/* ─── Match Selector ─── */}
             <div className="match-selector">
               <div className="match-selector-header">
                 <h2>Live Matches</h2>
                 <div className="live-indicator">LIVE</div>
               </div>
-
               <div className="match-tabs">
                 {matches.map((m) => (
                   <button
@@ -258,24 +245,21 @@ export default function Home() {
                     className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
                     onClick={() => setSelected(m.matchId)}
                   >
-                    <div className="tab-teams">
-                      <div className="tab-team-row">
-                        <span>{FLAGS[m.homeTeam] || '🏳️'}</span>
-                        <span>{m.homeTeam}</span>
-                      </div>
-                      <div className="tab-vs-label">vs</div>
-                      <div className="tab-team-row">
-                        <span>{FLAGS[m.awayTeam] || '🏳️'}</span>
-                        <span>{m.awayTeam}</span>
-                      </div>
+                    <div className="tab-team-row">
+                      <span>{FLAGS[m.homeTeam] || '🏳️'}</span>
+                      <span>{m.homeTeam}</span>
                     </div>
-                    <small>{m.venue || 'World Cup 2026'}</small>
+                    <div className="tab-vs-label">vs</div>
+                    <div className="tab-team-row">
+                      <span>{FLAGS[m.awayTeam] || '🏳️'}</span>
+                      <span>{m.awayTeam}</span>
+                    </div>
+                    <small>{m.venue || 'WC 2026'}</small>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* ─── Match Detail ─── */}
             {selectedMatch && (
               <div className="match-view">
                 <div className="match-header">
@@ -291,14 +275,12 @@ export default function Home() {
                 </div>
 
                 <MomentumBar data={momentum} loading={!momentum} />
-
                 <PoolCard
                   matchId={selectedMatch.matchId}
                   homeTeam={selectedMatch.homeTeam}
                   awayTeam={selectedMatch.awayTeam}
                   onDeposit={handleDeposit}
                 />
-
                 <EventFeed
                   events={events}
                   homeTeam={selectedMatch.homeTeam}
@@ -307,7 +289,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* ─── Footer ─── */}
             <footer className="app-footer">
               <p>
                 Built on{' '}
