@@ -1,10 +1,7 @@
 /* ═════════════════════ HERO SPLIT — AFTER PLAYER IMAGES REMOVED ═════════════════════ */
 
 .split-hero {
-  background:
-    radial-gradient(circle at 78% 30%, rgba(40, 193, 108, 0.16), transparent 30%),
-    radial-gradient(circle at 62% 55%, rgba(36, 83, 190, 0.14), transparent 34%),
-    linear-gradient(90deg, rgba(5,5,16,.98), rgba(5,5,16,.86) 48%, rgba(5,5,16,.96));
+  /* No background — uses unified .color-bg behind it */
 }
 
 .hero-split-inner {

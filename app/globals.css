@@ -173,8 +173,8 @@ body {
 
 .top-bar-brand { display: flex; align-items: center; gap: var(--sp-3); cursor: pointer; background: none; border: none; padding: 0; font: inherit; color: inherit; }
 .top-bar-logo { width: 42px; height: 42px; object-fit: contain; }
-.top-bar-title { font-family: var(--font-sports); font-size: 24px; letter-spacing: 1.5px; color: var(--text-primary); line-height: 1; }
-.top-bar-title span { color: var(--electric-blue); }
+.top-bar-title { font-family: var(--font-sports); font-size: 20px; letter-spacing: 1.5px; color: var(--text-primary); line-height: 1; }
+.top-bar-title span { color: transparent; -webkit-text-stroke: 1.5px var(--yellow); text-stroke: 1.5px var(--yellow); }
 
 @media (max-width: 640px) { .top-bar-hosts { display: none; } }
 
