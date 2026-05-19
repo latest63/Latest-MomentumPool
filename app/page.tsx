@@ -187,7 +187,7 @@ export default function Home() {
               <div className="section-desc">Pick your side, watch the momentum shift, and win the pool at half-time.</div>
               <div className="features-grid">
                 <div className="feature-card">
-                  <img src="/assets/stadium.svg" alt="Stadium" className="feature-img" />
+                  <img src="/assets/design-1.jpeg" alt="Pick your side" className="feature-img" />
                   <h3>Pick a Side</h3>
                   <p>Deposit into Team A or B before the half starts. Your pick, your call.</p>
                 </div>
@@ -197,7 +197,7 @@ export default function Home() {
                   <p>Goals, shots, cards, corners — every event updates the momentum bar in real time.</p>
                 </div>
                 <div className="feature-card">
-                  <img src="/assets/stadium.svg" alt="Celebration" className="feature-img" />
+                  <img src="/assets/design-2.jpeg" alt="Win the pool" className="feature-img" />
                   <h3>Win the Pool</h3>
                   <p>Winners split the losers&apos; pool. All settled on-chain at half-time.</p>
                 </div>
