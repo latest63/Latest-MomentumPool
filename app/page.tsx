@@ -105,7 +105,7 @@ export default function Home() {
 
               <div className="hero-player-panel" aria-hidden="true">
                 <div className="hero-player-glow" />
-                <img src="/assets/hero-player-real.jpg" alt="Football player in action" className="hero-player-real" />
+                <img src="/assets/hero-player-cutout.png" alt="Football player in action" className="hero-player-real" />
                 <div className="hero-player-ground" />
               </div>
             </div>
