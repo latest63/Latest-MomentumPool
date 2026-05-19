@@ -131,9 +131,6 @@ body {
   padding-top: 0;
 }
 
-.section:nth-child(odd) { background: var(--bg-glass); backdrop-filter: blur(4px); }
-.section:nth-child(even) { background: var(--bg-glass-light); backdrop-filter: blur(2px); }
-
 .section-inner {
   max-width: 1100px;
   margin: 0 auto;
