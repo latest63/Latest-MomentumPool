@@ -431,6 +431,35 @@ body {
   line-height: 1.6;
 }
 
+/* ═════════════════════ APP PREVIEW ═════════════════════ */
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-4);
+}
+
+@media (max-width: 640px) { .preview-grid { grid-template-columns: 1fr; } }
+
+.preview-card {
+  background: var(--bg-glass-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.preview-card:hover {
+  border-color: var(--border-glass-hover);
+  transform: translateY(-4px);
+}
+
+.preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ═════════════════════ MATCH GRID ═════════════════════ */
 
 .match-grid {

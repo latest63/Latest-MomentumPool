@@ -187,7 +187,7 @@ export default function Home() {
               <div className="section-desc">Pick your side, watch the momentum shift, and win the pool at half-time.</div>
               <div className="features-grid">
                 <div className="feature-card">
-                  <img src="/assets/design-1.jpeg" alt="Pick your side" className="feature-img" />
+                  <img src="/assets/stadium.svg" alt="Stadium" className="feature-img" />
                   <h3>Pick a Side</h3>
                   <p>Deposit into Team A or B before the half starts. Your pick, your call.</p>
                 </div>
@@ -197,9 +197,26 @@ export default function Home() {
                   <p>Goals, shots, cards, corners — every event updates the momentum bar in real time.</p>
                 </div>
                 <div className="feature-card">
-                  <img src="/assets/design-2.jpeg" alt="Win the pool" className="feature-img" />
+                  <img src="/assets/stadium.svg" alt="Celebration" className="feature-img" />
                   <h3>Win the Pool</h3>
                   <p>Winners split the losers&apos; pool. All settled on-chain at half-time.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ────────── APP PREVIEW — your design images ────────── */}
+          <section className="section">
+            <div className="section-inner">
+              <div className="section-label">Preview</div>
+              <div className="section-title">See the App in Action</div>
+              <div className="section-desc">Clean, dark interface built for World Cup 2026 energy.</div>
+              <div className="preview-grid">
+                <div className="preview-card">
+                  <img src="/assets/design-1.jpeg" alt="App preview 1" className="preview-img" />
+                </div>
+                <div className="preview-card">
+                  <img src="/assets/design-2.jpeg" alt="App preview 2" className="preview-img" />
                 </div>
               </div>
             </div>
