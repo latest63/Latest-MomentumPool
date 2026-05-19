@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Bebas_Neue, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import './use-client-redesign.css';
 
 const bebasNeue = Bebas_Neue({
   variable: '--font-bebas-neue',

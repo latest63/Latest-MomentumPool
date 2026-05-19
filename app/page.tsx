@@ -26,14 +26,7 @@ export default function Home() {
   const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [playerIdx, setPlayerIdx] = useState(0);
   const appRef = useRef<HTMLDivElement>(null);
-
-  // Rotate player every 5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => setPlayerIdx(i => (i + 1) % 3), 5000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -61,19 +54,13 @@ export default function Home() {
   const handleDeposit = (id: string, t: number) => console.log(`deposit ${id} team ${t}`);
   const handleEnter = () => { setPage('app'); setTimeout(() => appRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); };
 
-  const playerPoses = [
-    { label: 'Kicking', svg: '/assets/players.svg#player-kick' },
-    { label: 'Dribbling', svg: '/assets/players.svg#player-dribble' },
-    { label: 'Celebrating', svg: '/assets/players.svg#player-celebrate' },
-  ];
-
   return (
     <main className="app-shell">
-      {/* ══════════ UNIFIED COLOR BG ══════════ */}
-      <div className="color-bg">
-        <div className="bg-blob bg-blob-1" /><div className="bg-blob bg-blob-2" />
-        <div className="bg-blob bg-blob-3" /><div className="bg-blob bg-blob-4" />
-        <div className="bg-blob bg-blob-5" /><div className="bg-blob bg-blob-6" />
+      {/* ══════════ PDF-INSPIRED BACKGROUND RINGS ══════════ */}
+      <div className="use-client-rings" aria-hidden="true">
+        {Array.from({ length: 18 }).map((_, i) => (
+          <span key={i} style={{ '--i': i } as React.CSSProperties} />
+        ))}
       </div>
 
       {/* ══════════ BOLD ABSTRACT LINES — thick, energetic ══════════ */}
@@ -130,53 +117,66 @@ export default function Home() {
       {page === 'landing' && (
         <>
           {/* ────────── HERO with player rotation ────────── */}
-          <div className="hero-wrap">
-            {/* Player showcase — switching every 5s */}
-            <div className="player-showcase">
-              <div className={`player-fig ${playerIdx === 0 ? 'active' : ''}`} style={{ opacity: playerIdx === 0 ? 1 : 0 }}>
-                <img src="/assets/player-kick.svg" alt="Kicking" />
-              </div>
-              <div className={`player-fig ${playerIdx === 1 ? 'active' : ''}`} style={{ opacity: playerIdx === 1 ? 1 : 0 }}>
-                <img src="/assets/player-dribble.svg" alt="Dribbling" />
-              </div>
-              <div className={`player-fig ${playerIdx === 2 ? 'active' : ''}`} style={{ opacity: playerIdx === 2 ? 1 : 0 }}>
-                <img src="/assets/player-celebrate.svg" alt="Celebrating" />
-              </div>
+          <div className="hero-wrap hero-pdf">
+            <div className="hero-nav-shell">
+              <nav className="hero-nav">
+                <div className="top-bar-brand">
+                  <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
+                  <div className="top-bar-title">
+                    Momentum<span>Pool</span>
+                  </div>
+                </div>
+                <button className="nav-pill" onClick={handleEnter}>Launch App</button>
+              </nav>
             </div>
 
-            {/* Hero overlay gradient */}
-            <div className="hero-overlay" />
+            <section className="hero-pdf-grid">
+              <div className="hero-copy-block">
+                <div className="hero-accent-line" />
+                <div className="stacked-headline" aria-label="Pick the Momentum">
+                  <span className="headline-bar bar-blue">Pick</span>
+                  <span className="headline-bar bar-white">the</span>
+                  <span className="headline-bar bar-multi">Momentum</span>
+                </div>
+                <p className="hero-sub hero-sub-pdf">
+                  Deposit on who controls the half. Goals, shots, cards and corners feed the live momentum meter — winners split the pool at half-time.
+                </p>
+                <div className="hero-actions">
+                  <button className="hero-cta hero-cta-lime" onClick={handleEnter}>Enter Arena</button>
+                  <button className="hero-cta ghost" onClick={() => document.getElementById('fixtures')?.scrollIntoView({ behavior: 'smooth' })}>View Fixtures</button>
+                </div>
+                <p className="hero-hint">X Layer • World Cup 2026 • 2% pool fee</p>
+              </div>
 
-            {/* Stadium beams */}
-            <div className="hero-beams" />
-
-            {/* Nav */}
-            <nav className="hero-nav">
-              <div className="top-bar-brand">
-                <img className="top-bar-logo" src="/assets/logo.svg" alt="" />
-                <div className="top-bar-title">
-                  Momentum<span>Pool</span>
+              <div className="phone-stage" aria-label="Momentum Pool mobile app preview">
+                <div className="phone-glow" />
+                <div className="phone-frame">
+                  <div className="phone-gradient" />
+                  <div className="phone-dark" />
+                  <div className="phone-ui">
+                    <div className="phone-top">
+                      <span className="phone-brand-pill">LIVE</span>
+                      <span className="phone-red-pill">45'</span>
+                    </div>
+                    <div className="phone-teams">
+                      <div><span>USA</span><strong>64%</strong></div>
+                      <div><span>CAN</span><strong>36%</strong></div>
+                    </div>
+                    <div className="phone-bars">
+                      {[78, 44, 62].map((w, i) => (
+                        <div className="phone-stat" key={i}>
+                          <div><span /> <span /></div>
+                          <b style={{ width: `${w}%` }} />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="phone-card-grid">
+                      <span /><span /><span />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </nav>
-
-            {/* Hero text */}
-            <div className="hero-content">
-              <div className="hero-tag">
-                <span className="dot" /> WORLD CUP 2026
-              </div>
-              <h1 className="hero-title">
-                Pick the<br /><span className="hl">Momentum</span>
-              </h1>
-              <p className="hero-sub">
-                Deposit on who controls the half.<br />
-                More momentum points wins the pool.
-              </p>
-              <button className="hero-cta" onClick={handleEnter}>
-                Enter the Arena
-              </button>
-              <p className="hero-hint">Powered by X Layer &middot; 2% pool fee</p>
-            </div>
+            </section>
           </div>
 
           {/* ────────── HOW IT WORKS with stadium image ────────── */}
@@ -206,7 +206,7 @@ export default function Home() {
           </section>
 
           {/* ────────── MATCHES ────────── */}
-          <section className="section">
+          <section className="section" id="fixtures">
             <div className="section-inner">
               <div className="section-label">Schedule</div>
               <div className="section-title">World Cup 2026 Fixtures</div>
