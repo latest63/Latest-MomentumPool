@@ -185,10 +185,9 @@ body {
 
 .hero-wrap {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
   overflow: hidden;
   z-index: 2;
+  margin-bottom: 0;
 }
 
 /* Player images container */
@@ -279,13 +278,11 @@ body {
 .hero-content {
   position: relative;
   z-index: 3;
-  min-height: 80vh;
   display: flex; flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 var(--sp-4) var(--sp-10);
 }
 
 .hero-tag {
@@ -648,7 +645,6 @@ body {
   font-size: 11px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 1px;
   color: var(--bright-red);
-  animation: liveBlink 1.4s ease-in-out infinite;
 }
 
 .live-indicator::before {

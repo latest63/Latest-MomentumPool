@@ -1,9 +1,6 @@
-
-/* ═════════════════════ HERO SPLIT REAL PLAYER REDESIGN ═════════════════════ */
+/* ═════════════════════ HERO SPLIT — AFTER PLAYER IMAGES REMOVED ═════════════════════ */
 
 .split-hero {
-  min-height: 100vh;
-  min-height: 100dvh;
   background:
     radial-gradient(circle at 78% 30%, rgba(40, 193, 108, 0.16), transparent 30%),
     radial-gradient(circle at 62% 55%, rgba(36, 83, 190, 0.14), transparent 34%),
@@ -14,21 +11,15 @@
   position: relative;
   z-index: 3;
   max-width: 1240px;
-  min-height: calc(100vh - 88px);
   margin: 0 auto;
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: clamp(28px, 4vw, 72px);
+  padding: 24px 32px 0;
 }
 
 .hero-content-split {
-  flex: 0 0 48%;
-  min-height: auto !important;
   max-width: 590px;
   margin: 0;
-  padding: 0;
+  padding: 0 !important;
+  min-height: 0 !important;
 }
 
 .hero-content-split .hero-title {
@@ -36,113 +27,21 @@
   max-width: 620px;
 }
 
-.hero-player-panel {
-  flex: 1 1 52%;
-  position: relative;
-  min-height: 660px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  overflow: visible;
-}
-
-.hero-player-glow {
-  position: absolute;
-  width: min(560px, 48vw);
-  height: min(560px, 48vw);
-  border-radius: 999px;
-  background:
-    radial-gradient(circle, rgba(190,238,79,.22), transparent 58%),
-    radial-gradient(circle at 64% 32%, rgba(0,229,255,.16), transparent 48%);
-  filter: blur(36px);
-  right: 4%;
-  bottom: 82px;
-}
-
-.hero-player-panel::before {
-  content: '';
-  position: absolute;
-  right: 5%;
-  bottom: 64px;
-  width: min(430px, 38vw);
-  height: min(430px, 38vw);
-  border-radius: 50%;
-  border: 1px solid rgba(190,238,79,.16);
-  background: radial-gradient(circle, rgba(255,255,255,.055), transparent 66%);
-}
-
-.hero-player-real {
-  position: relative;
-  z-index: 2;
-  height: min(78vh, 760px);
-  max-width: 100%;
-  object-fit: contain;
-  object-position: bottom right;
-  filter:
-    saturate(1.14)
-    contrast(1.06)
-    drop-shadow(0 44px 72px rgba(0,0,0,.7))
-    drop-shadow(0 0 52px rgba(190,238,79,.16));
-}
-
-.hero-fade {
-  animation: heroCrossfade 1s ease;
-}
-
-@keyframes heroCrossfade {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-.hero-player-ground {
-  position: absolute;
-  z-index: 1;
-  right: 3%;
-  bottom: 8px;
-  width: min(520px, 44vw);
-  height: 92px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(190,238,79,.25), rgba(0,0,0,.22) 58%, transparent 72%);
-  filter: blur(10px);
-}
-
-@media (max-width: 980px) {
+@media (max-width: 768px) {
   .hero-split-inner {
     padding-inline: 22px;
-    gap: 18px;
+    padding-top: 20px;
   }
-  .hero-content-split { flex-basis: 52%; }
-  .hero-player-panel { flex-basis: 48%; min-height: 560px; }
-  .hero-player-real { height: min(64vh, 600px); }
-}
-
-@media (max-width: 760px) {
-  .hero-split-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: auto;
-    padding-top: var(--sp-8);
+  .hero-content-split .hero-title {
+    font-size: 48px;
   }
-  .hero-content-split {
-    flex: none;
-    align-items: flex-start;
-    text-align: left;
-    max-width: 680px;
-  }
-  .hero-player-panel {
-    width: 100%;
-    min-height: 430px;
-    justify-content: center;
-  }
-  .hero-player-real { height: 430px; object-position: bottom center; }
-  .hero-player-glow { right: auto; width: 420px; height: 420px; }
-  .hero-player-ground { right: auto; width: 82%; }
 }
 
 @media (max-width: 520px) {
-  .hero-split-inner { gap: var(--sp-4); padding-bottom: var(--sp-8); }
-  .hero-content-split .hero-title { font-size: 54px; }
-  .hero-player-panel { min-height: 380px; }
-  .hero-player-real { height: 390px; }
-  .hero-player-panel::before { width: 300px; height: 300px; right: 12%; bottom: 48px; }
+  .hero-split-inner {
+    padding-bottom: var(--sp-8);
+  }
+  .hero-content-split .hero-title {
+    font-size: 54px;
+  }
 }

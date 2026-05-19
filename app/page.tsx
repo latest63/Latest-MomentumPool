@@ -209,7 +209,7 @@ export default function Home() {
       {page === 'app' && (
         <div ref={appRef}>
           <div className="top-bar">
-            <div className="top-bar-brand">
+            <div className="top-bar-brand" style={{ cursor: 'pointer' }} onClick={() => setPage('landing')}>
               <img className="top-bar-logo" src="/assets/momentum-logo-transparent.png" alt="Momentum Pool" />
               <div className="top-bar-title">Momentum<span>Pool</span></div>
             </div>
