@@ -40,11 +40,6 @@ export default function Home() {
             <a href="/arena" className="hero-cta">
               Enter the Arena
             </a>
-            <div className="hero-hint powered-by-badge-row">
-              <span>Powered by X Layer</span>
-              <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge" />
-              <span>&middot; 2% pool fee</span>
-            </div>
           </div>
 
           {/* ────────── Momentum Emblem ────────── */}
@@ -86,6 +81,13 @@ export default function Home() {
               </div>
             </div>
             <div className="emblem-platform" />
+          </div>
+
+          {/* ────────── Powered by Badge ────────── */}
+          <div className="hero-hint powered-by-badge-row">
+            <span>Powered by X Layer</span>
+            <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge" />
+            <span>&middot; 2% pool fee</span>
           </div>
         </div>
 
