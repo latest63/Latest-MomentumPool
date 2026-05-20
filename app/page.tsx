@@ -70,7 +70,7 @@ export default function Home() {
           <div className="section-desc">Pick your side, watch the momentum shift, and win the pool at half-time.</div>
           <div className="features-grid">
             <div className="feature-card">
-              <img src="/assets/feature-pick-side.jpg" alt="Pick a side" className="feature-img" />
+              <img src="/assets/feature-pick-side-v2.jpg" alt="Pick a side" className="feature-img" />
               <h3>Pick a Side</h3>
               <p>Deposit into Team A or B before the half starts. Your pick, your call.</p>
             </div>
