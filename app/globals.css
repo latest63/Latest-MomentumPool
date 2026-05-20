@@ -569,8 +569,8 @@ body {
 }
 
 .brand-xlayer {
-  width: 20px;
-  height: 20px;
+  width: auto;
+  height: 22px;
   object-fit: contain;
   flex: 0 0 auto;
   border-radius: 0;
@@ -597,7 +597,7 @@ body {
     height: 14px;
   }
   .brand-xlayer {
-    width: 16px;
+    width: auto;
     height: 16px;
   }
 }
