@@ -516,8 +516,8 @@
     font-size: 9px;
     gap: 4px;
     grid-column: 1 / -1;
-    width: 100%;
-    max-width: 460px;
+    width: calc(100% + 44px);
+    margin-left: -22px;
     min-height: 42px;
     padding: 6px 8px;
     justify-content: space-between;
@@ -579,7 +579,7 @@
   .hero-title { font-size: clamp(27px, 9.8vw, 38px) !important; }
   .hero-title .hl { font-size: clamp(30px, 11vw, 43px) !important; }
   .hero-sub { font-size: 11px; max-width: 185px; }
-  .hero-hint { grid-column: 1 / -1; width: 100%; max-width: 340px; font-size: 8px; gap: 3px; padding-inline: 6px; }
+  .hero-hint { grid-column: 1 / -1; width: calc(100% + 24px); margin-left: -12px; font-size: 8px; gap: 3px; padding-inline: 6px; }
   .xlayer-powered-badge { width: 18px; height: 18px; }
   .hero-cta { font-size: 12px !important; padding: 9px 14px !important; }
   .hero-emblem-panel { min-height: 190px; transform: translateX(10px); }

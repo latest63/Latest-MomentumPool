@@ -748,9 +748,9 @@ body {
   flex-wrap: nowrap;
   grid-column: 1 / -1;
   width: 100%;
-  max-width: 820px;
   min-height: 52px;
   padding: 8px 14px;
+  margin: 0 -32px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(12px);
