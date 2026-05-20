@@ -175,6 +175,7 @@ body {
 .top-bar-brand { display: flex; align-items: center; gap: var(--sp-3); cursor: pointer; background: none; border: none; padding: 0; font: inherit; color: inherit; }
 .top-bar-logo { width: 42px; height: 42px; object-fit: contain; }
 .top-bar-title { font-family: var(--font-sports); font-size: 20px; letter-spacing: 1.5px; color: var(--text-primary); line-height: 1; }
+.momentum-outline { color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,0.85); text-stroke: 1.5px rgba(255,255,255,0.85); }
 .pool-colored span { font-size: inherit; }
 
 @media (max-width: 640px) { .top-bar-hosts { display: none; } }

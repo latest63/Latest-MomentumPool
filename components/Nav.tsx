@@ -32,7 +32,7 @@ export default function Nav() {
               alt="Momentum Pool"
             />
             <div className="top-bar-title">
-              Momentum
+              <span className="momentum-outline">Momentum</span>
               <span className="pool-colored">
                 {poolLetters.map((letter, i) => (
                   <span key={i} style={{ color: 'transparent', WebkitTextStroke: `1.5px ${COLORS[i]}` } as any}>
