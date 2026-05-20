@@ -104,18 +104,13 @@ export default function Home() {
       <div className="brand-bar">
         <div className="brand-bar-inner">
           <span className="brand-item brand-with-logo">
-            <img src="/assets/okx-ventures-logo.jpeg" alt="OKX Ventures" className="brand-xlayer" />
-            OKX Ventures
+            <img src="/assets/okx-wallet-logo.jpeg" alt="OKX Wallet" className="brand-xlayer" />
+            OKX Wallet
           </span>
           <span className="brand-divider" />
           <span className="brand-item brand-with-logo">
             <img src="/assets/x-layer-powered.jpeg" alt="X Layer" className="brand-xlayer" />
             X Layer
-          </span>
-          <span className="brand-divider" />
-          <span className="brand-item brand-with-logo">
-            <img src="/assets/okx-wallet-logo.jpeg" alt="OKX Wallet" className="brand-xlayer" />
-            OKX Wallet
           </span>
           <span className="brand-divider" />
           <span className="brand-item brand-with-logo">
@@ -126,6 +121,11 @@ export default function Home() {
           <span className="brand-item brand-with-logo">
             <img src="/assets/okx-exchange-logo.jpeg" alt="OKX Exchange" className="brand-xlayer" />
             OKX Exchange
+          </span>
+          <span className="brand-divider" />
+          <span className="brand-item brand-with-logo">
+            <img src="/assets/okx-ventures-logo.jpeg" alt="OKX Ventures" className="brand-xlayer" />
+            OKX Ventures
           </span>
         </div>
       </div>
