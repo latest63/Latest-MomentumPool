@@ -513,9 +513,13 @@
 
   .hero-hint {
     margin-top: 12px;
-    font-size: 10px;
-    gap: 6px;
-    flex-wrap: wrap;
+    font-size: 9px;
+    gap: 4px;
+    width: min(100%, 205px);
+    min-height: 42px;
+    padding: 6px 8px;
+    justify-content: space-between;
+    flex-wrap: nowrap;
   }
 
   .xlayer-powered-badge {
@@ -573,6 +577,8 @@
   .hero-title { font-size: clamp(27px, 9.8vw, 38px) !important; }
   .hero-title .hl { font-size: clamp(30px, 11vw, 43px) !important; }
   .hero-sub { font-size: 11px; max-width: 185px; }
+  .hero-hint { width: min(100%, 188px); font-size: 8px; gap: 3px; padding-inline: 6px; }
+  .xlayer-powered-badge { width: 18px; height: 18px; }
   .hero-cta { font-size: 12px !important; padding: 9px 14px !important; }
   .hero-emblem-panel { min-height: 190px; transform: translateX(10px); }
   .emblem { width: clamp(110px, 38vw, 156px); height: clamp(110px, 38vw, 156px); }

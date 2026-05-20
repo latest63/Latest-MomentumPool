@@ -739,10 +739,23 @@ body {
 }
 
 .powered-by-badge-row {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap;
+  width: min(100%, 460px);
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-round);
+  background: rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.powered-by-badge-row span {
+  white-space: nowrap;
 }
 
 .xlayer-powered-badge {
@@ -750,6 +763,7 @@ body {
   height: 34px;
   object-fit: contain;
   border-radius: 8px;
+  flex: 0 0 auto;
 }
 
 .footer-powered-img {
