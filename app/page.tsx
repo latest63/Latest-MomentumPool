@@ -30,8 +30,8 @@ export default function Home() {
               <span className="dot" /> WORLD CUP 2026
             </div>
             <h1 className="hero-title">
-              Pick the<br />
-              <span className="hl">Momentum</span>
+              PICK THE<br />
+              <span className="hl">MOMENTUM</span>
             </h1>
             <p className="hero-sub">
               Deposit on who controls the half.<br />
@@ -47,10 +47,31 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="hero-player-panel">
-            <div className="hero-player-glow" />
-            <img src="/assets/hero-image.jpg" alt="Football player" className="hero-player-real" />
-            <div className="hero-player-ground" />
+          {/* ────────── Momentum Emblem ────────── */}
+          <div className="hero-emblem-panel">
+            <div className="emblem-glow-bg" />
+            <div className="emblem">
+              <div className="emblem-frame emblem-frame-1" />
+              <div className="emblem-frame emblem-frame-2" />
+              <div className="emblem-frame emblem-frame-3" />
+              <div className="emblem-inner">
+                <div className="emblem-pitch">
+                  <div className="pitch-center-circle" />
+                  <div className="pitch-center-line" />
+                  <div className="pitch-penalty pitch-penalty-top" />
+                  <div className="pitch-penalty pitch-penalty-bot" />
+                </div>
+                <div className="emblem-momentum-text">M</div>
+                <div className="emblem-arc emblem-arc-1" />
+                <div className="emblem-arc emblem-arc-2" />
+                <div className="emblem-dots">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="emblem-dot" style={{ '--i': i } as any} />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="emblem-platform" />
           </div>
         </div>
 

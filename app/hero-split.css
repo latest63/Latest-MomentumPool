@@ -20,82 +20,252 @@
   min-height: 0 !important;
 }
 
-.hero-content-split .hero-title {
-  font-size: clamp(64px, 8vw, 116px);
-  max-width: 620px;
+.hero-title {
+  font-size: clamp(56px, 10vw, 90px) !important;
+  line-height: 0.95 !important;
 }
 
-/* ────────── Player Panel ────────── */
+.hero-title .hl {
+  font-size: clamp(64px, 12vw, 110px) !important;
+}
 
-.hero-player-panel {
+/* ═════════════════════ MOMENTUM EMBLEM ═════════════════════ */
+
+.hero-emblem-panel {
   flex: 1 1 52%;
   position: relative;
   min-height: 560px;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
   overflow: visible;
 }
 
-.hero-player-glow {
+/* Glowing background behind emblem */
+.emblem-glow-bg {
   position: absolute;
-  width: min(500px, 44vw);
-  height: min(500px, 44vw);
-  border-radius: 999px;
-  background:
-    radial-gradient(circle, rgba(190,238,79,.2), transparent 58%),
-    radial-gradient(circle at 64% 32%, rgba(0,229,255,.14), transparent 48%);
-  filter: blur(36px);
-  right: 4%;
-  bottom: 72px;
-  pointer-events: none;
-}
-
-.hero-player-panel::before {
-  content: '';
-  position: absolute;
-  right: 5%;
-  bottom: 54px;
-  width: min(380px, 34vw);
-  height: min(380px, 34vw);
+  width: min(520px, 46vw);
+  height: min(520px, 46vw);
   border-radius: 50%;
-  border: 1px solid rgba(190,238,79,.14);
-  background: radial-gradient(circle, rgba(255,255,255,.045), transparent 66%);
+  background:
+    radial-gradient(circle at 40% 35%, rgba(0, 229, 255, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 60% 65%, rgba(40, 193, 108, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(190, 238, 79, 0.06) 0%, transparent 50%);
+  filter: blur(50px);
+  animation: emblem-pulse 4s ease-in-out infinite;
   pointer-events: none;
 }
 
-.hero-player-real {
+/* Glowing platform under the emblem */
+.emblem-platform {
+  position: absolute;
+  bottom: 8%;
+  width: min(400px, 38vw);
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 229, 255, 0.2), rgba(40, 193, 108, 0.1) 50%, transparent 70%);
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+/* The emblem itself */
+.emblem {
   position: relative;
   z-index: 2;
-  height: min(72vh, 680px);
-  max-width: 100%;
-  object-fit: contain;
-  object-position: bottom right;
-  filter:
-    saturate(1.1)
-    contrast(1.04)
-    drop-shadow(0 40px 64px rgba(0,0,0,.7))
-    drop-shadow(0 0 48px rgba(190,238,79,.12));
+  width: min(400px, 38vw);
+  height: min(400px, 38vw);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.hero-player-ground {
+/* Neon frames */
+.emblem-frame {
   position: absolute;
-  z-index: 1;
-  right: 3%;
-  bottom: 8px;
-  width: min(460px, 40vw);
-  height: 80px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(190,238,79,.22), rgba(0,0,0,.2) 58%, transparent 72%);
-  filter: blur(10px);
+  inset: 0;
+  border-radius: 24px;
   pointer-events: none;
 }
+
+.emblem-frame-1 {
+  border: 2.5px solid rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05);
+  transform: scale(1);
+}
+
+.emblem-frame-2 {
+  border: 2px solid rgba(40, 193, 108, 0.4);
+  box-shadow: 0 0 16px rgba(40, 193, 108, 0.12), inset 0 0 16px rgba(40, 193, 108, 0.04);
+  transform: scale(0.92);
+  border-radius: 20px;
+}
+
+.emblem-frame-3 {
+  border: 1.5px solid rgba(190, 238, 79, 0.35);
+  box-shadow: 0 0 12px rgba(190, 238, 79, 0.1), inset 0 0 12px rgba(190, 238, 79, 0.03);
+  transform: scale(0.84);
+  border-radius: 16px;
+}
+
+/* Inner content area */
+.emblem-inner {
+  position: relative;
+  z-index: 3;
+  width: 72%;
+  height: 72%;
+  border-radius: 14px;
+  background: rgba(5, 5, 16, 0.6);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Football pitch lines inside */
+.emblem-pitch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pitch-center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 38%;
+  height: 50%;
+  border: 1.5px solid rgba(0, 229, 255, 0.25);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pitch-center-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 229, 255, 0.2);
+  transform: translateY(-50%);
+}
+
+.pitch-penalty {
+  position: absolute;
+  left: 50%;
+  width: 30%;
+  height: 16%;
+  border: 1.5px solid rgba(0, 229, 255, 0.2);
+  transform: translateX(-50%);
+}
+
+.pitch-penalty-top {
+  top: 6%;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+}
+
+.pitch-penalty-bot {
+  bottom: 6%;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+}
+
+/* M letter in the center */
+.emblem-momentum-text {
+  position: relative;
+  z-index: 4;
+  font-family: var(--font-sports);
+  font-size: clamp(72px, 12vw, 96px);
+  font-weight: 700;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, var(--cyan), var(--neon-green), var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.3));
+  line-height: 1;
+}
+
+/* Orbiting arcs */
+.emblem-arc {
+  position: absolute;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.emblem-arc-1 {
+  width: 90%;
+  height: 50%;
+  top: 25%;
+  left: 5%;
+  border-top-color: rgba(0, 229, 255, 0.15);
+  border-right-color: rgba(40, 193, 108, 0.15);
+  animation: emblem-rotate 12s linear infinite;
+}
+
+.emblem-arc-2 {
+  width: 75%;
+  height: 40%;
+  bottom: 30%;
+  right: 8%;
+  border-bottom-color: rgba(190, 238, 79, 0.12);
+  border-left-color: rgba(0, 229, 255, 0.12);
+  animation: emblem-rotate-reverse 15s linear infinite;
+}
+
+/* Orbiting dots */
+.emblem-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.emblem-dot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: emblem-rotate 8s linear infinite;
+  animation-delay: calc(var(--i) * -1.3s);
+  transform-origin: 50% 50%;
+}
+
+.emblem-dot:nth-child(1) { top: 8%; left: 50%; }
+.emblem-dot:nth-child(2) { top: 50%; right: 8%; }
+.emblem-dot:nth-child(3) { bottom: 8%; left: 50%; }
+.emblem-dot:nth-child(4) { top: 50%; left: 8%; }
+.emblem-dot:nth-child(5) { top: 18%; right: 22%; }
+.emblem-dot:nth-child(6) { bottom: 18%; left: 22%; }
+
+/* Animations */
+@keyframes emblem-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes emblem-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes emblem-rotate-reverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* ═══════════════════ Responsive ═══════════════════ */
 
 @media (max-width: 980px) {
   .hero-split-inner { padding-inline: 22px; gap: 18px; }
   .hero-content-split { flex-basis: 52%; }
-  .hero-player-panel { flex-basis: 48%; min-height: 480px; }
-  .hero-player-real { height: min(58vh, 540px); }
+  .hero-emblem-panel { flex-basis: 48%; min-height: 460px; }
+  .emblem { width: min(320px, 36vw); height: min(320px, 36vw); }
+  .emblem-glow-bg { width: min(400px, 40vw); height: min(400px, 40vw); }
+  .emblem-platform { width: min(320px, 34vw); }
 }
 
 @media (max-width: 760px) {
@@ -110,26 +280,28 @@
     text-align: left;
     max-width: 680px;
   }
-  .hero-content-split .hero-title { font-size: 48px; }
-  .hero-player-panel {
+  .hero-title { font-size: 48px !important; }
+  .hero-title .hl { font-size: 54px !important; }
+  .hero-emblem-panel {
     width: 100%;
-    min-height: 380px;
-    justify-content: center;
+    min-height: 360px;
   }
-  .hero-player-real { height: 380px; object-position: bottom center; }
-  .hero-player-glow { right: auto; width: 360px; height: 360px; }
-  .hero-player-ground { right: auto; width: 82%; }
+  .emblem { width: 300px; height: 300px; }
+  .emblem-glow-bg { width: 360px; height: 360px; }
+  .emblem-platform { width: 280px; }
 }
 
 @media (max-width: 520px) {
   .hero-split-inner { gap: var(--sp-4); }
-  .hero-content-split .hero-title { font-size: 54px; }
-  .hero-player-panel { min-height: 320px; }
-  .hero-player-real { height: 340px; }
-  .hero-player-panel::before { width: 260px; height: 260px; right: 12%; bottom: 40px; }
+  .hero-title { font-size: 36px !important; }
+  .hero-title .hl { font-size: 42px !important; }
+  .hero-emblem-panel { min-height: 280px; }
+  .emblem { width: 240px; height: 240px; }
+  .emblem-glow-bg { width: 300px; height: 300px; }
+  .emblem-platform { width: 220px; height: 50px; }
 }
 
-/* ────────── Introduction content on hero background ────────── */
+/* ═══════════════════ Introduction ═══════════════════ */
 
 .hero-intro {
   position: relative;
