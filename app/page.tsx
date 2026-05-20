@@ -75,7 +75,7 @@ export default function Home() {
               <p>Deposit into Team A or B before the half starts. Your pick, your call.</p>
             </div>
             <div className="feature-card">
-              <img src="/assets/feature-live-momentum.jpg" alt="Football on pitch with stadium lights" className="feature-img" />
+              <img src="/assets/feature-live-momentum-v2.jpg" alt="Live Momentum" className="feature-img" />
               <h3>Live Momentum</h3>
               <p>Goals, shots, cards, corners — every event updates the momentum bar in real time.</p>
             </div>
