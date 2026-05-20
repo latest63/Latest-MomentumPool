@@ -123,7 +123,7 @@ export default function Home() {
               <p>Goals, shots, cards, corners — every event updates the momentum bar in real time.</p>
             </div>
             <div className="feature-card">
-              <img src="/assets/feature-win-pool.jpg" alt="Fans celebrating a win with confetti" className="feature-img" />
+              <img src="/assets/feature-win-pool-v2.jpg" alt="Fans celebrating a win with confetti" className="feature-img" />
               <h3>Win the Pool</h3>
               <p>Winners split the losers&apos; pool. All settled on-chain at half-time.</p>
             </div>
