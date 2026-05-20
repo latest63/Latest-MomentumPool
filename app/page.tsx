@@ -2,8 +2,6 @@
 
 import Nav from '@/components/Nav';
 
-const MOMENTUM_COLORS = ['#2453BE', '#28C16C', '#E61A0A', '#FF4702', '#BEEE4F', '#00E5FF', '#2453BE', '#28C16C'];
-
 const FALLBACK = [
   { id: 'usa-canada', home: 'USA', away: 'Canada', venue: 'SoFi Stadium' },
   { id: 'brazil-nigeria', home: 'Brazil', away: 'Nigeria', venue: 'Estadio Azteca' },
@@ -33,11 +31,7 @@ export default function Home() {
             </div>
             <h1 className="hero-title">
               Pick the<br />
-              <span className="hl">
-                {'Momentum'.split('').map((letter, i) => (
-                  <span key={i} style={{ color: MOMENTUM_COLORS[i] }}>{letter}</span>
-                ))}
-              </span>
+              <span className="hl">Momentum</span>
             </h1>
             <p className="hero-sub">
               Deposit on who controls the half.<br />

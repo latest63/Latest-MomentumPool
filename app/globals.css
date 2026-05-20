@@ -333,10 +333,6 @@ body {
   color: var(--text-primary);
 }
 
-/* ═════════════════════ MOMENTUM LETTER COLORS ═════════════════════ */
-
-.hero-title .hl span { display: inline-block; }
-
 /* ═════════════════════ HERO — PLAYER ROTATION ═════════════════════ */
 
 .hero-wrap {
@@ -475,7 +471,14 @@ body {
 }
 
 .hero-title .hl {
-  background: linear-gradient(135deg, var(--yellow), var(--cyan));
+  background: linear-gradient(90deg,
+    var(--electric-blue) 0%,
+    var(--neon-green) 17%,
+    var(--bright-red) 33%,
+    var(--orange) 50%,
+    var(--yellow) 67%,
+    var(--cyan) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
