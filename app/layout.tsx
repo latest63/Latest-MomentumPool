@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://latest-momentum-pool.vercel.app'),
   title: 'Momentum Pool — World Cup 2026 on X Layer',
-  description: 'Pick the team. Control the half. Own the momentum. A World Cup 2026 momentum-based prediction pool on X Layer.',
+  description: 'Pick the team. Control the half. Own the momentum. A World Cup 2026 momentum-based pool on X Layer.',
   openGraph: {
     title: 'Momentum Pool',
     description: 'Pick the team. Control the half. Own the momentum.',
@@ -49,7 +49,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${bebasNeue.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {/* Unified background — same across all pages */}
+        <div className="color-bg">
+          <div className="bg-blob bg-blob-1" /><div className="bg-blob bg-blob-2" />
+          <div className="bg-blob bg-blob-3" /><div className="bg-blob bg-blob-4" />
+          <div className="bg-blob bg-blob-5" /><div className="bg-blob bg-blob-6" />
+        </div>
+        <main className="app-shell">{children}</main>
+      </body>
     </html>
   );
 }
