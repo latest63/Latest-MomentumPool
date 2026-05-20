@@ -177,14 +177,14 @@
   z-index: 4;
   font-family: var(--font-sports);
   font-size: clamp(72px, 12vw, 96px);
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: -2px;
-  background: linear-gradient(135deg, var(--cyan), var(--neon-green), var(--yellow));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.3));
+  color: transparent;
+  -webkit-text-stroke: 4px white;
+  text-stroke: 4px white;
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.3));
   line-height: 1;
+  text-transform: uppercase;
 }
 
 /* Orbiting arcs */
