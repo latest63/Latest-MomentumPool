@@ -160,24 +160,21 @@
   position: absolute;
   top: 78%;
   left: 50%;
-  transform: translateX(-50%) translateY(-6%);
+  transform: translateX(-50%) rotateX(8deg) rotateY(-10deg);
   width: min(460px, 42vw);
   height: 120px;
   border-radius: 50%;
-  /* Visible disk surface + spotlight + outer glow */
+  /* Top surface — dark glass with spotlight */
   background:
-    /* Spotlight highlight (bright center-top) */
-    radial-gradient(ellipse at 50% 30%, rgba(0, 229, 255, 0.35) 0%, transparent 40%),
-    /* Surface gradient — dark glass disk */
-    radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 30%, rgba(0,0,0,0.35) 80%, rgba(0,0,0,0.6) 100%);
-  /* Edge definition */
-  border: 1px solid rgba(0, 229, 255, 0.08);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  /* Shadow below platform + glow around */
+    radial-gradient(ellipse at 50% 30%, rgba(0, 229, 255, 0.3) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 38%, rgba(255,255,255,0.04) 0%, transparent 30%, rgba(0,0,0,0.3) 80%, rgba(0,0,0,0.5) 100%);
+  /* 3D side wall + shadow + glow */
   box-shadow:
-    0 40px 80px -10px rgba(0, 0, 0, 0.7),
-    0 0 40px rgba(0, 229, 255, 0.12),
-    0 0 100px rgba(40, 193, 108, 0.06);
+    0 14px 0 rgba(0, 0, 0, 0.5),                /* side thickness */
+    0 28px 40px -8px rgba(0, 0, 0, 0.6),         /* drop shadow */
+    0 0 50px rgba(0, 229, 255, 0.1),              /* outer glow */
+    0 0 100px rgba(40, 193, 108, 0.05);            /* green outer glow */
+  border: 1px solid rgba(0, 229, 255, 0.06);
   pointer-events: none;
   z-index: 1;
 }
