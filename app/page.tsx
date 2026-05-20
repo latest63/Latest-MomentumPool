@@ -49,6 +49,16 @@ export default function Home() {
 
           {/* ────────── Momentum Emblem ────────── */}
           <div className="hero-emblem-panel">
+            <div className="emblem-stadium-light light-left" />
+            <div className="emblem-stadium-light light-right" />
+            <div className="emblem-rainbow-arc arc-a" />
+            <div className="emblem-rainbow-arc arc-b" />
+            <div className="emblem-rainbow-arc arc-c" />
+            <div className="emblem-particles" aria-hidden="true">
+              {[...Array(14)].map((_, i) => (
+                <span key={i} style={{ '--p': i } as any} />
+              ))}
+            </div>
             <div className="emblem-glow-bg" />
             <div className="emblem">
               <div className="emblem-frame emblem-frame-1" />

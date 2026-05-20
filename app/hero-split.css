@@ -1,11 +1,43 @@
-/* ═════════════════════ HERO SPLIT ═════════════════════ */
+/* ═════════════════════ HERO SPLIT — GPT‑5.5 PREMIUM REINJECTION ═════════════════════ */
+
+.hero-wrap.split-hero {
+  min-height: 92vh;
+  background:
+    radial-gradient(circle at 72% 35%, rgba(0, 229, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 84% 22%, rgba(190, 238, 79, 0.08), transparent 28%),
+    radial-gradient(circle at 18% 18%, rgba(36, 83, 190, 0.28), transparent 38%),
+    linear-gradient(135deg, rgba(2, 6, 22, 0.96) 0%, rgba(3, 3, 8, 0.98) 56%, rgba(1, 8, 18, 0.96) 100%);
+}
+
+.hero-wrap.split-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(255,255,255,0.045) 43%, transparent 45% 100%),
+    linear-gradient(75deg, transparent 0 55%, rgba(0,229,255,0.05) 56%, transparent 58% 100%);
+  opacity: 0.7;
+}
+
+.hero-wrap.split-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto -10% -36% -10%;
+  height: 42%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0,229,255,0.18), rgba(36,83,190,0.08) 42%, transparent 72%);
+  filter: blur(34px);
+}
 
 .hero-split-inner {
   position: relative;
   z-index: 3;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 32px 0;
+  padding: clamp(28px, 4vw, 54px) 32px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,16 +49,42 @@
   max-width: 590px;
   margin: 0;
   padding: 0 !important;
-  min-height: 0 !important;
+  min-height: auto !important;
 }
 
 .hero-title {
-  font-size: clamp(56px, 10vw, 90px) !important;
-  line-height: 0.95 !important;
+  font-size: clamp(58px, 10vw, 96px) !important;
+  line-height: 0.88 !important;
+  letter-spacing: 4px !important;
+  text-shadow: 0 0 36px rgba(255,255,255,0.08);
 }
 
 .hero-title .hl {
-  font-size: clamp(64px, 12vw, 110px) !important;
+  font-size: clamp(70px, 12vw, 118px) !important;
+  background: linear-gradient(135deg,
+    var(--electric-blue) 0%,
+    var(--cyan) 18%,
+    var(--neon-green) 36%,
+    var(--yellow) 52%,
+    var(--orange) 68%,
+    var(--bright-red) 82%,
+    var(--cyan) 100%
+  ) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.18));
+}
+
+.hero-tag,
+.hero-hint {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 0 30px rgba(0,229,255,0.06);
+}
+
+.hero-cta {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.28) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 18px 60px rgba(0,0,0,0.32), 0 0 34px rgba(0,229,255,0.12);
 }
 
 /* ═════════════════════ MOMENTUM EMBLEM ═════════════════════ */
@@ -34,99 +92,185 @@
 .hero-emblem-panel {
   flex: 1 1 52%;
   position: relative;
-  min-height: 560px;
+  min-height: 580px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
+  perspective: 1200px;
 }
 
-/* Glowing background behind emblem */
+.emblem-stadium-light {
+  position: absolute;
+  top: 8%;
+  width: 220px;
+  height: 360px;
+  pointer-events: none;
+  filter: blur(18px);
+  opacity: 0.22;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(0,229,255,0.22) 32%, transparent 74%);
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+}
+
+.light-left { left: 4%; transform: rotate(-24deg); }
+.light-right { right: 0; transform: rotate(24deg); }
+
+.emblem-rainbow-arc {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2px solid transparent;
+  filter: blur(0.2px) drop-shadow(0 0 18px rgba(0,229,255,0.16));
+}
+
+.arc-a {
+  width: min(620px, 54vw);
+  height: min(380px, 34vw);
+  border-top-color: rgba(0,229,255,0.32);
+  border-right-color: rgba(40,193,108,0.26);
+  transform: rotate(-18deg);
+  animation: arc-drift 7s ease-in-out infinite;
+}
+
+.arc-b {
+  width: min(540px, 48vw);
+  height: min(300px, 28vw);
+  border-left-color: rgba(190,238,79,0.24);
+  border-bottom-color: rgba(255,71,2,0.24);
+  transform: rotate(18deg);
+  animation: arc-drift 8s ease-in-out infinite reverse;
+}
+
+.arc-c {
+  width: min(450px, 40vw);
+  height: min(230px, 22vw);
+  border-top-color: rgba(230,26,10,0.18);
+  border-left-color: rgba(36,83,190,0.25);
+  transform: rotate(42deg);
+  opacity: 0.75;
+}
+
+.emblem-particles {
+  position: absolute;
+  inset: 6%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.emblem-particles span {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 0 10px rgba(0,229,255,0.8);
+  left: calc((var(--p) * 17%) % 92%);
+  top: calc((var(--p) * 29%) % 88%);
+  opacity: 0.28;
+  animation: particle-twinkle 3s ease-in-out infinite;
+  animation-delay: calc(var(--p) * -0.22s);
+}
+
 .emblem-glow-bg {
   position: absolute;
-  width: min(520px, 46vw);
-  height: min(520px, 46vw);
+  width: min(560px, 48vw);
+  height: min(560px, 48vw);
   border-radius: 50%;
   background:
-    radial-gradient(circle at 40% 35%, rgba(0, 229, 255, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 60% 65%, rgba(40, 193, 108, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(190, 238, 79, 0.06) 0%, transparent 50%);
-  filter: blur(50px);
+    radial-gradient(circle at 42% 34%, rgba(0, 229, 255, 0.22) 0%, transparent 48%),
+    radial-gradient(circle at 62% 65%, rgba(40, 193, 108, 0.16) 0%, transparent 48%),
+    radial-gradient(circle at 50% 50%, rgba(190, 238, 79, 0.08) 0%, transparent 52%);
+  filter: blur(46px);
   animation: emblem-pulse 4s ease-in-out infinite;
   pointer-events: none;
 }
 
-/* Glowing platform under the emblem */
 .emblem-platform {
   position: absolute;
-  bottom: 8%;
-  width: min(400px, 38vw);
-  height: 70px;
+  bottom: 7%;
+  width: min(460px, 42vw);
+  height: 86px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(0, 229, 255, 0.2), rgba(40, 193, 108, 0.1) 50%, transparent 70%);
-  filter: blur(16px);
+  background:
+    radial-gradient(ellipse at center, rgba(255,255,255,0.16), transparent 28%),
+    radial-gradient(ellipse at center, rgba(0, 229, 255, 0.34), rgba(40, 193, 108, 0.13) 48%, transparent 72%);
+  filter: blur(13px);
   pointer-events: none;
 }
 
-/* The emblem itself */
 .emblem {
   position: relative;
   z-index: 2;
-  width: min(400px, 38vw);
-  height: min(400px, 38vw);
+  width: min(420px, 38vw);
+  height: min(420px, 38vw);
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: rotateX(8deg) rotateY(-10deg);
+  filter: drop-shadow(0 28px 70px rgba(0,0,0,0.52));
 }
 
-/* Neon frames */
 .emblem-frame {
   position: absolute;
   inset: 0;
-  border-radius: 24px;
+  border-radius: 30px;
   pointer-events: none;
+  background: linear-gradient(145deg, rgba(255,255,255,0.11), rgba(255,255,255,0.01));
 }
 
 .emblem-frame-1 {
-  border: 2.5px solid rgba(0, 229, 255, 0.5);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), inset 0 0 20px rgba(0, 229, 255, 0.05);
-  transform: scale(1);
+  border: 3px solid rgba(0, 229, 255, 0.58);
+  box-shadow: 0 0 28px rgba(0, 229, 255, 0.24), inset 0 0 30px rgba(0, 229, 255, 0.08), inset 0 1px 0 rgba(255,255,255,0.22);
+  transform: scale(1) translateZ(28px);
 }
 
 .emblem-frame-2 {
-  border: 2px solid rgba(40, 193, 108, 0.4);
-  box-shadow: 0 0 16px rgba(40, 193, 108, 0.12), inset 0 0 16px rgba(40, 193, 108, 0.04);
-  transform: scale(0.92);
-  border-radius: 20px;
+  border: 2.5px solid rgba(40, 193, 108, 0.48);
+  box-shadow: 0 0 24px rgba(40, 193, 108, 0.18), inset 0 0 24px rgba(40, 193, 108, 0.05);
+  transform: scale(0.91) translateZ(16px);
+  border-radius: 24px;
 }
 
 .emblem-frame-3 {
-  border: 1.5px solid rgba(190, 238, 79, 0.35);
-  box-shadow: 0 0 12px rgba(190, 238, 79, 0.1), inset 0 0 12px rgba(190, 238, 79, 0.03);
-  transform: scale(0.84);
-  border-radius: 16px;
+  border: 2px solid rgba(190, 238, 79, 0.4);
+  box-shadow: 0 0 18px rgba(190, 238, 79, 0.15), inset 0 0 20px rgba(190, 238, 79, 0.04);
+  transform: scale(0.82) translateZ(8px);
+  border-radius: 18px;
 }
 
-/* Inner content area */
 .emblem-inner {
   position: relative;
   z-index: 3;
   width: 72%;
   height: 72%;
-  border-radius: 14px;
-  background: rgba(5, 5, 16, 0.6);
-  backdrop-filter: blur(4px);
+  border-radius: 20px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.01)),
+    radial-gradient(circle at 30% 12%, rgba(0,229,255,0.16), transparent 42%),
+    rgba(3, 6, 18, 0.76);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -24px 60px rgba(0,0,0,0.38);
 }
 
-/* Football pitch lines inside */
+.emblem-inner::before {
+  content: '';
+  position: absolute;
+  inset: -30% -10% auto -10%;
+  height: 48%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: rotate(-12deg);
+}
+
 .emblem-pitch {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  opacity: 0.9;
 }
 
 .pitch-center-circle {
@@ -135,7 +279,7 @@
   left: 50%;
   width: 38%;
   height: 50%;
-  border: 1.5px solid rgba(0, 229, 255, 0.25);
+  border: 1.5px solid rgba(0, 229, 255, 0.34);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
@@ -146,7 +290,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: rgba(0, 229, 255, 0.2);
+  background: rgba(0, 229, 255, 0.3);
   transform: translateY(-50%);
 }
 
@@ -155,7 +299,7 @@
   left: 50%;
   width: 30%;
   height: 16%;
-  border: 1.5px solid rgba(0, 229, 255, 0.2);
+  border: 1.5px solid rgba(0, 229, 255, 0.28);
   transform: translateX(-50%);
 }
 
@@ -171,23 +315,21 @@
   border-radius: 0 0 4px 4px;
 }
 
-/* M letter in the center */
 .emblem-momentum-text {
   position: relative;
   z-index: 4;
   font-family: var(--font-sports);
-  font-size: clamp(72px, 12vw, 96px);
+  font-size: clamp(76px, 12vw, 104px);
   font-weight: 900;
   letter-spacing: -2px;
   color: transparent;
   -webkit-text-stroke: 4px white;
   text-stroke: 4px white;
-  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.36)) drop-shadow(0 0 28px rgba(0,229,255,0.22));
   line-height: 1;
   text-transform: uppercase;
 }
 
-/* Orbiting arcs */
 .emblem-arc {
   position: absolute;
   border: 1px solid transparent;
@@ -200,8 +342,8 @@
   height: 50%;
   top: 25%;
   left: 5%;
-  border-top-color: rgba(0, 229, 255, 0.15);
-  border-right-color: rgba(40, 193, 108, 0.15);
+  border-top-color: rgba(0, 229, 255, 0.2);
+  border-right-color: rgba(40, 193, 108, 0.2);
   animation: emblem-rotate 12s linear infinite;
 }
 
@@ -210,12 +352,11 @@
   height: 40%;
   bottom: 30%;
   right: 8%;
-  border-bottom-color: rgba(190, 238, 79, 0.12);
-  border-left-color: rgba(0, 229, 255, 0.12);
+  border-bottom-color: rgba(190, 238, 79, 0.16);
+  border-left-color: rgba(0, 229, 255, 0.16);
   animation: emblem-rotate-reverse 15s linear infinite;
 }
 
-/* Orbiting dots */
 .emblem-dots {
   position: absolute;
   inset: 0;
@@ -241,10 +382,9 @@
 .emblem-dot:nth-child(5) { top: 18%; right: 22%; }
 .emblem-dot:nth-child(6) { bottom: 18%; left: 22%; }
 
-/* Animations */
 @keyframes emblem-pulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%, 100% { opacity: 0.62; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
 }
 
 @keyframes emblem-rotate {
@@ -255,6 +395,16 @@
 @keyframes emblem-rotate-reverse {
   from { transform: rotate(0deg); }
   to { transform: rotate(-360deg); }
+}
+
+@keyframes arc-drift {
+  0%, 100% { opacity: 0.62; translate: 0 0; }
+  50% { opacity: 1; translate: 0 -10px; }
+}
+
+@keyframes particle-twinkle {
+  0%, 100% { opacity: 0.12; transform: scale(0.8); }
+  50% { opacity: 0.75; transform: scale(1.45); }
 }
 
 /* ═══════════════════ Responsive ═══════════════════ */
@@ -289,6 +439,7 @@
   .emblem { width: 300px; height: 300px; }
   .emblem-glow-bg { width: 360px; height: 360px; }
   .emblem-platform { width: 280px; }
+  .emblem-rainbow-arc { transform: scale(0.75); }
 }
 
 @media (max-width: 520px) {
@@ -299,6 +450,7 @@
   .emblem { width: 240px; height: 240px; }
   .emblem-glow-bg { width: 300px; height: 300px; }
   .emblem-platform { width: 220px; height: 50px; }
+  .emblem-momentum-text { -webkit-text-stroke-width: 3px; text-stroke-width: 3px; }
 }
 
 /* ═══════════════════ Introduction ═══════════════════ */
