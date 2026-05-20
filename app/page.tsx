@@ -71,7 +71,11 @@ export default function Home() {
                   <div className="pitch-penalty pitch-penalty-top" />
                   <div className="pitch-penalty pitch-penalty-bot" />
                 </div>
-                <div className="emblem-momentum-text">M</div>
+                <div className="emblem-core-mark" aria-label="Momentum tracking core">
+                  <span className="core-ring core-ring-1" />
+                  <span className="core-ring core-ring-2" />
+                  <span className="core-pulse" />
+                </div>
                 <div className="emblem-arc emblem-arc-1" />
                 <div className="emblem-arc emblem-arc-2" />
                 <div className="emblem-dots">
