@@ -471,7 +471,7 @@ body {
 }
 
 .hero-title .hl {
-  background: linear-gradient(90deg,
+  background: linear-gradient(135deg,
     var(--electric-blue) 0%,
     var(--neon-green) 17%,
     var(--bright-red) 33%,
