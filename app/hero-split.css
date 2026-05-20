@@ -121,41 +121,6 @@
 .light-left { left: 4%; transform: rotate(-24deg); }
 .light-right { right: 0; transform: rotate(24deg); }
 
-.emblem-rainbow-arc {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  border: 2px solid transparent;
-  filter: blur(0.2px) drop-shadow(0 0 18px rgba(0,229,255,0.16));
-}
-
-.arc-a {
-  width: min(620px, 54vw);
-  height: min(380px, 34vw);
-  border-top-color: rgba(0,229,255,0.32);
-  border-right-color: rgba(40,193,108,0.26);
-  transform: rotate(-18deg);
-  animation: arc-drift 7s ease-in-out infinite;
-}
-
-.arc-b {
-  width: min(540px, 48vw);
-  height: min(300px, 28vw);
-  border-left-color: rgba(190,238,79,0.24);
-  border-bottom-color: rgba(255,71,2,0.24);
-  transform: rotate(18deg);
-  animation: arc-drift 8s ease-in-out infinite reverse;
-}
-
-.arc-c {
-  width: min(450px, 40vw);
-  height: min(230px, 22vw);
-  border-top-color: rgba(230,26,10,0.18);
-  border-left-color: rgba(36,83,190,0.25);
-  transform: rotate(42deg);
-  opacity: 0.75;
-}
-
 .emblem-particles {
   position: absolute;
   inset: 6%;
@@ -364,33 +329,6 @@
   animation: core-pulse 1.8s ease-in-out infinite;
 }
 
-.emblem-arc {
-  position: absolute;
-  border: 1px solid transparent;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.emblem-arc-1 {
-  width: 90%;
-  height: 50%;
-  top: 25%;
-  left: 5%;
-  border-top-color: rgba(0, 229, 255, 0.2);
-  border-right-color: rgba(40, 193, 108, 0.2);
-  animation: emblem-rotate 12s linear infinite;
-}
-
-.emblem-arc-2 {
-  width: 75%;
-  height: 40%;
-  bottom: 30%;
-  right: 8%;
-  border-bottom-color: rgba(190, 238, 79, 0.16);
-  border-left-color: rgba(0, 229, 255, 0.16);
-  animation: emblem-rotate-reverse 15s linear infinite;
-}
-
 .emblem-dots {
   position: absolute;
   inset: 0;
@@ -424,16 +362,6 @@
 @keyframes emblem-rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-@keyframes emblem-rotate-reverse {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(-360deg); }
-}
-
-@keyframes arc-drift {
-  0%, 100% { opacity: 0.62; translate: 0 0; }
-  50% { opacity: 1; translate: 0 -10px; }
 }
 
 @keyframes particle-twinkle {
@@ -556,11 +484,6 @@
   .emblem-core-mark {
     width: clamp(48px, 14vw, 82px);
     height: clamp(48px, 14vw, 82px);
-  }
-
-  .emblem-rainbow-arc {
-    transform: scale(0.48);
-    opacity: 0.65;
   }
 
   .emblem-stadium-light,

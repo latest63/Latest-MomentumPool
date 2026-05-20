@@ -46,9 +46,6 @@ export default function Home() {
           <div className="hero-emblem-panel">
             <div className="emblem-stadium-light light-left" />
             <div className="emblem-stadium-light light-right" />
-            <div className="emblem-rainbow-arc arc-a" />
-            <div className="emblem-rainbow-arc arc-b" />
-            <div className="emblem-rainbow-arc arc-c" />
             <div className="emblem-particles" aria-hidden="true">
               {[...Array(14)].map((_, i) => (
                 <span key={i} style={{ '--p': i } as any} />
@@ -71,8 +68,6 @@ export default function Home() {
                   <span className="core-ring core-ring-2" />
                   <span className="core-pulse" />
                 </div>
-                <div className="emblem-arc emblem-arc-1" />
-                <div className="emblem-arc emblem-arc-2" />
                 <div className="emblem-dots">
                   {[...Array(6)].map((_, i) => (
                     <div key={i} className="emblem-dot" style={{ '--i': i } as any} />
