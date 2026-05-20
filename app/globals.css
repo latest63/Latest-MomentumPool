@@ -744,12 +744,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: nowrap;
   grid-column: 1 / -1;
   width: 100%;
-  min-height: 52px;
-  padding: 8px 14px;
+  min-height: 38px;
+  padding: 4px 12px;
   margin: 0 -32px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(0, 0, 0, 0.34);
@@ -762,8 +762,8 @@ body {
 }
 
 .xlayer-powered-badge {
-  width: 118px;
-  height: 34px;
+  width: 82px;
+  height: 28px;
   object-fit: contain;
   flex: 0 0 auto;
 }

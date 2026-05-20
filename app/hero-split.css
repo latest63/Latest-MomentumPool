@@ -518,15 +518,15 @@
     grid-column: 1 / -1;
     width: calc(100% + 44px);
     margin-left: -22px;
-    min-height: 42px;
-    padding: 6px 8px;
+    min-height: 32px;
+    padding: 3px 8px;
     justify-content: space-between;
     flex-wrap: nowrap;
   }
 
   .xlayer-powered-badge {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
   }
 
   .hero-emblem-panel {
@@ -580,7 +580,7 @@
   .hero-title .hl { font-size: clamp(30px, 11vw, 43px) !important; }
   .hero-sub { font-size: 11px; max-width: 185px; }
   .hero-hint { grid-column: 1 / -1; width: calc(100% + 24px); margin-left: -12px; font-size: 8px; gap: 3px; padding-inline: 6px; }
-  .xlayer-powered-badge { width: 18px; height: 18px; }
+  .xlayer-powered-badge { width: 16px; height: 16px; }
   .hero-cta { font-size: 12px !important; padding: 9px 14px !important; }
   .hero-emblem-panel { min-height: 190px; transform: translateX(10px); }
   .emblem { width: clamp(110px, 38vw, 156px); height: clamp(110px, 38vw, 156px); }
