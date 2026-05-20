@@ -1,8 +1,4 @@
-/* ═════════════════════ HERO SPLIT — AFTER PLAYER IMAGES REMOVED ═════════════════════ */
-
-.split-hero {
-  /* No background — uses unified .color-bg behind it */
-}
+/* ═════════════════════ HERO SPLIT ═════════════════════ */
 
 .hero-split-inner {
   position: relative;
@@ -10,9 +6,14 @@
   max-width: 1240px;
   margin: 0 auto;
   padding: 24px 32px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(28px, 4vw, 72px);
 }
 
 .hero-content-split {
+  flex: 0 0 48%;
   max-width: 590px;
   margin: 0;
   padding: 0 !important;
@@ -24,32 +25,118 @@
   max-width: 620px;
 }
 
-@media (max-width: 768px) {
+/* ────────── Player Panel ────────── */
+
+.hero-player-panel {
+  flex: 1 1 52%;
+  position: relative;
+  min-height: 560px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  overflow: visible;
+}
+
+.hero-player-glow {
+  position: absolute;
+  width: min(500px, 44vw);
+  height: min(500px, 44vw);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(190,238,79,.2), transparent 58%),
+    radial-gradient(circle at 64% 32%, rgba(0,229,255,.14), transparent 48%);
+  filter: blur(36px);
+  right: 4%;
+  bottom: 72px;
+  pointer-events: none;
+}
+
+.hero-player-panel::before {
+  content: '';
+  position: absolute;
+  right: 5%;
+  bottom: 54px;
+  width: min(380px, 34vw);
+  height: min(380px, 34vw);
+  border-radius: 50%;
+  border: 1px solid rgba(190,238,79,.14);
+  background: radial-gradient(circle, rgba(255,255,255,.045), transparent 66%);
+  pointer-events: none;
+}
+
+.hero-player-real {
+  position: relative;
+  z-index: 2;
+  height: min(72vh, 680px);
+  max-width: 100%;
+  object-fit: contain;
+  object-position: bottom right;
+  filter:
+    saturate(1.1)
+    contrast(1.04)
+    drop-shadow(0 40px 64px rgba(0,0,0,.7))
+    drop-shadow(0 0 48px rgba(190,238,79,.12));
+}
+
+.hero-player-ground {
+  position: absolute;
+  z-index: 1;
+  right: 3%;
+  bottom: 8px;
+  width: min(460px, 40vw);
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(190,238,79,.22), rgba(0,0,0,.2) 58%, transparent 72%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+@media (max-width: 980px) {
+  .hero-split-inner { padding-inline: 22px; gap: 18px; }
+  .hero-content-split { flex-basis: 52%; }
+  .hero-player-panel { flex-basis: 48%; min-height: 480px; }
+  .hero-player-real { height: min(58vh, 540px); }
+}
+
+@media (max-width: 760px) {
   .hero-split-inner {
-    padding-inline: 22px;
-    padding-top: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: var(--sp-4);
   }
-  .hero-content-split .hero-title {
-    font-size: 48px;
+  .hero-content-split {
+    flex: none;
+    align-items: flex-start;
+    text-align: left;
+    max-width: 680px;
   }
+  .hero-content-split .hero-title { font-size: 48px; }
+  .hero-player-panel {
+    width: 100%;
+    min-height: 380px;
+    justify-content: center;
+  }
+  .hero-player-real { height: 380px; object-position: bottom center; }
+  .hero-player-glow { right: auto; width: 360px; height: 360px; }
+  .hero-player-ground { right: auto; width: 82%; }
 }
 
 @media (max-width: 520px) {
-  .hero-split-inner {
-    padding-bottom: var(--sp-8);
-  }
-  .hero-content-split .hero-title {
-    font-size: 54px;
-  }
+  .hero-split-inner { gap: var(--sp-4); }
+  .hero-content-split .hero-title { font-size: 54px; }
+  .hero-player-panel { min-height: 320px; }
+  .hero-player-real { height: 340px; }
+  .hero-player-panel::before { width: 260px; height: 260px; right: 12%; bottom: 40px; }
 }
 
-/* Introduction content on hero background */
+/* ────────── Introduction content on hero background ────────── */
+
 .hero-intro {
   position: relative;
   z-index: 3;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 48px 32px 32px;
+  padding: 40px 32px 32px;
 }
 
 .hero-intro-inner {
@@ -82,7 +169,5 @@
 }
 
 @media (max-width: 768px) {
-  .hero-intro {
-    padding: 32px 22px;
-  }
+  .hero-intro { padding: 28px 22px; }
 }

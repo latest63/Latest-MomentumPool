@@ -46,6 +46,12 @@ export default function Home() {
               <span>&middot; 2% pool fee</span>
             </div>
           </div>
+
+          <div className="hero-player-panel">
+            <div className="hero-player-glow" />
+            <img src="/assets/hero-image.jpg" alt="Football player" className="hero-player-real" />
+            <div className="hero-player-ground" />
+          </div>
         </div>
 
         {/* ────────── INTRODUCTION (on hero background) ────────── */}
