@@ -106,6 +106,36 @@
  justify-self: end;
 }
 
+.hero-platform-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+  filter: drop-shadow(0 36px 60px rgba(0, 0, 0, 0.48));
+}
+
+.hero-platform-art-glow {
+  position: absolute;
+  width: min(620px, 58vw);
+  height: min(380px, 36vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.22) 0%, rgba(40, 193, 108, 0.12) 28%, transparent 72%);
+  filter: blur(28px);
+  transform: translateY(18px);
+}
+
+.hero-platform-image {
+  position: relative;
+  width: min(760px, 72vw);
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: translateY(18px) scale(1.02);
+}
+
 .emblem-stadium-light {
   position: absolute;
   top: 8%;
@@ -158,7 +188,7 @@
 
 .emblem-platform {
   position: absolute;
-  top: 78%;
+  top: 70%;
   left: 50%;
   transform: translateX(-50%) rotateX(8deg) rotateY(-10deg);
   width: min(460px, 42vw);
@@ -187,7 +217,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: rotateX(8deg) rotateY(-10deg);
+  transform: rotateX(8deg) rotateY(-10deg) translateY(-42px);
   filter: drop-shadow(0 28px 70px rgba(0,0,0,0.52));
 }
 

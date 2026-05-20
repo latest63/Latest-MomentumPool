@@ -44,6 +44,14 @@ export default function Home() {
 
           {/* ────────── Momentum Emblem ────────── */}
           <div className="hero-emblem-panel">
+            <div className="hero-platform-art" aria-hidden="true">
+              <div className="hero-platform-art-glow" />
+              <img
+                src="/assets/hero-platform-v2.webp"
+                alt="Futuristic circular podium"
+                className="hero-platform-image"
+              />
+            </div>
             <div className="emblem-stadium-light light-left" />
             <div className="emblem-stadium-light light-right" />
             <div className="emblem-particles" aria-hidden="true">
