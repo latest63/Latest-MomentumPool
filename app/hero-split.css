@@ -158,16 +158,18 @@
 
 .emblem-platform {
   position: absolute;
-  top: 72%;
-  width: min(500px, 46vw);
-  height: 100px;
+  top: 78%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(540px, 50vw);
+  height: 160px;
   border-radius: 50%;
   background:
-    radial-gradient(ellipse at center 70%, rgba(255,255,255,0.35) 0%, transparent 18%),
-    radial-gradient(ellipse at center, rgba(0, 229, 255, 0.6), rgba(40, 193, 108, 0.25) 28%, rgba(0, 229, 255, 0.08) 48%, transparent 70%);
-  filter: blur(16px);
+    radial-gradient(ellipse at center 60%, rgba(255,255,255,0.5) 0%, transparent 14%),
+    radial-gradient(ellipse at center, rgba(0, 229, 255, 0.8), rgba(40, 193, 108, 0.35) 22%, rgba(0, 229, 255, 0.12) 38%, transparent 60%);
+  filter: blur(14px);
   pointer-events: none;
-  transform: translateY(10%);
+  z-index: 1;
 }
 
 .emblem {
@@ -477,9 +479,9 @@
   }
 
   .emblem-platform {
-    width: clamp(160px, 44vw, 240px);
-    height: 48px;
-    top: 68%;
+    width: clamp(180px, 48vw, 260px);
+    height: 70px;
+    top: 74%;
   }
 
   .emblem-core-mark {

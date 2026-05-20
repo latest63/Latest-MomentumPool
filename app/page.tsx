@@ -117,16 +117,6 @@ export default function Home() {
             <img src="/assets/okx-explorer-logo.jpeg" alt="OKX Explorer" className="brand-xlayer" />
             OKX Explorer
           </span>
-          <span className="brand-divider" />
-          <span className="brand-item brand-with-logo">
-            <img src="/assets/okx-exchange-logo.jpeg" alt="OKX Exchange" className="brand-xlayer" />
-            OKX Exchange
-          </span>
-          <span className="brand-divider" />
-          <span className="brand-item brand-with-logo">
-            <img src="/assets/okx-ventures-logo.jpeg" alt="OKX Ventures" className="brand-xlayer" />
-            OKX Ventures
-          </span>
         </div>
       </div>
 
