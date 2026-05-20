@@ -105,6 +105,24 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ────────── BRAND BAR ────────── */}
+      <div className="brand-bar">
+        <div className="brand-bar-inner">
+          <span className="brand-item">OKX Ventures</span>
+          <span className="brand-divider" />
+          <span className="brand-item brand-with-logo">
+            <img src="/assets/x-layer-powered.jpeg" alt="X Layer" className="brand-xlayer" />
+            X Layer
+          </span>
+          <span className="brand-divider" />
+          <span className="brand-item">OKX Wallet</span>
+          <span className="brand-divider" />
+          <span className="brand-item">OKX Explorer</span>
+          <span className="brand-divider" />
+          <span className="brand-item">OKX Exchange</span>
+        </div>
+      </div>
+
       {/* ────────── HOW IT WORKS ────────── */}
       <section className="section">
         <div className="section-inner">
