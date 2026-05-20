@@ -160,14 +160,24 @@
   position: absolute;
   top: 78%;
   left: 50%;
-  transform: translateX(-50%);
-  width: min(540px, 50vw);
-  height: 160px;
+  transform: translateX(-50%) translateY(-6%);
+  width: min(460px, 42vw);
+  height: 120px;
   border-radius: 50%;
+  /* Visible disk surface + spotlight + outer glow */
   background:
-    radial-gradient(ellipse at center 60%, rgba(255,255,255,0.5) 0%, transparent 14%),
-    radial-gradient(ellipse at center, rgba(0, 229, 255, 0.8), rgba(40, 193, 108, 0.35) 22%, rgba(0, 229, 255, 0.12) 38%, transparent 60%);
-  filter: blur(14px);
+    /* Spotlight highlight (bright center-top) */
+    radial-gradient(ellipse at 50% 30%, rgba(0, 229, 255, 0.35) 0%, transparent 40%),
+    /* Surface gradient — dark glass disk */
+    radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 30%, rgba(0,0,0,0.35) 80%, rgba(0,0,0,0.6) 100%);
+  /* Edge definition */
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  /* Shadow below platform + glow around */
+  box-shadow:
+    0 40px 80px -10px rgba(0, 0, 0, 0.7),
+    0 0 40px rgba(0, 229, 255, 0.12),
+    0 0 100px rgba(40, 193, 108, 0.06);
   pointer-events: none;
   z-index: 1;
 }
@@ -388,7 +398,7 @@
   .hero-emblem-panel { min-height: 390px; }
   .emblem { width: min(300px, 32vw); height: min(300px, 32vw); }
   .emblem-glow-bg { width: min(370px, 38vw); height: min(370px, 38vw); }
-  .emblem-platform { width: min(300px, 32vw); }
+  .emblem-platform { width: min(300px, 32vw); height: 80px; }
 }
 
 @media (max-width: 760px) {
@@ -479,9 +489,9 @@
   }
 
   .emblem-platform {
-    width: clamp(180px, 48vw, 260px);
-    height: 70px;
-    top: 74%;
+    width: clamp(180px, 44vw, 250px);
+    height: 60px;
+    top: 76%;
   }
 
   .emblem-core-mark {
@@ -511,7 +521,7 @@
   .hero-emblem-panel { min-height: 190px; transform: translateX(10px); }
   .emblem { width: clamp(110px, 38vw, 156px); height: clamp(110px, 38vw, 156px); }
   .emblem-glow-bg { width: clamp(150px, 48vw, 210px); height: clamp(150px, 48vw, 210px); }
-  .emblem-platform { width: 140px; }
+  .emblem-platform { width: 140px; height: 40px; }
 }
 
 @media (max-width: 520px) {
@@ -521,7 +531,7 @@
   .hero-emblem-panel { min-height: 205px; }
   .emblem { width: clamp(118px, 40vw, 170px); height: clamp(118px, 40vw, 170px); }
   .emblem-glow-bg { width: clamp(160px, 50vw, 230px); height: clamp(160px, 50vw, 230px); }
-  .emblem-platform { width: clamp(130px, 40vw, 170px); height: 42px; }
+  .emblem-platform { width: clamp(130px, 40vw, 170px); height: 36px; }
 }
 
 /* ═══════════════════ Introduction ═══════════════════ */
