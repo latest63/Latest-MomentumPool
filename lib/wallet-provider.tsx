@@ -4,11 +4,10 @@ import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { injected, walletConnect } from 'wagmi/connectors';
-import { mainnet } from 'wagmi/chains';
 
 const queryClient = new QueryClient();
 
-// ── X Layer chain definition ──
+// ── X Layer chain ──
 const xLayer = {
   id: 196,
   name: 'X Layer',
@@ -28,9 +27,8 @@ const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '';
 export const config = createConfig({
   chains: [xLayer],
   connectors: [
-    injected({ target: 'metaMask' }),
-    injected({ target: 'okxWallet' }),
-    walletConnect({ projectId, showQrModal: true }),
+    injected(),                                                  // auto-detects MetaMask/OKX/etc
+    walletConnect({ projectId, showQrModal: true }),             // mobile fallback via WC modal
   ],
   transports: {
     [xLayer.id]: http(),

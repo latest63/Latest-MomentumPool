@@ -20,31 +20,19 @@ export default function ConnectWallet() {
         <span className="wallet-balance">
           {balance ? `${Number(balance.formatted).toFixed(4)} ${balance.symbol}` : ''}
         </span>
-        <span className="wallet-addr">
+        <button className="wallet-addr" onClick={() => disconnect()} title="Disconnect">
           {address.slice(0, 6)}...{address.slice(-4)}
-        </span>
-        <button className="wallet-disconnect" onClick={() => disconnect()} title="Disconnect">
-          ✕
         </button>
       </div>
     );
   }
 
   return (
-    <div className="wallet-connectors">
-      {connectors.map((connector) => (
-        <button
-          key={connector.id}
-          className="wallet-btn"
-          onClick={() => connect({ connector })}
-        >
-          {connector.id === 'injected'
-            ? '🦊 MetaMask'
-            : connector.id === 'okxWallet'
-              ? '🔷 OKX Wallet'
-              : connector.name}
-        </button>
-      ))}
-    </div>
+    <button
+      className="wallet-btn"
+      onClick={() => connect({ connector: connectors[0] })}
+    >
+      Connect Wallet
+    </button>
   );
 }
