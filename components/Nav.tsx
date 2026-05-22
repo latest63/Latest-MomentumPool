@@ -77,6 +77,9 @@ export default function Nav() {
           <Link href="/arena" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
             ⚽ Arena
           </Link>
+          <Link href="/arena/positions" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
+            📊 Positions
+          </Link>
         </div>
       </aside>
     </>
