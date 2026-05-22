@@ -53,7 +53,7 @@ export default function ArenaPage() {
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
   const { address, isConnected } = useAccount();
-  const { writeContract } = useWriteContract();
+  const { writeContract, isPending } = useWriteContract();
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -82,7 +82,7 @@ export default function ArenaPage() {
 
   const selectedMatch = matches.find(m => m.matchId === selected);
 
-  const handleDeposit = (teamId: number) => {
+  const handleDeposit = (matchId: string, teamId: number) => {
     if (!isConnected) return alert('Connect your wallet first');
     writeContract({
       address: POOL_ADDRESS,
@@ -126,7 +126,7 @@ export default function ArenaPage() {
               matchId={selectedMatch.matchId}
               homeTeam={selectedMatch.homeTeam}
               awayTeam={selectedMatch.awayTeam}
-              onDeposit={() => {}}
+              onDeposit={handleDeposit}
             />
             <EventFeed events={events} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />
           </div>
