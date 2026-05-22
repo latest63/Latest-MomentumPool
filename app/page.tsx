@@ -20,6 +20,29 @@ export default function Home() {
     <>
       <Nav />
 
+      {/* ────────── Theme Song ────────── */}
+      <div className="theme-song">
+        <iframe
+          id="theme-youtube"
+          src="https://www.youtube.com/embed/by7dgQSaFTw?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=by7dgQSaFTw"
+          className="theme-song-iframe"
+          allow="autoplay"
+          title="Dai Dai - Shakira ft Burna Boy"
+        />
+        <button
+          className="theme-song-btn"
+          onClick={() => {
+            const iframe = document.getElementById('theme-youtube') as HTMLIFrameElement;
+            if (iframe?.contentWindow) {
+              iframe.contentWindow.postMessage('{"event":"command","func":"play","args":""}', '*');
+            }
+          }}
+          aria-label="Play theme song"
+        >
+          🎵
+        </button>
+      </div>
+
       {/* ────────── HERO ────────── */}
       <div className="hero-wrap split-hero">
         <div className="hero-beams" />

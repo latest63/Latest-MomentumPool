@@ -70,7 +70,7 @@ FACTORY=$(forge create \
     --rpc-url "$RPC" \
     --private-key "$PRIVATE_KEY" \
     src/MomentumPoolFactory.sol:MomentumPoolFactory \
-    --json | jq -r '.deployedTo')
+    --broadcast 2>&1 | grep "Deployed to:" | awk '{print $3}')
 
 echo -e "${GREEN}✅ Factory deployed: $FACTORY${NC}"
 echo -e "   ${EXPLORER}/$FACTORY"

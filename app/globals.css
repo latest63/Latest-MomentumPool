@@ -531,6 +531,41 @@ body {
   .hero-cta { font-size: 16px; padding: 14px 32px; }
 }
 
+/* ═════════════════════ THEME SONG ═════════════════════ */
+
+.theme-song {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+}
+
+.theme-song-iframe {
+  display: none; /* hidden — audio only */
+}
+
+.theme-song-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 229, 255, 0.4);
+  background: rgba(3, 3, 8, 0.85);
+  backdrop-filter: blur(8px);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.12);
+}
+
+.theme-song-btn:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.3);
+  transform: scale(1.08);
+}
+
 /* ═════════════════════ BRAND BAR ═════════════════════ */
 
 .brand-bar {
