@@ -24,10 +24,10 @@ export default function Home() {
       <div className="theme-song">
         <iframe
           id="theme-youtube"
-          src="https://www.youtube.com/embed/by7dgQSaFTw?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=by7dgQSaFTw"
+          src="https://www.youtube.com/embed/Ymo1X5pPJU8?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=Ymo1X5pPJU8"
           className="theme-song-iframe"
           allow="autoplay"
-          title="Dai Dai - Shakira ft Burna Boy"
+          title="Dai Dai (Instrumental) - Shakira ft Burna Boy"
         />
         <button
           className="theme-song-btn"
