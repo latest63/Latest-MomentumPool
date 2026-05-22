@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
+import { LoadingProvider } from './LoadingOverlay';
 
 const Web3ModalProvider = dynamic(
   () => import('@/components/Web3ModalProvider').then(m => ({ default: m.Web3ModalProvider })),
@@ -9,5 +10,11 @@ const Web3ModalProvider = dynamic(
 );
 
 export function ClientProviders({ children }: { children: ReactNode }) {
-  return <Web3ModalProvider>{children}</Web3ModalProvider>;
+  return (
+    <Web3ModalProvider>
+      <LoadingProvider>
+        {children}
+      </LoadingProvider>
+    </Web3ModalProvider>
+  );
 }

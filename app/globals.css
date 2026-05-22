@@ -1274,3 +1274,34 @@ body {
   color: var(--neon-green);
   border-top: 1px solid var(--border-glass);
 }
+
+/* ═════════════════════ LOADING OVERLAY ═════════════════════ */
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 3, 8, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.loading-img {
+  position: relative;
+  width: 100px;
+  height: auto;
+  animation: loading-pulse 1s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(0.95); }
+}
