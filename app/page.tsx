@@ -1,6 +1,44 @@
 'use client';
 
 import Nav from '@/components/Nav';
+import { useEffect, useRef } from 'react';
+
+function ThemeSong() {
+  const unmuted = useRef(false);
+
+  useEffect(() => {
+    const handler = () => {
+      if (unmuted.current) return;
+      unmuted.current = true;
+      const iframe = document.getElementById('theme-youtube') as HTMLIFrameElement;
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+        iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[40]}', '*');
+      }
+    };
+    // First user interaction anywhere on the page → unmutes
+    document.addEventListener('click', handler, { once: true });
+    document.addEventListener('touchstart', handler, { once: true });
+    document.addEventListener('keydown', handler, { once: true });
+    return () => {
+      document.removeEventListener('click', handler);
+      document.removeEventListener('touchstart', handler);
+      document.removeEventListener('keydown', handler);
+    };
+  }, []);
+
+  return (
+    <div className="theme-song">
+      <iframe
+        id="theme-youtube"
+        src="https://www.youtube.com/embed/Ymo1X5pPJU8?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=Ymo1X5pPJU8"
+        className="theme-song-iframe"
+        allow="autoplay"
+        title="Dai Dai (Instrumental) - Shakira ft Burna Boy"
+      />
+    </div>
+  );
+}
 
 const FALLBACK = [
   { id: 'usa-canada', home: 'USA', away: 'Canada', venue: 'SoFi Stadium' },
@@ -20,30 +58,8 @@ export default function Home() {
     <>
       <Nav />
 
-      {/* ────────── Theme Song ────────── */}
-      <div className="theme-song">
-        <iframe
-          id="theme-youtube"
-          src="https://www.youtube.com/embed/Ymo1X5pPJU8?enablejsapi=1&autoplay=1&loop=1&playlist=Ymo1X5pPJU8"
-          className="theme-song-iframe"
-          allow="autoplay"
-          title="Dai Dai (Instrumental) - Shakira ft Burna Boy"
-        />
-        <button
-          className="theme-song-btn"
-          onClick={() => {
-            const iframe = document.getElementById('theme-youtube') as HTMLIFrameElement;
-            if (iframe?.contentWindow) {
-              iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-              iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[100]}', '*');
-              iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-            }
-          }}
-          aria-label="Play theme song"
-        >
-          🎵
-        </button>
-      </div>
+      {/* ────────── Theme Song — autoplays muted, unmutes on first click ────────── */}
+      <ThemeSong />
 
       {/* ────────── HERO ────────── */}
       <div className="hero-wrap split-hero">
