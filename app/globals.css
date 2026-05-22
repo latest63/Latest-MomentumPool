@@ -180,6 +180,12 @@ body {
 
 @media (max-width: 640px) { .top-bar-hosts { display: none; } }
 
+@media (max-width: 640px) {
+  .top-bar-title { font-size: 15px; }
+  .top-bar-logo { width: 30px; height: 30px; }
+  .nav-link { display: none; }
+}
+
 /* ═════════════════════ TOP NAV ═════════════════════ */
 
 .top-nav {

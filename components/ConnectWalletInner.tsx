@@ -47,7 +47,7 @@ export default function ConnectWalletInner() {
 
   return (
     <button className="wallet-btn" onClick={() => open()}>
-      Connect Wallet
+      Connect
     </button>
   );
 }
