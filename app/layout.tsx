@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Bebas_Neue, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import './hero-split.css';
+import { WalletProvider } from '@/lib/wallet-provider';
 
 const bebasNeue = Bebas_Neue({
   variable: '--font-bebas-neue',
@@ -56,7 +57,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="bg-blob bg-blob-3" /><div className="bg-blob bg-blob-4" />
           <div className="bg-blob bg-blob-5" /><div className="bg-blob bg-blob-6" />
         </div>
-        <main className="app-shell">{children}</main>
+        <main className="app-shell">
+          <WalletProvider>{children}</WalletProvider>
+        </main>
       </body>
     </html>
   );

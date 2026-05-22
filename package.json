@@ -8,9 +8,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.60.5",
     "next": "15.5.18",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "viem": "^2.21.58",
+    "wagmi": "^2.14.11"
   },
   "devDependencies": {
     "@types/node": "^22",

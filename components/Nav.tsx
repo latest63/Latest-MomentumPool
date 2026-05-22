@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import ConnectWallet from './ConnectWallet';
 
 const COLORS = ['#2453BE', '#28C16C', '#E61A0A', '#FF4702', '#BEEE4F', '#00E5FF'];
 
@@ -47,6 +48,7 @@ export default function Nav() {
             <Link href="/arena" className={`nav-link ${pathname === '/arena' ? 'active' : ''}`}>
               Arena
             </Link>
+            <ConnectWallet />
           </div>
         </div>
       </nav>

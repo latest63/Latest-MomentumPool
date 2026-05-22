@@ -3,6 +3,29 @@
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
+import { useAccount, useWriteContract } from 'wagmi';
+
+const FACTORY = '0xB61bd43eDf36FA210079725FD2e9b1d6f143BC83';
+
+const POOL_ABI = [
+  {
+    name: 'deposit',
+    type: 'function',
+    inputs: [{ name: 'teamId', type: 'uint8' }],
+    stateMutability: 'payable',
+    outputs: [],
+  },
+  {
+    name: 'getPoolTotals',
+    type: 'function',
+    inputs: [],
+    outputs: [
+      { name: '', type: 'uint256' },
+      { name: '', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+  },
+] as const;
 
 interface MomentumData { homeScore: number; awayScore: number; homeTeam: string; awayTeam: string; half: string; diff: number; }
 interface EventItem { type: string; team: 'home' | 'away'; minute: number; player?: string; }
@@ -21,11 +44,16 @@ const FLAGS: Record<string, string> = {
   Argentina: '🇦🇷', Japan: '🇯🇵',
 };
 
+// Pool address from on-chain deploy (Nigeria vs Brazil)
+const POOL_ADDRESS = '0x86ce525510b61d21de8ad122fc7f4e43a66c5f68';
+
 export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>(FALLBACK);
   const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const { address, isConnected } = useAccount();
+  const { writeContract } = useWriteContract();
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
@@ -39,7 +67,10 @@ export default function ArenaPage() {
     if (!selected) return;
     const fetchLive = async () => {
       try {
-        const [momRes, evRes] = await Promise.all([fetch(`/api/match/${selected}/momentum`), fetch(`/api/match/${selected}`)]);
+        const [momRes, evRes] = await Promise.all([
+          fetch(`/api/match/${selected}/momentum`),
+          fetch(`/api/match/${selected}`),
+        ]);
         if (momRes.ok) setMomentum(await momRes.json());
         if (evRes.ok) { const d = await evRes.json(); setEvents(d.recentEvents || []); }
       } catch {}
@@ -50,7 +81,17 @@ export default function ArenaPage() {
   }, [selected]);
 
   const selectedMatch = matches.find(m => m.matchId === selected);
-  const handleDeposit = (id: string, t: number) => console.log(`deposit ${id} team ${t}`);
+
+  const handleDeposit = (teamId: number) => {
+    if (!isConnected) return alert('Connect your wallet first');
+    writeContract({
+      address: POOL_ADDRESS,
+      abi: POOL_ABI,
+      functionName: 'deposit',
+      args: [teamId],
+      value: BigInt('1000000000000000'), // 0.001 OKB
+    });
+  };
 
   return (
     <>
@@ -81,7 +122,12 @@ export default function ArenaPage() {
               <div className="match-header-team"><span className="flag">{FLAGS[selectedMatch.awayTeam] || '🏳️'}</span><span>{selectedMatch.awayTeam}</span></div>
             </div>
             <MomentumBar data={momentum} loading={!momentum} />
-            <PoolCard matchId={selectedMatch.matchId} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} onDeposit={handleDeposit} />
+            <PoolCard
+              matchId={selectedMatch.matchId}
+              homeTeam={selectedMatch.homeTeam}
+              awayTeam={selectedMatch.awayTeam}
+              onDeposit={() => {}}
+            />
             <EventFeed events={events} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />
           </div>
         )}
