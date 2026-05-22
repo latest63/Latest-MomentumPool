@@ -1,38 +1,12 @@
 'use client';
 
-import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
-import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+const ConnectWalletInner = dynamic(
+  () => import('./ConnectWalletInner'),
+  { ssr: false, loading: () => <div className="wallet-btn wallet-btn-skel">...</div> }
+);
 
 export default function ConnectWallet() {
-  const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { data: balance } = useBalance({ address });
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return <div className="wallet-btn wallet-btn-skel">...</div>;
-
-  if (isConnected && address) {
-    return (
-      <div className="wallet-connected">
-        <span className="wallet-balance">
-          {balance ? `${Number(balance.formatted).toFixed(4)} ${balance.symbol}` : ''}
-        </span>
-        <button className="wallet-addr" onClick={() => disconnect()} title="Disconnect">
-          {address.slice(0, 6)}...{address.slice(-4)}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      className="wallet-btn"
-      onClick={() => connect({ connector: connectors[0] })}
-    >
-      Connect Wallet
-    </button>
-  );
+  return <ConnectWalletInner />;
 }

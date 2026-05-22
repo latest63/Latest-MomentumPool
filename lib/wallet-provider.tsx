@@ -2,38 +2,10 @@
 
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider, createConfig, http } from 'wagmi';
-import { injected, walletConnect } from 'wagmi/connectors';
+import { WagmiProvider } from 'wagmi';
+import { config } from './wagmi-config';
 
 const queryClient = new QueryClient();
-
-// ── X Layer chain ──
-const xLayer = {
-  id: 196,
-  name: 'X Layer',
-  nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://rpc.xlayer.tech'] },
-    public: { http: ['https://rpc.xlayer.tech'] },
-  },
-  blockExplorers: {
-    default: { name: 'OKX Explorer', url: 'https://www.okx.com/explorer/xlayer' },
-  },
-} as const;
-
-// ── Config ──
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '';
-
-export const config = createConfig({
-  chains: [xLayer],
-  connectors: [
-    injected(),                                                  // auto-detects MetaMask/OKX/etc
-    walletConnect({ projectId, showQrModal: true }),             // mobile fallback via WC modal
-  ],
-  transports: {
-    [xLayer.id]: http(),
-  },
-});
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   return (
