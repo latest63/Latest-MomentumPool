@@ -109,9 +109,9 @@ export default function ArenaPage() {
           <div className="match-tabs">
             {matches.map(m => (
               <button key={m.matchId} className={`match-tab ${selected === m.matchId ? 'active' : ''}`} onClick={() => setSelected(m.matchId)}>
-                <div className="tab-team-row"><span>{FLAGS[m.homeTeam] || '🏳️'}</span><span>{m.homeTeam}</span></div>
+                <div className="tab-team-row"><span className="flag-emoji">{FLAGS[m.homeTeam] || '🏳️'}</span><span>{m.homeTeam}</span></div>
                 <div className="tab-vs-label">vs</div>
-                <div className="tab-team-row"><span>{FLAGS[m.awayTeam] || '🏳️'}</span><span>{m.awayTeam}</span></div>
+                <div className="tab-team-row"><span className="flag-emoji">{FLAGS[m.awayTeam] || '🏳️'}</span><span>{m.awayTeam}</span></div>
                 <small>{m.venue || 'WC 2026'}</small>
               </button>
             ))}
