@@ -2,7 +2,8 @@
 
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import Nav from '@/components/Nav';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLoading } from '@/components/LoadingOverlay';
 
 const POOL_ADDRESS = '0x86ce525510b61d21de8ad122fc7f4e43a66c5f68';
 
@@ -79,8 +80,11 @@ const KNOWN_POOLS: PoolInfo[] = [
 export default function PositionsPage() {
   const { address, isConnected } = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
+  const { setLoading } = useLoading();
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState('');
+
+  useEffect(() => { setLoading(isPending || claiming); }, [isPending, claiming, setLoading]);
 
   // Resolve pool info (could expand to multiple pools later)
   const pool = KNOWN_POOLS[0];

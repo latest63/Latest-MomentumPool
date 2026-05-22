@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import { useAccount, useWriteContract } from 'wagmi';
+import { useLoading } from '@/components/LoadingOverlay';
 
 const FACTORY = '0xB61bd43eDf36FA210079725FD2e9b1d6f143BC83';
 
@@ -54,6 +55,9 @@ export default function ArenaPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const { address, isConnected } = useAccount();
   const { writeContract, isPending } = useWriteContract();
+  const { setLoading } = useLoading();
+
+  useEffect(() => { setLoading(isPending); }, [isPending, setLoading]);
 
   useEffect(() => {
     fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
