@@ -1043,6 +1043,45 @@ body {
 .match-header-team .flag { font-size: 28px; margin-bottom: 2px; }
 .match-header-vs { font-family: var(--font-sports); font-size: 16px; letter-spacing: 2px; color: var(--border-glass-hover); padding: 0 var(--sp-2); }
 
+/* ═════════════════════ POOL AMOUNT INPUT ═════════════════════ */
+.wc-pool-amount {
+  padding: var(--sp-3) var(--sp-5);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.wc-amount-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.wc-amount-input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.wc-amount-input:focus {
+  border-color: var(--cyan);
+}
+
+.wc-amount-input::placeholder {
+  color: var(--text-tertiary);
+}
+
 .wc-bar { background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: var(--sp-6); }
 .wc-teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4); }
 .wc-left, .wc-right { display: flex; align-items: center; gap: var(--sp-3); }

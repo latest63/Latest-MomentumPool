@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /* ─── Types ─── */
 export interface MomentumData {
@@ -127,13 +127,14 @@ interface PoolCardProps {
   poolAddress?: string;
   depositDeadline?: number;
   halfEnd?: number;
-  onDeposit: (matchId: string, teamId: number) => void;
+  onDeposit: (matchId: string, teamId: number, amount: string) => void;
 }
 
 export function PoolCard({ matchId, homeTeam, awayTeam, depositDeadline, onDeposit }: PoolCardProps) {
   const now = Math.floor(Date.now() / 1000);
   const isOpen = depositDeadline ? now < depositDeadline : true;
   const timeLeft = depositDeadline ? depositDeadline - now : 0;
+  const [amount, setAmount] = useState('0.001');
 
   return (
     <div className="wc-pool">
@@ -141,8 +142,20 @@ export function PoolCard({ matchId, homeTeam, awayTeam, depositDeadline, onDepos
         <h3>Deposit Pool</h3>
         <span className="wc-pool-half">1ST HALF</span>
       </div>
+      <div className="wc-pool-amount">
+        <label className="wc-amount-label">Amount (OKB)</label>
+        <input
+          type="number"
+          className="wc-amount-input"
+          value={amount}
+          onChange={e => setAmount(e.target.value)}
+          min="0.0001"
+          step="0.001"
+          placeholder="0.001"
+        />
+      </div>
       <div className="wc-pool-teams">
-        <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 0)}>
+        <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 0, amount)}>
           <div className="btn-content">
             <span className="wc-pool-name">{homeTeam}</span>
             <span className="wc-pool-label">Home</span>
@@ -153,7 +166,7 @@ export function PoolCard({ matchId, homeTeam, awayTeam, depositDeadline, onDepos
           <span>VS</span>
           <span className="wc-pool-vs-sub">2% Fee</span>
         </div>
-        <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 1)}>
+        <button className="wc-pool-btn" disabled={!isOpen} onClick={() => onDeposit(matchId, 1, amount)}>
           <div className="btn-content">
             <span className="wc-pool-name">{awayTeam}</span>
             <span className="wc-pool-label">Away</span>

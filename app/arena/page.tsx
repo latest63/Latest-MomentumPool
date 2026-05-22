@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import { useAccount, useWriteContract } from 'wagmi';
+import { parseEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 
 const FACTORY = '0xB61bd43eDf36FA210079725FD2e9b1d6f143BC83';
@@ -86,14 +87,16 @@ export default function ArenaPage() {
 
   const selectedMatch = matches.find(m => m.matchId === selected);
 
-  const handleDeposit = (matchId: string, teamId: number) => {
+  const handleDeposit = (matchId: string, teamId: number, amount: string) => {
     if (!isConnected) return alert('Connect your wallet first');
+    const parsed = parseFloat(amount);
+    if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
     writeContract({
       address: POOL_ADDRESS,
       abi: POOL_ABI,
       functionName: 'deposit',
       args: [teamId],
-      value: BigInt('1000000000000000'), // 0.001 OKB
+      value: parseEther(amount),
     });
   };
 
