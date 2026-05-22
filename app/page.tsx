@@ -24,7 +24,7 @@ export default function Home() {
       <div className="theme-song">
         <iframe
           id="theme-youtube"
-          src="https://www.youtube.com/embed/Ymo1X5pPJU8?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=Ymo1X5pPJU8"
+          src="https://www.youtube.com/embed/Ymo1X5pPJU8?enablejsapi=1&autoplay=1&loop=1&playlist=Ymo1X5pPJU8"
           className="theme-song-iframe"
           allow="autoplay"
           title="Dai Dai (Instrumental) - Shakira ft Burna Boy"
@@ -34,7 +34,9 @@ export default function Home() {
           onClick={() => {
             const iframe = document.getElementById('theme-youtube') as HTMLIFrameElement;
             if (iframe?.contentWindow) {
-              iframe.contentWindow.postMessage('{"event":"command","func":"play","args":""}', '*');
+              iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+              iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[100]}', '*');
+              iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
             }
           }}
           aria-label="Play theme song"
