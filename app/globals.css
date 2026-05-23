@@ -1013,7 +1013,7 @@ body {
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding: var(--sp-6) 0;
+  padding: var(--sp-6) 50px;
 }
 
 .mc-track {
@@ -1128,6 +1128,7 @@ body {
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
+  .mc-viewport { padding: var(--sp-6) 40px; }
   .mc-item { width: 160px; }
   .mc-item.active { transform: scale(1.05); }
   .mc-arrow { width: 34px; height: 34px; font-size: 22px; }

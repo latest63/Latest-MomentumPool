@@ -5,26 +5,39 @@ function getCtx() {
   return audioCtx;
 }
 
-/** Quick game-style UI pop/select sound */
+/** Crisp game-style click/tick sound */
 export function playSelect() {
   try {
     const ctx = getCtx();
     if (ctx.state === 'suspended') ctx.resume();
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const now = ctx.currentTime;
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.06);
+    // — Click layer: high-frequency tick —
+    const tick = ctx.createOscillator();
+    const tickGain = ctx.createGain();
+    tick.type = 'square';
+    tick.frequency.setValueAtTime(1800, now);
+    tick.frequency.exponentialRampToValueAtTime(600, now + 0.04);
+    tickGain.gain.setValueAtTime(0.12, now);
+    tickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    tick.connect(tickGain);
+    tickGain.connect(ctx.destination);
 
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    // — Thud layer: low-frequency punch —
+    const thud = ctx.createOscillator();
+    const thudGain = ctx.createGain();
+    thud.type = 'sine';
+    thud.frequency.setValueAtTime(200, now);
+    thud.frequency.exponentialRampToValueAtTime(80, now + 0.06);
+    thudGain.gain.setValueAtTime(0.2, now);
+    thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+    thud.connect(thudGain);
+    thudGain.connect(ctx.destination);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.1);
+    tick.start(now);
+    tick.stop(now + 0.04);
+    thud.start(now);
+    thud.stop(now + 0.06);
   } catch { /* audio not available */ }
 }

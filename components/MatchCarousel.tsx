@@ -23,8 +23,10 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
     const vp = viewportRef.current;
     if (!vp || idx < 0) return;
     const vw = vp.offsetWidth;
+    const style = getComputedStyle(vp);
+    const pl = parseFloat(style.paddingLeft);
     const center = vw / 2 - ITEM_W / 2;
-    const off = center - idx * (ITEM_W + GAP);
+    const off = center - idx * (ITEM_W + GAP) - pl;
     setOffset(off);
   }, []);
 
