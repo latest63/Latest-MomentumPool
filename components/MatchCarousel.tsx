@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useLayoutEffect } from 'react';
 
 interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
 
@@ -16,7 +16,6 @@ const GAP = 20;
 
 function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
   if (!wrap || idx < 0) return 0;
-  // Read actual card width from DOM (handles responsive sizes)
   const firstCard = wrap.querySelector('.mc-card') as HTMLElement | null;
   const actualW = firstCard?.offsetWidth ?? CARD_W;
   const step = actualW + GAP;
@@ -26,24 +25,20 @@ function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
 export default function MatchCarousel({ matches, selected, flags, onSelect }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
+
   const selectedIdx = matches.findIndex(m => m.matchId === selected);
 
-  useEffect(() => {
+  // Calculate before paint so there's no flash
+  useLayoutEffect(() => {
     setOffset(calcOffset(wrapRef.current, selectedIdx));
   }, [selectedIdx]);
 
+  // Re-center on resize
   useEffect(() => {
     const onResize = () => setOffset(calcOffset(wrapRef.current, selectedIdx));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [selectedIdx]);
-
-  // Recalculate after mount (first render has no card in DOM yet)
-  useEffect(() => {
-    const timer = setTimeout(() => setOffset(calcOffset(wrapRef.current, selectedIdx)), 50);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const goNext = () => {
     const next = Math.min(selectedIdx + 1, matches.length - 1);
