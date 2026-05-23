@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
 import { LoadingProvider } from './LoadingOverlay';
+import ThemeAudio from '@/lib/ThemeAudio';
 
 const Web3ModalProvider = dynamic(
   () => import('@/components/Web3ModalProvider').then(m => ({ default: m.Web3ModalProvider })),
@@ -14,6 +15,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
     <Web3ModalProvider>
       <LoadingProvider>
         {children}
+        <ThemeAudio />
       </LoadingProvider>
     </Web3ModalProvider>
   );
