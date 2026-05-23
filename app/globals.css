@@ -1007,7 +1007,40 @@ body {
   50% { opacity: 0.25; }
 }
 
-/* ═════════════════════ MATCH CAROUSEL ═════════════════════ */
+/* ═════════════════════ MATCH TABS (desktop) ═════════════════════ */
+
+.match-tabs {
+  display: flex;
+  gap: var(--sp-3);
+  overflow-x: auto;
+  padding-bottom: var(--sp-1);
+  scrollbar-width: none;
+}
+.match-tabs::-webkit-scrollbar { display: none; }
+
+.match-tab {
+  flex-shrink: 0;
+  min-width: 170px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-3) var(--sp-4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+.match-tab:hover { background: rgba(0,0,0,0.55); transform: translateY(-2px); }
+.match-tab.active { border-color: var(--electric-blue); }
+
+.tab-team-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.tab-team-row .flag-emoji { font-size: 20px; line-height: 1; }
+.tab-vs-label { font-size: 9px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1.5px; margin: 1px 0; }
+.match-tab small { display: block; margin-top: 6px; font-size: 10px; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ═════════════════════ MATCH CAROUSEL (mobile) ═════════════════════ */
 
 .mc-wrap {
   position: relative;
@@ -1122,6 +1155,14 @@ body {
 .mc-arrow-right { right: 8px; }
 
 /* Mobile adjustments */
+@media (max-width: 768px) {
+  .match-tabs { display: none; }
+}
+
+@media (min-width: 769px) {
+  .mc-wrap { display: none; }
+}
+
 @media (max-width: 480px) {
   .mc-card { width: 140px; padding: 14px 8px 12px; border-width: 2px; }
   .mc-flags .flag-emoji { font-size: 24px; }

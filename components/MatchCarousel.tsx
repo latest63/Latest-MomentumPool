@@ -13,6 +13,7 @@ interface Props {
 
 const CARD_W = 160;
 const GAP = 20;
+const MOBILE_BP = 768;
 
 function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
   if (!wrap || idx < 0) return 0;
@@ -23,22 +24,30 @@ function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
 }
 
 export default function MatchCarousel({ matches, selected, flags, onSelect }: Props) {
+  const [isMobile, setIsMobile] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
 
   const selectedIdx = matches.findIndex(m => m.matchId === selected);
 
-  // Calculate before paint so there's no flash
-  useLayoutEffect(() => {
-    setOffset(calcOffset(wrapRef.current, selectedIdx));
-  }, [selectedIdx]);
-
-  // Re-center on resize
   useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < MOBILE_BP);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isMobile) return;
+    setOffset(calcOffset(wrapRef.current, selectedIdx));
+  }, [selectedIdx, isMobile]);
+
+  useEffect(() => {
+    if (!isMobile) return;
     const onResize = () => setOffset(calcOffset(wrapRef.current, selectedIdx));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, [selectedIdx]);
+  }, [selectedIdx, isMobile]);
 
   const goNext = () => {
     const next = Math.min(selectedIdx + 1, matches.length - 1);
@@ -53,6 +62,33 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
   const atStart = selectedIdx <= 0;
   const atEnd = selectedIdx >= matches.length - 1;
 
+  // ─── Desktop: simple horizontal tabs ───
+  if (!isMobile) {
+    return (
+      <div className="match-tabs">
+        {matches.map(m => (
+          <button
+            key={m.matchId}
+            className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
+            onClick={() => onSelect(m.matchId)}
+          >
+            <div className="tab-team-row">
+              <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>
+              <span>{m.homeTeam}</span>
+            </div>
+            <div className="tab-vs-label">vs</div>
+            <div className="tab-team-row">
+              <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>
+              <span>{m.awayTeam}</span>
+            </div>
+            <small>{m.venue || 'WC 2026'}</small>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  // ─── Mobile: game-style carousel ───
   return (
     <div className="mc-wrap" ref={wrapRef}>
       <div
