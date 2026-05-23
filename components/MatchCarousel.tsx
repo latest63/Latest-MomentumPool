@@ -19,23 +19,36 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
   const [offset, setOffset] = useState(0);
   const selectedIdx = matches.findIndex(m => m.matchId === selected);
 
-  const calcOffset = useCallback(() => {
+  const calcOffset = useCallback((idx: number) => {
     const vp = viewportRef.current;
-    if (!vp || selectedIdx < 0) return;
+    if (!vp || idx < 0) return;
     const vw = vp.offsetWidth;
-    // Push track so selected item sits dead center
     const center = vw / 2 - ITEM_W / 2;
-    const off = center - selectedIdx * (ITEM_W + GAP);
+    const off = center - idx * (ITEM_W + GAP);
     setOffset(off);
-  }, [selectedIdx]);
+  }, []);
 
   useEffect(() => {
-    calcOffset();
-    window.addEventListener('resize', calcOffset);
-    return () => window.removeEventListener('resize', calcOffset);
-  }, [calcOffset]);
+    calcOffset(selectedIdx);
+    const handleResize = () => calcOffset(selectedIdx);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [selectedIdx, calcOffset]);
 
-  // If only 1 match, nothing to slide — just show it centered
+  const goNext = () => {
+    const next = Math.min(selectedIdx + 1, matches.length - 1);
+    if (next !== selectedIdx) onSelect(matches[next].matchId);
+  };
+
+  const goPrev = () => {
+    const prev = Math.max(selectedIdx - 1, 0);
+    if (prev !== selectedIdx) onSelect(matches[prev].matchId);
+  };
+
+  const atStart = selectedIdx <= 0;
+  const atEnd = selectedIdx >= matches.length - 1;
+
+  // Single match — just show it
   if (matches.length <= 1) {
     return (
       <div className="mc-viewport" ref={viewportRef}>
@@ -78,9 +91,23 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
         ))}
       </div>
 
-      {/* Edge fade gradients */}
-      <div className="mc-fade mc-fade-left" />
-      <div className="mc-fade mc-fade-right" />
+      {/* Arrow buttons */}
+      <button
+        className={`mc-arrow mc-arrow-left ${atStart ? 'disabled' : ''}`}
+        onClick={goPrev}
+        disabled={atStart}
+        aria-label="Previous match"
+      >
+        ‹
+      </button>
+      <button
+        className={`mc-arrow mc-arrow-right ${atEnd ? 'disabled' : ''}`}
+        onClick={goNext}
+        disabled={atEnd}
+        aria-label="Next match"
+      >
+        ›
+      </button>
     </div>
   );
 }
