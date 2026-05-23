@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
 
@@ -15,27 +15,19 @@ const ITEM_W = 190;
 const GAP = 16;
 
 export default function MatchCarousel({ matches, selected, flags, onSelect }: Props) {
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   const selectedIdx = matches.findIndex(m => m.matchId === selected);
 
-  const calcOffset = useCallback((idx: number) => {
-    const vp = viewportRef.current;
-    if (!vp || idx < 0) return;
-    const vw = vp.offsetWidth;
-    const style = getComputedStyle(vp);
-    const pl = parseFloat(style.paddingLeft);
-    const center = vw / 2 - ITEM_W / 2;
-    const off = center - idx * (ITEM_W + GAP) - pl;
-    setOffset(off);
-  }, []);
-
   useEffect(() => {
-    calcOffset(selectedIdx);
-    const handleResize = () => calcOffset(selectedIdx);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [selectedIdx, calcOffset]);
+    if (selectedIdx < 0) return;
+    // Each item step = ITEM_W + GAP
+    const step = ITEM_W + GAP;
+    // We want item at selectedIdx centered in the frame.
+    // The frame shows one item at a time. Item 0 sits at left=0 of the track.
+    // To show item N, we shift track left by N * step.
+    setOffset(-selectedIdx * step);
+  }, [selectedIdx]);
 
   const goNext = () => {
     const next = Math.min(selectedIdx + 1, matches.length - 1);
@@ -50,17 +42,16 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
   const atStart = selectedIdx <= 0;
   const atEnd = selectedIdx >= matches.length - 1;
 
-  // Single match — just show it
   if (matches.length <= 1) {
     return (
-      <div className="mc-viewport" ref={viewportRef}>
-        <div className="mc-track" style={{ transform: 'translateX(0)' }}>
+      <div className="mc-frame">
+        <div className="mc-frame-inner">
           {matches.map(m => (
-            <button key={m.matchId} className="mc-item active">
+            <div key={m.matchId} className="mc-card active">
               <div className="mc-flags"><span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span><span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span></div>
               <div className="mc-teams"><span>{m.homeTeam}</span><span className="mc-vs">vs</span><span>{m.awayTeam}</span></div>
               <small>{m.venue || 'WC 2026'}</small>
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -68,29 +59,34 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
   }
 
   return (
-    <div className="mc-viewport" ref={viewportRef}>
-      <div
-        className="mc-track"
-        style={{ transform: `translateX(${offset}px)` }}
-      >
-        {matches.map((m, i) => (
-          <button
-            key={m.matchId}
-            className={`mc-item ${i === selectedIdx ? 'active' : ''}`}
-            onClick={() => onSelect(m.matchId)}
-          >
-            <div className="mc-flags">
-              <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>
-              <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>
-            </div>
-            <div className="mc-teams">
-              <span className="mc-team">{m.homeTeam}</span>
-              <span className="mc-vs">vs</span>
-              <span className="mc-team">{m.awayTeam}</span>
-            </div>
-            <small>{m.venue || 'WC 2026'}</small>
-          </button>
-        ))}
+    <div className="mc-frame">
+      {/* Fixed center frame border glow */}
+      <div className="mc-frame-glow" />
+
+      <div className="mc-frame-inner" ref={trackRef}>
+        <div
+          className="mc-track"
+          style={{ transform: `translateX(${offset}px)` }}
+        >
+          {matches.map((m, i) => (
+            <button
+              key={m.matchId}
+              className={`mc-card ${i === selectedIdx ? 'active' : ''}`}
+              onClick={() => onSelect(m.matchId)}
+            >
+              <div className="mc-flags">
+                <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>
+                <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>
+              </div>
+              <div className="mc-teams">
+                <span className="mc-team">{m.homeTeam}</span>
+                <span className="mc-vs">vs</span>
+                <span className="mc-team">{m.awayTeam}</span>
+              </div>
+              <small>{m.venue || 'WC 2026'}</small>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Arrow buttons */}
