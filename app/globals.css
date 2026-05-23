@@ -1165,6 +1165,7 @@ body {
 
 @media (max-width: 480px) {
   .mc-card { width: 140px; padding: 14px 8px 12px; border-width: 2px; }
+  .mc-card.active { transform: scale(1.05); }
   .mc-flags .flag-emoji { font-size: 24px; }
   .mc-team { font-size: 14px; }
   .mc-arrow { width: 32px; height: 32px; font-size: 20px; }
