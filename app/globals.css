@@ -1009,21 +1009,30 @@ body {
 
 .match-tabs {
   display: flex; gap: var(--sp-3);
-  overflow-x: auto; padding-bottom: var(--sp-1);
+  overflow-x: auto; padding: var(--sp-2) var(--sp-1) var(--sp-1);
   scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 .match-tabs::-webkit-scrollbar { display: none; }
 
 .match-tab {
-  flex-shrink: 0; min-width: 170px;
+  flex-shrink: 0; min-width: 160px;
   background: var(--bg-glass); border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg); padding: var(--sp-3) var(--sp-4);
-  cursor: pointer; transition: all 0.2s ease; text-align: left;
-  backdrop-filter: blur(8px);
+  cursor: pointer; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: left; backdrop-filter: blur(8px);
+  scroll-snap-align: center;
+  opacity: 0.55; transform: scale(0.92);
 }
-
-.match-tab:hover { background: rgba(0,0,0,0.55); transform: translateY(-2px); }
-.match-tab.active { border-color: var(--electric-blue); }
+.match-tab:hover { background: rgba(0,0,0,0.55); }
+.match-tab.active {
+  opacity: 1; transform: scale(1.05);
+  border-color: var(--cyan);
+  background: rgba(0, 229, 255, 0.08);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), 0 4px 16px rgba(0,0,0,0.3);
+  z-index: 2;
+}
 
 .tab-team-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); }
 .tab-team-row .flag-emoji { font-size: 20px; line-height: 1; }
