@@ -608,13 +608,13 @@ body {
 }
 
 .theme-song-btn {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1.5px solid rgba(0, 229, 255, 0.4);
   background: rgba(3, 3, 8, 0.85);
   backdrop-filter: blur(8px);
-  font-size: 20px;
+  font-size: 15px;
   cursor: pointer;
   display: flex;
   align-items: center;
