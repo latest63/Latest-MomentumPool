@@ -14,34 +14,36 @@ interface Props {
 const CARD_W = 160;
 const GAP = 20;
 
+function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
+  if (!wrap || idx < 0) return 0;
+  // Read actual card width from DOM (handles responsive sizes)
+  const firstCard = wrap.querySelector('.mc-card') as HTMLElement | null;
+  const actualW = firstCard?.offsetWidth ?? CARD_W;
+  const step = actualW + GAP;
+  return wrap.offsetWidth / 2 - actualW / 2 - idx * step;
+}
+
 export default function MatchCarousel({ matches, selected, flags, onSelect }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   const selectedIdx = matches.findIndex(m => m.matchId === selected);
 
   useEffect(() => {
-    if (selectedIdx < 0) return;
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-    const wrapW = wrap.offsetWidth;
-    const step = CARD_W + GAP;
-    // Center selected card under the frame (which is at wrap center)
-    const off = wrapW / 2 - CARD_W / 2 - selectedIdx * step;
-    setOffset(off);
+    setOffset(calcOffset(wrapRef.current, selectedIdx));
   }, [selectedIdx]);
 
-  // Re-center on resize
   useEffect(() => {
-    const onResize = () => {
-      const wrap = wrapRef.current;
-      if (!wrap || selectedIdx < 0) return;
-      const wrapW = wrap.offsetWidth;
-      const step = CARD_W + GAP;
-      setOffset(wrapW / 2 - CARD_W / 2 - selectedIdx * step);
-    };
+    const onResize = () => setOffset(calcOffset(wrapRef.current, selectedIdx));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [selectedIdx]);
+
+  // Recalculate after mount (first render has no card in DOM yet)
+  useEffect(() => {
+    const timer = setTimeout(() => setOffset(calcOffset(wrapRef.current, selectedIdx)), 50);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const goNext = () => {
     const next = Math.min(selectedIdx + 1, matches.length - 1);
@@ -58,37 +60,30 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
 
   return (
     <div className="mc-wrap" ref={wrapRef}>
-      {/* Visual center frame — sits on top */}
-      <div className="mc-frame" />
-
-      {/* Track with all cards — slides behind the frame */}
-      <div className="mc-track-wrap">
-        <div
-          className="mc-track"
-          style={{ transform: `translateX(${offset}px)` }}
-        >
-          {matches.map((m, i) => (
-            <button
-              key={m.matchId}
-              className={`mc-card ${i === selectedIdx ? 'active' : ''}`}
-              onClick={() => onSelect(m.matchId)}
-            >
-              <div className="mc-flags">
-                <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>
-                <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>
-              </div>
-              <div className="mc-teams">
-                <span className="mc-team">{m.homeTeam}</span>
-                <span className="mc-vs">VS</span>
-                <span className="mc-team">{m.awayTeam}</span>
-              </div>
-              <small>{m.venue || 'WC 2026'}</small>
-            </button>
-          ))}
-        </div>
+      <div
+        className="mc-track"
+        style={{ transform: `translateX(${offset}px)` }}
+      >
+        {matches.map((m, i) => (
+          <button
+            key={m.matchId}
+            className={`mc-card ${i === selectedIdx ? 'active' : ''}`}
+            onClick={() => onSelect(m.matchId)}
+          >
+            <div className="mc-flags">
+              <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>
+              <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>
+            </div>
+            <div className="mc-teams">
+              <span className="mc-team">{m.homeTeam}</span>
+              <span className="mc-vs">VS</span>
+              <span className="mc-team">{m.awayTeam}</span>
+            </div>
+            <small>{m.venue || 'WC 2026'}</small>
+          </button>
+        ))}
       </div>
 
-      {/* Arrows */}
       <button
         className={`mc-arrow mc-arrow-left ${atStart ? 'disabled' : ''}`}
         onClick={goPrev}

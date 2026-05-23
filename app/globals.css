@@ -1007,7 +1007,7 @@ body {
   50% { opacity: 0.25; }
 }
 
-/* ═════════════════════ MATCH CAROUSEL (center spotlight) ═════════════════════ */
+/* ═════════════════════ MATCH CAROUSEL ═════════════════════ */
 
 .mc-wrap {
   position: relative;
@@ -1016,26 +1016,11 @@ body {
   padding: 20px 0;
 }
 
-/* Fixed center frame — fits snug around the card */
-.mc-frame {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 164px;
-  height: 100%;
-  border: 2px solid rgba(0, 229, 255, 0.35);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 0 25px rgba(0, 229, 255, 0.12), inset 0 0 25px rgba(0, 229, 255, 0.03);
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Track — all cards visible, slides behind the frame */
+/* Track — all cards visible */
 .mc-track {
   display: flex;
   gap: 20px;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.3s ease-out;
   will-change: transform;
 }
 
@@ -1043,26 +1028,24 @@ body {
   width: 160px;
   flex-shrink: 0;
   background: transparent;
-  border: none;
-  border-radius: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
   padding: 16px 10px 14px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s ease-out;
   text-align: center;
   color: var(--text-primary);
   font-family: inherit;
-  transform: scale(0.8);
-  opacity: 0.35;
+  opacity: 0.3;
   filter: blur(1px);
 }
 
 .mc-card.active {
-  transform: scale(1.05);
   opacity: 1;
   filter: blur(0);
+  border-color: var(--cyan);
   background: rgba(0, 229, 255, 0.06);
-  z-index: 3;
-  position: relative;
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.15), 0 4px 16px rgba(0,0,0,0.3);
 }
 
 .mc-flags {
@@ -1140,9 +1123,7 @@ body {
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
-  .mc-frame { width: 144px; }
-  .mc-card { width: 140px; padding: 14px 8px 12px; }
-  .mc-card.active { transform: scale(1.03); }
+  .mc-card { width: 140px; padding: 14px 8px 12px; border-width: 2px; }
   .mc-flags .flag-emoji { font-size: 24px; }
   .mc-team { font-size: 14px; }
   .mc-arrow { width: 32px; height: 32px; font-size: 20px; }
