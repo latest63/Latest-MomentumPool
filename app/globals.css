@@ -1022,7 +1022,7 @@ body {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
+  width: 164px;
   height: 100%;
   border: 2px solid rgba(0, 229, 255, 0.35);
   border-radius: var(--radius-lg);
@@ -1140,7 +1140,7 @@ body {
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
-  .mc-frame { width: 140px; }
+  .mc-frame { width: 144px; }
   .mc-card { width: 140px; padding: 14px 8px 12px; }
   .mc-card.active { transform: scale(1.03); }
   .mc-flags .flag-emoji { font-size: 24px; }

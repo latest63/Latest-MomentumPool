@@ -21,11 +21,26 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
 
   useEffect(() => {
     if (selectedIdx < 0) return;
-    // Center the selected card under the frame
-    // Frame sits at the center of the wrap.
-    // We want card at selectedIdx to be centered under the frame.
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const wrapW = wrap.offsetWidth;
     const step = CARD_W + GAP;
-    setOffset(-selectedIdx * step);
+    // Center selected card under the frame (which is at wrap center)
+    const off = wrapW / 2 - CARD_W / 2 - selectedIdx * step;
+    setOffset(off);
+  }, [selectedIdx]);
+
+  // Re-center on resize
+  useEffect(() => {
+    const onResize = () => {
+      const wrap = wrapRef.current;
+      if (!wrap || selectedIdx < 0) return;
+      const wrapW = wrap.offsetWidth;
+      const step = CARD_W + GAP;
+      setOffset(wrapW / 2 - CARD_W / 2 - selectedIdx * step);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, [selectedIdx]);
 
   const goNext = () => {
