@@ -976,7 +976,7 @@ body {
 
 @media (max-width: 480px) { .main-content { padding: 0 var(--sp-3) var(--sp-8); } }
 
-.match-selector { margin-bottom: var(--sp-6); }
+.match-selector { margin: 0 auto var(--sp-6); max-width: 680px; }
 
 .match-selector-header {
   display: flex; align-items: center;
