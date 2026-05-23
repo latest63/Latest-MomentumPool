@@ -1011,11 +1011,8 @@ body {
 
 .mc-frame {
   position: relative;
-  width: fit-content;
+  width: 190px;
   margin: 24px auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Fixed center window — shows one match at a time */
@@ -1141,6 +1138,7 @@ body {
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
+  .mc-frame { width: 160px; }
   .mc-frame-inner { width: 160px; }
   .mc-card { width: 160px; padding: 16px 10px 14px; }
   .mc-card.active { transform: scale(1); }

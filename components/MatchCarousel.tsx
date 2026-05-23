@@ -12,7 +12,7 @@ interface Props {
 }
 
 const ITEM_W = 190;
-const GAP = 16;
+const GAP = 0; // no gap between cards — frame shows one at a time
 
 export default function MatchCarousel({ matches, selected, flags, onSelect }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -21,7 +21,7 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
 
   useEffect(() => {
     if (selectedIdx < 0) return;
-    // Each item step = ITEM_W + GAP
+    // Each item step = ITEM_W (cards are flush, no gap)
     const step = ITEM_W + GAP;
     // We want item at selectedIdx centered in the frame.
     // The frame shows one item at a time. Item 0 sits at left=0 of the track.
