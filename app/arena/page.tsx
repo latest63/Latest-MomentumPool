@@ -6,6 +6,7 @@ import Nav from '@/components/Nav';
 import { useAccount, useWriteContract } from 'wagmi';
 import { parseEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
+import { playSelect } from '@/lib/playSound';
 
 const FACTORY = '0xB61bd43eDf36FA210079725FD2e9b1d6f143BC83';
 
@@ -129,7 +130,7 @@ export default function ArenaPage() {
           </div>
           <div className="match-tabs" ref={tabsRef}>
             {matches.map(m => (
-              <button key={m.matchId} data-match-id={m.matchId} className={`match-tab ${selected === m.matchId ? 'active' : ''}`} onClick={() => { setSelected(m.matchId); scrollTabCenter(m.matchId); }}>
+              <button key={m.matchId} data-match-id={m.matchId} className={`match-tab ${selected === m.matchId ? 'active' : ''}`} onClick={() => { playSelect(); setSelected(m.matchId); scrollTabCenter(m.matchId); }}>
                 <div className="tab-team-row"><span className="flag-emoji">{FLAGS[m.homeTeam] || '🏳️'}</span><span>{m.homeTeam}</span></div>
                 <div className="tab-vs-label">vs</div>
                 <div className="tab-team-row"><span className="flag-emoji">{FLAGS[m.awayTeam] || '🏳️'}</span><span>{m.awayTeam}</span></div>
