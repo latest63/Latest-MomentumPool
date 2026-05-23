@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import { useAccount, useWriteContract } from 'wagmi';
 import { parseEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
+import MatchCarousel from '@/components/MatchCarousel';
 
 const FACTORY = '0xB61bd43eDf36FA210079725FD2e9b1d6f143BC83';
 
@@ -58,19 +59,6 @@ export default function ArenaPage() {
   const { address, isConnected } = useAccount();
   const { writeContract, isPending } = useWriteContract();
   const { setLoading } = useLoading();
-  const tabsRef = useRef<HTMLDivElement>(null);
-
-  // Scroll active tab into center
-  const scrollTabCenter = (id: string) => {
-    const container = tabsRef.current;
-    if (!container) return;
-    const btn = container.querySelector(`[data-match-id="${id}"]`) as HTMLElement;
-    if (!btn) return;
-    const containerRect = container.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-    const offset = btnRect.left - containerRect.left - (containerRect.width / 2 - btnRect.width / 2);
-    container.scrollBy({ left: offset, behavior: 'smooth' });
-  };
 
   useEffect(() => { setLoading(isPending); }, [isPending, setLoading]);
 
@@ -99,11 +87,6 @@ export default function ArenaPage() {
     return () => clearInterval(interval);
   }, [selected]);
 
-  // Center active tab on mount + when selected changes
-  useEffect(() => {
-    if (selected) setTimeout(() => scrollTabCenter(selected), 100);
-  }, [selected]);
-
   const selectedMatch = matches.find(m => m.matchId === selected);
 
   const handleDeposit = (matchId: string, teamId: number, amount: string) => {
@@ -128,16 +111,12 @@ export default function ArenaPage() {
             <h2>Live Matches</h2>
             <div className="live-indicator">LIVE</div>
           </div>
-          <div className="match-tabs" ref={tabsRef}>
-            {matches.map(m => (
-              <button key={m.matchId} data-match-id={m.matchId} className={`match-tab ${selected === m.matchId ? 'active' : ''}`} onClick={() => { playSelect(); setSelected(m.matchId); scrollTabCenter(m.matchId); }}>
-                <div className="tab-team-row"><span className="flag-emoji">{FLAGS[m.homeTeam] || '🏳️'}</span><span>{m.homeTeam}</span></div>
-                <div className="tab-vs-label">vs</div>
-                <div className="tab-team-row"><span className="flag-emoji">{FLAGS[m.awayTeam] || '🏳️'}</span><span>{m.awayTeam}</span></div>
-                <small>{m.venue || 'WC 2026'}</small>
-              </button>
-            ))}
-          </div>
+          <MatchCarousel
+            matches={matches}
+            selected={selected}
+            flags={FLAGS}
+            onSelect={(id) => { playSelect(); setSelected(id); }}
+          />
         </div>
 
         {selectedMatch && (
