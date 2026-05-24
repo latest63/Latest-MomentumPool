@@ -49,7 +49,7 @@ const FLAGS: Record<string, string> = {
 };
 
 // Pool address from on-chain deploy (Nigeria vs Brazil)
-const POOL_ADDRESS = '0x86ce525510b61d21de8ad122fc7f4e43a66c5f68';
+const POOL_ADDRESS = '0xEC817c04C503A8B641bfdD0CDC105135d13Eb590';
 
 export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>(FALLBACK);
