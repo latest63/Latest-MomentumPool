@@ -14,7 +14,7 @@ export async function GET(
   const lsPath = LIVESCORE_MATCHES[id];
   if (lsPath) {
     const live = await fetchLivescoreMatch(lsPath);
-    if (live && live.status !== 'PAST' && live.status !== 'PREMATCH') {
+    if (live) {
       return NextResponse.json({
         homeScore: parseInt(live.homeScore) || 0,
         awayScore: parseInt(live.awayScore) || 0,

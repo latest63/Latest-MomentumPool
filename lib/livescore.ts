@@ -128,12 +128,19 @@ export function mapLivescoreStatus(status: string): string {
 
 /**
  * Match configuration — maps our internal matchId to livescore.com path
- * Update these when World Cup 2026 fixtures are published
+ * Uses recent Premier League matches for testing
+ * When World Cup 2026 fixtures are published, update the event IDs here
+ *
  * Format: "en/football/{country}/{league}/{teamA}-vs-{teamB}/{eventId}"
+ *
+ * To find an event ID:
+ *   1. Go to livescore.com and open a match detail page
+ *   2. The URL has the event ID at the end: .../teamA-vs-teamB/{eventId}/
+ *   3. Or use curl + NEXT_DATA to find match IDs for a league
  */
 export const LIVESCORE_MATCHES: Record<string, string> = {
-  'brazil-nigeria': 'en/football/world/world-cup/brazil-vs-nigeria/0',
-  'usa-canada': 'en/football/world/world-cup/usa-vs-canada/0',
-  'argentina-ghana': 'en/football/world/world-cup/argentina-vs-ghana/0',
-  'mexico-japan': 'en/football/world/world-cup/mexico-vs-japan/0',
+  'brazil-nigeria': 'en/football/england/premier-league/brighton-vs-manchester-united/1529167',
+  'usa-canada': 'en/football/england/premier-league/manchester-city-vs-aston-villa/1529168',
+  'argentina-ghana': 'en/football/england/premier-league/liverpool-vs-chelsea/1529170',
+  'mexico-japan': 'en/football/england/premier-league/aston-villa-vs-liverpool/1529175',
 };
