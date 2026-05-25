@@ -3,16 +3,17 @@
 import Nav from '@/components/Nav';
 
 const FALLBACK = [
-  { id: 'usa-canada', home: 'Paderborn', away: 'Wolfsburg', venue: 'Home Deluxe Arena' },
-  { id: 'brazil-nigeria', home: 'Wolfsburg', away: 'Paderborn', venue: 'Volkswagen Arena' },
-  { id: 'argentina-ghana', home: 'Bodø/Glimt', away: 'Brann', venue: 'Aspmyra Stadion' },
-  { id: 'mexico-japan', home: 'IK Start', away: 'Vålerenga', venue: 'Sør Arena' },
+  { id: 'usa-canada', home: 'IK Start', away: 'Vålerenga', venue: 'Sør Arena' },
+  { id: 'brazil-nigeria', home: 'HamKam', away: 'Lillestrøm', venue: 'Briskeby Stadion' },
+  { id: 'argentina-ghana', home: 'Elfsborg', away: 'BK Häcken', venue: 'Borås Arena' },
+  { id: 'mexico-japan', home: 'Paderborn', away: 'Wolfsburg', venue: 'Home Deluxe Arena' },
 ];
 
 const FLAGS: Record<string, string> = {
-  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
-  'Bodø/Glimt': '🇳🇴', Brann: '🇳🇴',
   'IK Start': '🇳🇴', Vålerenga: '🇳🇴',
+  HamKam: '🇳🇴', 'Lillestrøm': '🇳🇴',
+  Elfsborg: '🇸🇪', 'BK Häcken': '🇸🇪',
+  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
 };
 
 export default function Home() {

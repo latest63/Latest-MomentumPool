@@ -36,16 +36,17 @@ interface EventItem { type: string; team: 'home' | 'away'; minute: number; playe
 interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
 
 const FALLBACK: MatchSummary[] = [
-  { matchId: 'usa-canada', homeTeam: 'Paderborn', awayTeam: 'Wolfsburg', venue: 'Home Deluxe Arena' },
-  { matchId: 'brazil-nigeria', homeTeam: 'Wolfsburg', awayTeam: 'Paderborn', venue: 'Volkswagen Arena' },
-  { matchId: 'argentina-ghana', homeTeam: 'Bodø/Glimt', awayTeam: 'Brann', venue: 'Aspmyra Stadion' },
-  { matchId: 'mexico-japan', homeTeam: 'IK Start', awayTeam: 'Vålerenga', venue: 'Sør Arena' },
+  { matchId: 'usa-canada', homeTeam: 'IK Start', awayTeam: 'Vålerenga', venue: 'Sør Arena' },
+  { matchId: 'brazil-nigeria', homeTeam: 'HamKam', awayTeam: 'Lillestrøm', venue: 'Briskeby Stadion' },
+  { matchId: 'argentina-ghana', homeTeam: 'Elfsborg', awayTeam: 'BK Häcken', venue: 'Borås Arena' },
+  { matchId: 'mexico-japan', homeTeam: 'Paderborn', awayTeam: 'Wolfsburg', venue: 'Home Deluxe Arena' },
 ];
 
 const FLAGS: Record<string, string> = {
-  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
-  'Bodø/Glimt': '🇳🇴', Brann: '🇳🇴',
   'IK Start': '🇳🇴', Vålerenga: '🇳🇴',
+  HamKam: '🇳🇴', 'Lillestrøm': '🇳🇴',
+  Elfsborg: '🇸🇪', 'BK Häcken': '🇸🇪',
+  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
 };
 
 // Pool address from on-chain deploy (Nigeria vs Brazil)
