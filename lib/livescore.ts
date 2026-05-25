@@ -1,0 +1,139 @@
+/**
+ * livescore.com scraper — fetches live match data via their Next.js data route
+ */
+export interface LivescoreEvent {
+  type: string;
+  team: string;
+  name: string;
+  time: string;
+  score?: { home: string; away: string };
+  assist?: { name: string }[];
+}
+
+export interface LivescoreData {
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: string;
+  awayScore: string;
+  status: string;
+  incidents: LivescoreEvent[];
+}
+
+const BASE = 'https://www.livescore.com';
+
+/** Fetch the current build ID from livescore.com */
+async function getBuildId(): Promise<string | null> {
+  try {
+    const html = await fetch(BASE, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36' },
+      next: { revalidate: 3600 },
+    } as RequestInit & { next?: { revalidate?: number } }).then(r => r.text());
+
+    const match = html.match(/_next\/static\/([a-zA-Z0-9_-]+)\/_buildManifest/);
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch match data from livescore.com's Next.js data route
+ * @param path e.g. "en/football/england/premier-league/brighton-vs-manchester-united/1529167"
+ */
+export async function fetchLivescoreMatch(path: string): Promise<LivescoreData | null> {
+  try {
+    const buildId = await getBuildId();
+    if (!buildId) return null;
+
+    const url = `${BASE}/_next/data/${buildId}/${path}.json`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36' },
+      next: { revalidate: 15 },
+    } as RequestInit & { next?: { revalidate?: number } });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    const event = json?.pageProps?.initialEventData?.event;
+    if (!event) return null;
+
+    const incidents: LivescoreEvent[] = [];
+    const incs = event.incidents?.incs;
+    if (incs) {
+      for (const half of Object.keys(incs)) {
+        for (const minute of Object.keys(incs[half])) {
+          for (const teamKey of Object.keys(incs[half][minute])) {
+            for (const evt of incs[half][minute][teamKey]) {
+              incidents.push({
+                type: evt.type?.replace('Football', '') ?? 'event',
+                team: teamKey,
+                name: evt.name ?? '',
+                time: evt.time ?? '',
+                score: evt.score,
+                assist: evt.assist,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      homeTeam: event.homeTeamName,
+      awayTeam: event.awayTeamName,
+      homeScore: event.homeTeamScore ?? '0',
+      awayScore: event.awayTeamScore ?? '0',
+      status: event.eventStatus ?? 'UNKNOWN',
+      incidents,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Map livescore.com event types to our momentum event types
+ */
+export function mapLivescoreType(type: string): string {
+  const map: Record<string, string> = {
+    Goal: 'goal',
+    YellowCard: 'yellow_card',
+    RedCard: 'red_card',
+    Penalty: 'goal',
+    OwnGoal: 'goal',
+    Subst: 'foul',
+    Var: 'foul',
+    Corner: 'corner',
+    ShotOnTarget: 'shot_on_target',
+    Woodwork: 'woodwork',
+  };
+  return map[type] ?? 'foul';
+}
+
+/**
+ * Map livescore.com match status to our half format
+ */
+export function mapLivescoreStatus(status: string): string {
+  const map: Record<string, string> = {
+    LIVE: 'first',
+    HALFTIME: 'halftime',
+    SECONDHALF: 'second',
+    FULLTIME: 'fulltime',
+    PAST: 'fulltime',
+    PREMATCH: 'pre',
+    POSTPONED: 'pre',
+    CANCELLED: 'pre',
+  };
+  return map[status] ?? 'pre';
+}
+
+/**
+ * Match configuration — maps our internal matchId to livescore.com path
+ * Update these when World Cup 2026 fixtures are published
+ * Format: "en/football/{country}/{league}/{teamA}-vs-{teamB}/{eventId}"
+ */
+export const LIVESCORE_MATCHES: Record<string, string> = {
+  'brazil-nigeria': 'en/football/world/world-cup/brazil-vs-nigeria/0',
+  'usa-canada': 'en/football/world/world-cup/usa-vs-canada/0',
+  'argentina-ghana': 'en/football/world/world-cup/argentina-vs-ghana/0',
+  'mexico-japan': 'en/football/world/world-cup/mexico-vs-japan/0',
+};
