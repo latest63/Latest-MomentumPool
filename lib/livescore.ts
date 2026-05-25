@@ -139,8 +139,8 @@ export function mapLivescoreStatus(status: string): string {
  *   3. Or use curl + NEXT_DATA to find match IDs for a league
  */
 export const LIVESCORE_MATCHES: Record<string, string> = {
-  'brazil-nigeria': 'en/football/england/premier-league/brighton-vs-manchester-united/1529167',
-  'usa-canada': 'en/football/england/premier-league/manchester-city-vs-aston-villa/1529168',
-  'argentina-ghana': 'en/football/england/premier-league/liverpool-vs-chelsea/1529170',
-  'mexico-japan': 'en/football/england/premier-league/aston-villa-vs-liverpool/1529175',
+  'usa-canada': 'en/football/germany/bundesliga/paderborn-vs-wolfsburg/1779291',
+  'brazil-nigeria': 'en/football/germany/bundesliga/wolfsburg-vs-paderborn/1779290',
+  'argentina-ghana': 'en/football/norway/eliteserien/bodoe-glimt-vs-brann/1709185',
+  'mexico-japan': 'en/football/norway/eliteserien/ik-start-vs-vaalerenga/1709174',
 };
