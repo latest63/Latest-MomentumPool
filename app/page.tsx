@@ -3,16 +3,16 @@
 import Nav from '@/components/Nav';
 
 const FALLBACK = [
-  { id: 'usa-canada', home: 'USA', away: 'Canada', venue: 'SoFi Stadium' },
-  { id: 'brazil-nigeria', home: 'Brazil', away: 'Nigeria', venue: 'Estadio Azteca' },
-  { id: 'argentina-ghana', home: 'Argentina', away: 'Ghana', venue: 'BC Place' },
-  { id: 'mexico-japan', home: 'Mexico', away: 'Japan', venue: 'NRG Stadium' },
+  { id: 'usa-canada', home: 'Paderborn', away: 'Wolfsburg', venue: 'Home Deluxe Arena' },
+  { id: 'brazil-nigeria', home: 'Wolfsburg', away: 'Paderborn', venue: 'Volkswagen Arena' },
+  { id: 'argentina-ghana', home: 'Bodø/Glimt', away: 'Brann', venue: 'Aspmyra Stadion' },
+  { id: 'mexico-japan', home: 'IK Start', away: 'Vålerenga', venue: 'Sør Arena' },
 ];
 
 const FLAGS: Record<string, string> = {
-  USA: '🇺🇸', Canada: '🇨🇦', Mexico: '🇲🇽',
-  Brazil: '🇧🇷', Nigeria: '🇳🇬', Ghana: '🇬🇭',
-  Argentina: '🇦🇷', Japan: '🇯🇵',
+  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
+  'Bodø/Glimt': '🇳🇴', Brann: '🇳🇴',
+  'IK Start': '🇳🇴', Vålerenga: '🇳🇴',
 };
 
 export default function Home() {
@@ -27,7 +27,7 @@ export default function Home() {
         <div className="hero-split-inner">
           <div className="hero-content hero-content-split">
             <div className="hero-tag">
-              <span className="dot" /> WORLD CUP 2026
+              <span className="dot" /> BUNDESLIGA LIVE
             </div>
             <h1 className="hero-title">
               PICK THE<br />
@@ -90,10 +90,10 @@ export default function Home() {
         <div className="hero-intro">
           <div className="hero-intro-inner">
             <div className="section-label">Momentum Pool</div>
-            <div className="section-title">World Cup 2026 on X Layer</div>
+            <div className="section-title">Germany & Norway Live</div>
             <div className="section-desc">
               The first on-chain momentum pool built for football. Pick who controls each half,
-              watch live events shift the momentum bar, and split the pot at half-time.
+              watch live events shift the momentum bar, and split the pot.
               No oracles. No brackets. Just pure half-by-half action.
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function Home() {
       <section className="section">
         <div className="section-inner">
           <div className="section-label">Schedule</div>
-          <div className="section-title">World Cup 2026 Fixtures</div>
+          <div className="section-title">Qualifying & League Matches</div>
           <div className="section-desc">Open matches. Pick your side before the half starts.</div>
           <div className="match-grid">
             {FALLBACK.map((m) => (

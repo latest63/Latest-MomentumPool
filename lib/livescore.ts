@@ -128,8 +128,8 @@ export function mapLivescoreStatus(status: string): string {
 
 /**
  * Match configuration — maps our internal matchId to livescore.com path
- * Uses recent Premier League matches for testing
- * When World Cup 2026 fixtures are published, update the event IDs here
+ * Uses today's real matches — Bundesliga relegation + Eliteserien
+ * When WC 2026 or other fixtures are published, update the event IDs here
  *
  * Format: "en/football/{country}/{league}/{teamA}-vs-{teamB}/{eventId}"
  *
