@@ -36,16 +36,16 @@ interface EventItem { type: string; team: 'home' | 'away'; minute: number; playe
 interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
 
 const FALLBACK: MatchSummary[] = [
-  { matchId: 'usa-canada', homeTeam: 'Paderborn', awayTeam: 'Wolfsburg', venue: 'Home Deluxe Arena' },
-  { matchId: 'brazil-nigeria', homeTeam: 'Wolfsburg', awayTeam: 'Paderborn', venue: 'Volkswagen Arena' },
-  { matchId: 'argentina-ghana', homeTeam: 'Bodø/Glimt', awayTeam: 'Brann', venue: 'Aspmyra Stadion' },
-  { matchId: 'mexico-japan', homeTeam: 'IK Start', awayTeam: 'Vålerenga', venue: 'Sør Arena' },
+  { matchId: 'usa-canada', homeTeam: 'USA', awayTeam: 'Canada', venue: 'SoFi Stadium' },
+  { matchId: 'brazil-nigeria', homeTeam: 'Brazil', awayTeam: 'Nigeria', venue: 'Estadio Azteca' },
+  { matchId: 'argentina-ghana', homeTeam: 'Argentina', awayTeam: 'Ghana', venue: 'BC Place' },
+  { matchId: 'mexico-japan', homeTeam: 'Mexico', awayTeam: 'Japan', venue: 'NRG Stadium' },
 ];
 
 const FLAGS: Record<string, string> = {
-  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
-  'Bodø/Glimt': '🇳🇴', Brann: '🇳🇴',
-  'IK Start': '🇳🇴', Vålerenga: '🇳🇴',
+  USA: '🇺🇸', Canada: '🇨🇦', Mexico: '🇲🇽',
+  Brazil: '🇧🇷', Nigeria: '🇳🇬', Ghana: '🇬🇭',
+  Argentina: '🇦🇷', Japan: '🇯🇵',
 };
 
 // Pool address from on-chain deploy (Nigeria vs Brazil)
