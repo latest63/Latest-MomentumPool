@@ -1,6 +1,6 @@
 /**
  * Momentum Engine — shared between API routes and cron
- * 2026 World Cup themed sample data + scoring engine.
+ * Sample data for today's live matches (Bundesliga Rel. + Eliteserien + Allsvenskan).
  */
 
 export type EventType =
@@ -39,7 +39,7 @@ export interface MatchState {
   events: MatchEvent[];
   half: 'pre' | 'first' | 'halftime' | 'second' | 'fulltime';
   venue?: string;
-  host?: 'USA' | 'Canada' | 'Mexico';
+  host?: string;
   poolAddress?: string;
 }
 
@@ -68,73 +68,52 @@ export function computeMomentum(events: MatchEvent[]): MomentumResult {
 
 export const WORLD_CUP_MATCHES: MatchState[] = [
   {
-    matchId: 'wc26-01',
-    homeTeam: 'USA',
-    awayTeam: 'Canada',
-    kickoff: 1781085600,
-    venue: 'Los Angeles',
-    host: 'USA',
-    homeScore: 8,
-    awayScore: 5,
-    half: 'first',
-    events: [
-      { type: 'shot_on_target', team: 'home', minute: 6, player: 'Pulisic' },
-      { type: 'corner', team: 'home', minute: 11 },
-      { type: 'goal', team: 'away', minute: 18, player: 'David' },
-      { type: 'goal', team: 'home', minute: 31, player: 'Pulisic' },
-      { type: 'foul', team: 'away', minute: 38 },
-    ],
+    matchId: 'usa-canada',
+    homeTeam: 'IK Start',
+    awayTeam: 'Vålerenga',
+    kickoff: 1748262600,
+    venue: 'Sør Arena',
+    host: 'Norway',
+    homeScore: 0,
+    awayScore: 0,
+    half: 'pre',
+    events: [],
   },
   {
-    matchId: 'wc26-02',
-    homeTeam: 'Mexico',
-    awayTeam: 'Ghana',
-    kickoff: 1781172000,
-    venue: 'Mexico City',
-    host: 'Mexico',
-    homeScore: 6,
-    awayScore: 4,
-    half: 'first',
-    events: [
-      { type: 'corner', team: 'home', minute: 7 },
-      { type: 'shot_on_target', team: 'away', minute: 14 },
-      { type: 'goal', team: 'home', minute: 26, player: 'Giménez' },
-      { type: 'yellow_card', team: 'away', minute: 42 },
-    ],
+    matchId: 'brazil-nigeria',
+    homeTeam: 'HamKam',
+    awayTeam: 'Lillestrøm',
+    kickoff: 1748271600,
+    venue: 'Briskeby Stadion',
+    host: 'Norway',
+    homeScore: 0,
+    awayScore: 0,
+    half: 'pre',
+    events: [],
   },
   {
-    matchId: 'wc26-03',
-    homeTeam: 'Brazil',
-    awayTeam: 'Nigeria',
-    kickoff: 1781258400,
-    venue: 'Dallas',
-    host: 'USA',
-    homeScore: 7,
-    awayScore: 9,
-    half: 'first',
-    events: [
-      { type: 'shot_on_target', team: 'away', minute: 3, player: 'Osimhen' },
-      { type: 'corner', team: 'home', minute: 12 },
-      { type: 'woodwork', team: 'away', minute: 21, player: 'Lookman' },
-      { type: 'goal', team: 'home', minute: 28, player: 'Viní Jr' },
-      { type: 'goal', team: 'away', minute: 37, player: 'Osimhen' },
-    ],
+    matchId: 'argentina-ghana',
+    homeTeam: 'Elfsborg',
+    awayTeam: 'BK Häcken',
+    kickoff: 1748282400,
+    venue: 'Borås Arena',
+    host: 'Sweden',
+    homeScore: 0,
+    awayScore: 0,
+    half: 'pre',
+    events: [],
   },
   {
-    matchId: 'wc26-04',
-    homeTeam: 'Argentina',
-    awayTeam: 'Japan',
-    kickoff: 1781344800,
-    venue: 'Toronto',
-    host: 'Canada',
-    homeScore: 5,
-    awayScore: 6,
-    half: 'first',
-    events: [
-      { type: 'corner', team: 'away', minute: 9 },
-      { type: 'shot_on_target', team: 'home', minute: 17 },
-      { type: 'goal', team: 'away', minute: 33, player: 'Mitoma' },
-    ],
+    matchId: 'mexico-japan',
+    homeTeam: 'Paderborn',
+    awayTeam: 'Wolfsburg',
+    kickoff: 1748287800,
+    venue: 'Home Deluxe Arena',
+    host: 'Germany',
+    homeScore: 0,
+    awayScore: 0,
+    half: 'pre',
+    events: [],
   },
 ];
 
