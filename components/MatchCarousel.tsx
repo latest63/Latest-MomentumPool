@@ -8,9 +8,11 @@ interface Props {
   matches: MatchSummary[];
   selected: string;
   flags: Record<string, string>;
+  logos: Record<string, string>;
   onSelect: (id: string) => void;
 }
 
+export default function MatchCarousel({ matches, selected, flags, logos, onSelect }: Props) {
 const CARD_W = 160;
 const GAP = 20;
 const MOBILE_BP = 768;
@@ -22,8 +24,6 @@ function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
   const step = actualW + GAP;
   return wrap.offsetWidth / 2 - actualW / 2 - idx * step;
 }
-
-export default function MatchCarousel({ matches, selected, flags, onSelect }: Props) {
   const [isMobile, setIsMobile] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
@@ -73,12 +73,12 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
             onClick={() => onSelect(m.matchId)}
           >
             <div className="tab-team-row">
-              <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>
+              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
               <span>{m.homeTeam}</span>
             </div>
             <div className="tab-vs-label">vs</div>
             <div className="tab-team-row">
-              <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>
+              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
               <span>{m.awayTeam}</span>
             </div>
             <small>{m.venue || 'WC 2026'}</small>
@@ -102,8 +102,8 @@ export default function MatchCarousel({ matches, selected, flags, onSelect }: Pr
             onClick={() => onSelect(m.matchId)}
           >
             <div className="mc-flags">
-              <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>
-              <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>
+              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
+              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
             </div>
             <div className="mc-teams">
               <span className="mc-team">{m.homeTeam}</span>

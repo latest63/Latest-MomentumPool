@@ -16,6 +16,17 @@ const FLAGS: Record<string, string> = {
   Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
 };
 
+const LOGOS: Record<string, string> = {
+  'IK Start': 'https://storage.livescore.com/images/team/high/enet/9919.png',
+  Vålerenga: 'https://storage.livescore.com/images/team/high/enet/8007.png',
+  HamKam: 'https://storage.livescore.com/images/team/high/enet/8448.png',
+  'Lillestrøm': 'https://storage.livescore.com/images/team/high/enet/8476.png',
+  Elfsborg: 'https://storage.livescore.com/images/team/high/enet/8014.png',
+  'BK Häcken': 'https://storage.livescore.com/images/team/high/enet/8428.png',
+  Paderborn: 'https://storage.livescore.com/images/team/high/enet/8460.png',
+  Wolfsburg: 'https://storage.livescore.com/images/team/high/teambadge/wolfsburg-2026.png',
+};
+
 export default function Home() {
   return (
     <>
@@ -157,9 +168,9 @@ export default function Home() {
             {FALLBACK.map((m) => (
               <a key={m.id} href="/arena" className="match-card">
                 <div className="match-card-teams">
-                  <span>{FLAGS[m.home] || '🏳️'} {m.home}</span>
+                  <span className="match-card-team">{LOGOS[m.home] && <img src={LOGOS[m.home]} alt="" className="team-logo-sm" />} {m.home}</span>
                   <span className="vs">vs</span>
-                  <span>{FLAGS[m.away] || '🏳️'} {m.away}</span>
+                  <span className="match-card-team">{LOGOS[m.away] && <img src={LOGOS[m.away]} alt="" className="team-logo-sm" />} {m.away}</span>
                 </div>
                 <span className="match-card-venue">{m.venue}</span>
               </a>

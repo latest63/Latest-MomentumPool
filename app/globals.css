@@ -1037,6 +1037,7 @@ body {
 
 .tab-team-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); }
 .tab-team-row .flag-emoji { font-size: 20px; line-height: 1; }
+.tab-logo { width: 22px; height: 22px; object-fit: contain; }
 .tab-vs-label { font-size: 9px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1.5px; margin: 1px 0; }
 .match-tab small { display: block; margin-top: 6px; font-size: 10px; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -1088,6 +1089,7 @@ body {
   margin-bottom: var(--sp-2);
 }
 .mc-flags .flag-emoji { font-size: 28px; line-height: 1; }
+.mc-logo { width: 32px; height: 32px; object-fit: contain; }
 
 .mc-teams {
   display: flex;
@@ -1167,6 +1169,7 @@ body {
   .mc-card { width: 140px; padding: 14px 8px 12px; border-width: 2px; }
   .mc-card.active { transform: scale(1.05); }
   .mc-flags .flag-emoji { font-size: 24px; }
+  .mc-logo { width: 28px; height: 28px; }
   .mc-team { font-size: 14px; }
   .mc-arrow { width: 32px; height: 32px; font-size: 20px; }
   .mc-arrow-left { left: 4px; }
@@ -1183,7 +1186,9 @@ body {
 }
 
 .match-header-team { display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); font-size: 20px; font-weight: 700; font-family: var(--font-sports); letter-spacing: 1px; line-height: 1; }
-.match-header-team .flag { font-size: 28px; margin-bottom: 2px; }
+.match-header-team .team-logo { width: 48px; height: 48px; object-fit: contain; margin-bottom: 4px; }
+.match-card-team { display: inline-flex; align-items: center; gap: 6px; }
+.match-card-team .team-logo-sm { width: 24px; height: 24px; object-fit: contain; vertical-align: middle; }
 .match-header-vs { font-family: var(--font-sports); font-size: 16px; letter-spacing: 2px; color: var(--border-glass-hover); padding: 0 var(--sp-2); }
 
 /* ═════════════════════ POOL AMOUNT INPUT ═════════════════════ */

@@ -49,6 +49,17 @@ const FLAGS: Record<string, string> = {
   Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
 };
 
+const LOGOS: Record<string, string> = {
+  'IK Start': 'https://storage.livescore.com/images/team/high/enet/9919.png',
+  Vålerenga: 'https://storage.livescore.com/images/team/high/enet/8007.png',
+  HamKam: 'https://storage.livescore.com/images/team/high/enet/8448.png',
+  'Lillestrøm': 'https://storage.livescore.com/images/team/high/enet/8476.png',
+  Elfsborg: 'https://storage.livescore.com/images/team/high/enet/8014.png',
+  'BK Häcken': 'https://storage.livescore.com/images/team/high/enet/8428.png',
+  Paderborn: 'https://storage.livescore.com/images/team/high/enet/8460.png',
+  Wolfsburg: 'https://storage.livescore.com/images/team/high/teambadge/wolfsburg-2026.png',
+};
+
 // Pool address from on-chain deploy (Nigeria vs Brazil)
 const POOL_ADDRESS = '0xEC817c04C503A8B641bfdD0CDC105135d13Eb590';
 
@@ -116,6 +127,7 @@ export default function ArenaPage() {
             matches={matches}
             selected={selected}
             flags={FLAGS}
+            logos={LOGOS}
             onSelect={(id) => { playSelect(); setSelected(id); }}
           />
         </div>
@@ -123,9 +135,15 @@ export default function ArenaPage() {
         {selectedMatch && (
           <div className="match-view">
             <div className="match-header">
-              <div className="match-header-team"><span className="flag">{FLAGS[selectedMatch.homeTeam] || '🏳️'}</span><span>{selectedMatch.homeTeam}</span></div>
+              <div className="match-header-team">
+                {LOGOS[selectedMatch.homeTeam] && <img src={LOGOS[selectedMatch.homeTeam]} alt="" className="team-logo" />}
+                <span>{selectedMatch.homeTeam}</span>
+              </div>
               <div className="match-header-vs">VS</div>
-              <div className="match-header-team"><span className="flag">{FLAGS[selectedMatch.awayTeam] || '🏳️'}</span><span>{selectedMatch.awayTeam}</span></div>
+              <div className="match-header-team">
+                {LOGOS[selectedMatch.awayTeam] && <img src={LOGOS[selectedMatch.awayTeam]} alt="" className="team-logo" />}
+                <span>{selectedMatch.awayTeam}</span>
+              </div>
             </div>
             <MomentumBar data={momentum} loading={!momentum} />
             <PoolCard

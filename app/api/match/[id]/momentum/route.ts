@@ -22,6 +22,8 @@ export async function GET(
         awayTeam: live.awayTeam,
         half: mapLivescoreStatus(live.status),
         diff: (parseInt(live.homeScore) || 0) - (parseInt(live.awayScore) || 0),
+        homeBadge: live.homeBadge,
+        awayBadge: live.awayBadge,
         source: 'live',
       });
     }

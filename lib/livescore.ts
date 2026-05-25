@@ -17,6 +17,8 @@ export interface LivescoreData {
   awayScore: string;
   status: string;
   incidents: LivescoreEvent[];
+  homeBadge: string;
+  awayBadge: string;
 }
 
 const BASE = 'https://www.livescore.com';
@@ -77,6 +79,8 @@ export async function fetchLivescoreMatch(path: string): Promise<LivescoreData |
       }
     }
 
+    const IMG_BASE = 'https://storage.livescore.com/images/team/high/';
+
     return {
       homeTeam: event.homeTeamName,
       awayTeam: event.awayTeamName,
@@ -84,6 +88,8 @@ export async function fetchLivescoreMatch(path: string): Promise<LivescoreData |
       awayScore: event.awayTeamScore ?? '0',
       status: event.eventStatus ?? 'UNKNOWN',
       incidents,
+      homeBadge: event.homeTeamBadge ? `${IMG_BASE}${event.homeTeamBadge}` : '',
+      awayBadge: event.awayTeamBadge ? `${IMG_BASE}${event.awayTeamBadge}` : '',
     };
   } catch {
     return null;
