@@ -49,10 +49,10 @@ async function fetchMatch(path: string): Promise<any> {
 }
 
 const LIVESCORE_MATCHES: Record<string, string> = {
-  'usa-canada': 'en/football/norway/eliteserien/ik-start-vs-vaalerenga/1709174',
-  'brazil-nigeria': 'en/football/norway/eliteserien/hamkam-vs-lillestroem/1709184',
-  'argentina-ghana': 'en/football/sweden/allsvenskan/elfsborg-vs-bk-haecken/1710352',
-  'mexico-japan': 'en/football/germany/bundesliga/paderborn-vs-wolfsburg/1779291',
+  'aalesund-hamkam': 'en/football/norway/eliteserien/aalesund-vs-hamkam/1709180',
+  'brann-sarpsborg': 'en/football/norway/eliteserien/brann-vs-sarpsborg-08/1709179',
+  'fredrikstad-start': 'en/football/norway/eliteserien/fredrikstad-vs-ik-start/1709187',
+  'rosenborg-glimt': 'en/football/norway/eliteserien/rosenborg-vs-bodoe-glimt/1709178',
 };
 
 /**
