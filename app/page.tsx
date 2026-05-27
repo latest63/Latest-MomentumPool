@@ -17,14 +17,14 @@ const FLAGS: Record<string, string> = {
 };
 
 const LOGOS: Record<string, string> = {
-  Aalesund: 'https://storage.livescore.com/images/team/high/enet/9919.png',
+  Aalesund: 'https://storage.livescore.com/images/team/high/enet/8404.png',
   HamKam: 'https://storage.livescore.com/images/team/high/enet/8448.png',
-  Brann: 'https://storage.livescore.com/images/team/high/enet/8007.png',
-  'Sarpsborg 08': 'https://storage.livescore.com/images/team/high/enet/8476.png',
-  Fredrikstad: 'https://storage.livescore.com/images/team/high/enet/8014.png',
-  'IK Start': 'https://storage.livescore.com/images/team/high/enet/8428.png',
-  Rosenborg: 'https://storage.livescore.com/images/team/high/enet/8460.png',
-  'Bodø/Glimt': 'https://storage.livescore.com/images/team/high/enet/8456.png',
+  Brann: 'https://storage.livescore.com/images/team/high/enet/8468.png',
+  'Sarpsborg 08': 'https://storage.livescore.com/images/team/high/enet/8509.png',
+  Fredrikstad: 'https://storage.livescore.com/images/team/high/enet/8417.png',
+  'IK Start': 'https://storage.livescore.com/images/team/high/enet/9919.png',
+  Rosenborg: 'https://storage.livescore.com/images/team/high/enet/8422.png',
+  'Bodø/Glimt': 'https://storage.livescore.com/images/team/high/enet/8402.png',
 };
 
 export default function Home() {
