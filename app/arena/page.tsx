@@ -36,10 +36,10 @@ interface EventItem { type: string; team: 'home' | 'away'; minute: number; playe
 interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; kickoff?: number; homeBadge?: string; awayBadge?: string; }
 
 const FALLBACK: MatchSummary[] = [
-  { matchId: 'aalesund-hamkam', homeTeam: 'Aalesund', awayTeam: 'HamKam', venue: 'Color Line Stadion', kickoff: 1749056400 },
-  { matchId: 'brann-sarpsborg', homeTeam: 'Brann', awayTeam: 'Sarpsborg 08', venue: 'Brann Stadion', kickoff: 1749056400 },
-  { matchId: 'fredrikstad-start', homeTeam: 'Fredrikstad', awayTeam: 'IK Start', venue: 'Fredrikstad Stadion', kickoff: 1749056400 },
-  { matchId: 'rosenborg-glimt', homeTeam: 'Rosenborg', awayTeam: 'Bodø/Glimt', venue: 'Lerkendal Stadion', kickoff: 1749056400 },
+  { matchId: 'aalesund-hamkam', homeTeam: 'Aalesund', awayTeam: 'HamKam', venue: 'Color Line Stadion', kickoff: 1780074000 },
+  { matchId: 'brann-sarpsborg', homeTeam: 'Brann', awayTeam: 'Sarpsborg 08', venue: 'Brann Stadion', kickoff: 1780074000 },
+  { matchId: 'fredrikstad-start', homeTeam: 'Fredrikstad', awayTeam: 'IK Start', venue: 'Fredrikstad Stadion', kickoff: 1780074000 },
+  { matchId: 'rosenborg-glimt', homeTeam: 'Rosenborg', awayTeam: 'Bodø/Glimt', venue: 'Lerkendal Stadion', kickoff: 1780074000 },
 ];
 
 const FLAGS: Record<string, string> = {

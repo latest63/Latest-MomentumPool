@@ -74,7 +74,7 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     matchId: 'aalesund-hamkam',
     homeTeam: 'Aalesund',
     awayTeam: 'HamKam',
-    kickoff: 1779856531,
+    kickoff: 1780074000,
     venue: 'Color Line Stadion',
     host: 'Norway',
     homeScore: 0,
@@ -88,7 +88,7 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     matchId: 'brann-sarpsborg',
     homeTeam: 'Brann',
     awayTeam: 'Sarpsborg 08',
-    kickoff: 1779858331,
+    kickoff: 1780074000,
     venue: 'Brann Stadion',
     host: 'Norway',
     homeScore: 0,
@@ -102,7 +102,7 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     matchId: 'fredrikstad-start',
     homeTeam: 'Fredrikstad',
     awayTeam: 'IK Start',
-    kickoff: 1779860131,
+    kickoff: 1780074000,
     venue: 'Fredrikstad Stadion',
     host: 'Norway',
     homeScore: 0,
@@ -116,7 +116,7 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     matchId: 'rosenborg-glimt',
     homeTeam: 'Rosenborg',
     awayTeam: 'Bodø/Glimt',
-    kickoff: 1779861931,
+    kickoff: 1780074000,
     venue: 'Lerkendal Stadion',
     host: 'Norway',
     homeScore: 0,
@@ -185,6 +185,18 @@ export function updateMatch(matchId: string, events: MatchEvent[]): MatchState |
   return match;
 }
 
+/** Parse livescore startDateTimeString (YYYYMMDDHHmmss) to Unix timestamp */
+function parseStartTime(s: string): number {
+  if (!s || s.length < 14) return Math.floor(Date.now() / 1000);
+  const y = parseInt(s.slice(0, 4)),
+        m = parseInt(s.slice(4, 6)) - 1,
+        d = parseInt(s.slice(6, 8)),
+        h = parseInt(s.slice(8, 10)),
+        min = parseInt(s.slice(10, 12)),
+        sec = parseInt(s.slice(12, 14));
+  return Math.floor(new Date(Date.UTC(y, m, d, h, min, sec)).getTime() / 1000);
+}
+
 /**
  * Scrape all configured matches from livescore.com and update the in-memory store.
  * Called by the daily GitHub Actions cron at 1am.
@@ -221,7 +233,7 @@ export async function scrapeAllMatches(): Promise<{
         matchId,
         homeTeam: live.homeTeam,
         awayTeam: live.awayTeam,
-        kickoff: existing?.kickoff ?? Math.floor(Date.now() / 1000),
+        kickoff: parseStartTime(live.startDateTimeString),
         homeScore: result.homeScore,
         awayScore: result.awayScore,
         events,
@@ -229,6 +241,8 @@ export async function scrapeAllMatches(): Promise<{
         venue: existing?.venue,
         host: existing?.host,
         poolAddress: existing?.poolAddress,
+        homeBadge: live.homeBadge,
+        awayBadge: live.awayBadge,
       });
 
       updated++;

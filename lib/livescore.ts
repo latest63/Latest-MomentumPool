@@ -19,6 +19,7 @@ export interface LivescoreData {
   incidents: LivescoreEvent[];
   homeBadge: string;
   awayBadge: string;
+  startDateTimeString: string;
 }
 
 const BASE = 'https://www.livescore.com';
@@ -90,6 +91,7 @@ export async function fetchLivescoreMatch(path: string): Promise<LivescoreData |
       incidents,
       homeBadge: event.homeTeamBadge ? `${IMG_BASE}${event.homeTeamBadge}` : '',
       awayBadge: event.awayTeamBadge ? `${IMG_BASE}${event.awayTeamBadge}` : '',
+      startDateTimeString: event.startDateTimeString ?? '',
     };
   } catch {
     return null;
