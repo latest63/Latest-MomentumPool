@@ -2,6 +2,7 @@
  * Momentum Engine — shared between API routes and cron
  * Sample data for today's live matches (Bundesliga Rel. + Eliteserien + Allsvenskan).
  */
+import { fetchLivescoreMatch, mapLivescoreStatus, mapLivescoreType, LIVESCORE_MATCHES } from './livescore';
 
 export type EventType =
   | 'goal'
@@ -183,8 +184,6 @@ export async function scrapeAllMatches(): Promise<{
   failed: number;
   results: { matchId: string; status: string }[];
 }> {
-  const { fetchLivescoreMatch, mapLivescoreStatus, mapLivescoreType, LIVESCORE_MATCHES } = await import('./livescore');
-
   const results: { matchId: string; status: string }[] = [];
   let updated = 0;
   let failed = 0;
