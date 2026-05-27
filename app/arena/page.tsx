@@ -36,28 +36,28 @@ interface EventItem { type: string; team: 'home' | 'away'; minute: number; playe
 interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
 
 const FALLBACK: MatchSummary[] = [
-  { matchId: 'usa-canada', homeTeam: 'IK Start', awayTeam: 'Vålerenga', venue: 'Sør Arena' },
-  { matchId: 'brazil-nigeria', homeTeam: 'HamKam', awayTeam: 'Lillestrøm', venue: 'Briskeby Stadion' },
-  { matchId: 'argentina-ghana', homeTeam: 'Elfsborg', awayTeam: 'BK Häcken', venue: 'Borås Arena' },
-  { matchId: 'mexico-japan', homeTeam: 'Paderborn', awayTeam: 'Wolfsburg', venue: 'Home Deluxe Arena' },
+  { matchId: 'aalesund-hamkam', homeTeam: 'Aalesund', awayTeam: 'HamKam', venue: 'Color Line Stadion' },
+  { matchId: 'brann-sarpsborg', homeTeam: 'Brann', awayTeam: 'Sarpsborg 08', venue: 'Brann Stadion' },
+  { matchId: 'fredrikstad-start', homeTeam: 'Fredrikstad', awayTeam: 'IK Start', venue: 'Fredrikstad Stadion' },
+  { matchId: 'rosenborg-glimt', homeTeam: 'Rosenborg', awayTeam: 'Bodø/Glimt', venue: 'Lerkendal Stadion' },
 ];
 
 const FLAGS: Record<string, string> = {
-  'IK Start': '🇳🇴', Vålerenga: '🇳🇴',
-  HamKam: '🇳🇴', 'Lillestrøm': '🇳🇴',
-  Elfsborg: '🇸🇪', 'BK Häcken': '🇸🇪',
-  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
+  Aalesund: '🇳🇴', HamKam: '🇳🇴',
+  Brann: '🇳🇴', 'Sarpsborg 08': '🇳🇴',
+  Fredrikstad: '🇳🇴', 'IK Start': '🇳🇴',
+  Rosenborg: '🇳🇴', 'Bodø/Glimt': '🇳🇴',
 };
 
 const LOGOS: Record<string, string> = {
-  'IK Start': 'https://storage.livescore.com/images/team/high/enet/9919.png',
-  Vålerenga: 'https://storage.livescore.com/images/team/high/enet/8007.png',
+  Aalesund: 'https://storage.livescore.com/images/team/high/enet/9919.png',
   HamKam: 'https://storage.livescore.com/images/team/high/enet/8448.png',
-  'Lillestrøm': 'https://storage.livescore.com/images/team/high/enet/8476.png',
-  Elfsborg: 'https://storage.livescore.com/images/team/high/enet/8014.png',
-  'BK Häcken': 'https://storage.livescore.com/images/team/high/enet/8428.png',
-  Paderborn: 'https://storage.livescore.com/images/team/high/enet/8460.png',
-  Wolfsburg: 'https://storage.livescore.com/images/team/high/teambadge/wolfsburg-2026.png',
+  Brann: 'https://storage.livescore.com/images/team/high/enet/8007.png',
+  'Sarpsborg 08': 'https://storage.livescore.com/images/team/high/enet/8476.png',
+  Fredrikstad: 'https://storage.livescore.com/images/team/high/enet/8014.png',
+  'IK Start': 'https://storage.livescore.com/images/team/high/enet/8428.png',
+  Rosenborg: 'https://storage.livescore.com/images/team/high/enet/8460.png',
+  'Bodø/Glimt': 'https://storage.livescore.com/images/team/high/enet/8456.png',
 };
 
 // Pool address from on-chain deploy (Nigeria vs Brazil)
