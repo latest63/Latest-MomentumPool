@@ -173,3 +173,65 @@ export function updateMatch(matchId: string, events: MatchEvent[]): MatchState |
 
   return match;
 }
+
+/**
+ * Scrape all configured matches from livescore.com and update the in-memory store.
+ * Called by the daily GitHub Actions cron at 1am.
+ */
+export async function scrapeAllMatches(): Promise<{
+  updated: number;
+  failed: number;
+  results: { matchId: string; status: string }[];
+}> {
+  const { fetchLivescoreMatch, mapLivescoreStatus, mapLivescoreType, LIVESCORE_MATCHES } = await import('./livescore');
+
+  const results: { matchId: string; status: string }[] = [];
+  let updated = 0;
+  let failed = 0;
+
+  for (const [matchId, lsPath] of Object.entries(LIVESCORE_MATCHES)) {
+    try {
+      const live = await fetchLivescoreMatch(lsPath);
+      if (!live) {
+        results.push({ matchId, status: 'failed (no data)' });
+        failed++;
+        continue;
+      }
+
+      const events: MatchEvent[] = (live.incidents ?? []).map((inc) => ({
+        type: mapLivescoreType(inc.type) as EventType,
+        team: inc.team === 'home' ? 'home' : 'away',
+        minute: parseInt(inc.time) || 0,
+        player: inc.name || undefined,
+      }));
+
+      const result = computeMomentum(events);
+      const existing = store.get(matchId);
+
+      store.set(matchId, {
+        matchId,
+        homeTeam: live.homeTeam,
+        awayTeam: live.awayTeam,
+        kickoff: existing?.kickoff ?? Math.floor(Date.now() / 1000),
+        homeScore: result.homeScore,
+        awayScore: result.awayScore,
+        events,
+        half: mapLivescoreStatus(live.status) as MatchState['half'],
+        venue: existing?.venue,
+        host: existing?.host,
+        poolAddress: existing?.poolAddress,
+      });
+
+      updated++;
+      results.push({
+        matchId,
+        status: `ok (${live.homeTeam} ${live.homeScore}-${live.awayScore} ${live.awayTeam})`,
+      });
+    } catch (err) {
+      results.push({ matchId, status: `error: ${err}` });
+      failed++;
+    }
+  }
+
+  return { updated, failed, results };
+}
