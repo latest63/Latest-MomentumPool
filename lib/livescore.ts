@@ -28,8 +28,8 @@ async function getBuildId(): Promise<string | null> {
   try {
     const html = await fetch(BASE, {
       headers: { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36' },
-      next: { revalidate: 3600 },
-    } as RequestInit & { next?: { revalidate?: number } }).then(r => r.text());
+      cache: 'no-store',
+    }).then(r => r.text());
 
     const match = html.match(/_next\/static\/([a-zA-Z0-9_-]+)\/_buildManifest/);
     return match?.[1] ?? null;
@@ -50,8 +50,8 @@ export async function fetchLivescoreMatch(path: string): Promise<LivescoreData |
     const url = `${BASE}/_next/data/${buildId}/${path}.json`;
     const res = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36' },
-      next: { revalidate: 15 },
-    } as RequestInit & { next?: { revalidate?: number } });
+      cache: 'no-store',
+    });
 
     if (!res.ok) return null;
     const json = await res.json();
