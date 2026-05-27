@@ -33,7 +33,7 @@ const POOL_ABI = [
 
 interface MomentumData { homeScore: number; awayScore: number; homeTeam: string; awayTeam: string; half: string; diff: number; }
 interface EventItem { type: string; team: 'home' | 'away'; minute: number; player?: string; }
-interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
+interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; homeBadge?: string; awayBadge?: string; }
 
 const FALLBACK: MatchSummary[] = [
   { matchId: 'aalesund-hamkam', homeTeam: 'Aalesund', awayTeam: 'HamKam', venue: 'Color Line Stadion' },
@@ -136,12 +136,12 @@ export default function ArenaPage() {
           <div className="match-view">
             <div className="match-header">
               <div className="match-header-team">
-                {LOGOS[selectedMatch.homeTeam] && <img src={LOGOS[selectedMatch.homeTeam]} alt="" className="team-logo" />}
+                {selectedMatch.homeBadge ? <img src={selectedMatch.homeBadge} alt="" className="team-logo" /> : LOGOS[selectedMatch.homeTeam] ? <img src={LOGOS[selectedMatch.homeTeam]} alt="" className="team-logo" /> : null}
                 <span>{selectedMatch.homeTeam}</span>
               </div>
               <div className="match-header-vs">VS</div>
               <div className="match-header-team">
-                {LOGOS[selectedMatch.awayTeam] && <img src={LOGOS[selectedMatch.awayTeam]} alt="" className="team-logo" />}
+                {selectedMatch.awayBadge ? <img src={selectedMatch.awayBadge} alt="" className="team-logo" /> : LOGOS[selectedMatch.awayTeam] ? <img src={LOGOS[selectedMatch.awayTeam]} alt="" className="team-logo" /> : null}
                 <span>{selectedMatch.awayTeam}</span>
               </div>
             </div>

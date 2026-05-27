@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, useLayoutEffect } from 'react';
 
-interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; }
+interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; homeBadge?: string; awayBadge?: string; }
 
 interface Props {
   matches: MatchSummary[];
@@ -73,12 +73,12 @@ function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
             onClick={() => onSelect(m.matchId)}
           >
             <div className="tab-team-row">
-              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
+              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="tab-logo" /> : m.homeBadge ? <img src={m.homeBadge} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
               <span>{m.homeTeam}</span>
             </div>
             <div className="tab-vs-label">vs</div>
             <div className="tab-team-row">
-              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
+              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="tab-logo" /> : m.awayBadge ? <img src={m.awayBadge} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
               <span>{m.awayTeam}</span>
             </div>
             <small>{m.venue || 'WC 2026'}</small>
@@ -102,8 +102,8 @@ function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
             onClick={() => onSelect(m.matchId)}
           >
             <div className="mc-flags">
-              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
-              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
+              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="mc-logo" /> : m.homeBadge ? <img src={m.homeBadge} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
+              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="mc-logo" /> : m.awayBadge ? <img src={m.awayBadge} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
             </div>
             <div className="mc-teams">
               <span className="mc-team">{m.homeTeam}</span>

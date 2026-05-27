@@ -42,6 +42,8 @@ export interface MatchState {
   venue?: string;
   host?: string;
   poolAddress?: string;
+  homeBadge?: string;
+  awayBadge?: string;
 }
 
 export interface MomentumResult {
@@ -79,6 +81,8 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     awayScore: 0,
     half: 'pre',
     events: [],
+    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8404.png',
+    awayBadge: 'https://storage.livescore.com/images/team/high/enet/8448.png',
   },
   {
     matchId: 'brann-sarpsborg',
@@ -91,6 +95,8 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     awayScore: 0,
     half: 'pre',
     events: [],
+    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8468.png',
+    awayBadge: 'https://storage.livescore.com/images/team/high/enet/8509.png',
   },
   {
     matchId: 'fredrikstad-start',
@@ -103,6 +109,8 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     awayScore: 0,
     half: 'pre',
     events: [],
+    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8417.png',
+    awayBadge: 'https://storage.livescore.com/images/team/high/enet/9919.png',
   },
   {
     matchId: 'rosenborg-glimt',
@@ -115,6 +123,8 @@ export const WORLD_CUP_MATCHES: MatchState[] = [
     awayScore: 0,
     half: 'pre',
     events: [],
+    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8422.png',
+    awayBadge: 'https://storage.livescore.com/images/team/high/enet/8402.png',
   },
 ];
 

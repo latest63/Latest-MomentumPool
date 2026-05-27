@@ -15,6 +15,8 @@ export async function GET() {
     venue: m.venue,
     host: m.host,
     poolAddress: m.poolAddress,
+    homeBadge: m.homeBadge,
+    awayBadge: m.awayBadge,
   }));
 
   return NextResponse.json({ matches });
