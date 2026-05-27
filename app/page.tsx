@@ -3,28 +3,28 @@
 import Nav from '@/components/Nav';
 
 const FALLBACK = [
-  { id: 'usa-canada', home: 'IK Start', away: 'Vålerenga', venue: 'Sør Arena' },
-  { id: 'brazil-nigeria', home: 'HamKam', away: 'Lillestrøm', venue: 'Briskeby Stadion' },
-  { id: 'argentina-ghana', home: 'Elfsborg', away: 'BK Häcken', venue: 'Borås Arena' },
-  { id: 'mexico-japan', home: 'Paderborn', away: 'Wolfsburg', venue: 'Home Deluxe Arena' },
+  { id: 'aalesund-hamkam', home: 'Aalesund', away: 'HamKam', venue: 'Color Line Stadion' },
+  { id: 'brann-sarpsborg', home: 'Brann', away: 'Sarpsborg 08', venue: 'Brann Stadion' },
+  { id: 'fredrikstad-start', home: 'Fredrikstad', away: 'IK Start', venue: 'Fredrikstad Stadion' },
+  { id: 'rosenborg-glimt', home: 'Rosenborg', away: 'Bodø/Glimt', venue: 'Lerkendal Stadion' },
 ];
 
 const FLAGS: Record<string, string> = {
-  'IK Start': '🇳🇴', Vålerenga: '🇳🇴',
-  HamKam: '🇳🇴', 'Lillestrøm': '🇳🇴',
-  Elfsborg: '🇸🇪', 'BK Häcken': '🇸🇪',
-  Paderborn: '🇩🇪', Wolfsburg: '🇩🇪',
+  Aalesund: '🇳🇴', HamKam: '🇳🇴',
+  Brann: '🇳🇴', 'Sarpsborg 08': '🇳🇴',
+  Fredrikstad: '🇳🇴', 'IK Start': '🇳🇴',
+  Rosenborg: '🇳🇴', 'Bodø/Glimt': '🇳🇴',
 };
 
 const LOGOS: Record<string, string> = {
-  'IK Start': 'https://storage.livescore.com/images/team/high/enet/9919.png',
-  Vålerenga: 'https://storage.livescore.com/images/team/high/enet/8007.png',
+  Aalesund: 'https://storage.livescore.com/images/team/high/enet/9919.png',
   HamKam: 'https://storage.livescore.com/images/team/high/enet/8448.png',
-  'Lillestrøm': 'https://storage.livescore.com/images/team/high/enet/8476.png',
-  Elfsborg: 'https://storage.livescore.com/images/team/high/enet/8014.png',
-  'BK Häcken': 'https://storage.livescore.com/images/team/high/enet/8428.png',
-  Paderborn: 'https://storage.livescore.com/images/team/high/enet/8460.png',
-  Wolfsburg: 'https://storage.livescore.com/images/team/high/teambadge/wolfsburg-2026.png',
+  Brann: 'https://storage.livescore.com/images/team/high/enet/8007.png',
+  'Sarpsborg 08': 'https://storage.livescore.com/images/team/high/enet/8476.png',
+  Fredrikstad: 'https://storage.livescore.com/images/team/high/enet/8014.png',
+  'IK Start': 'https://storage.livescore.com/images/team/high/enet/8428.png',
+  Rosenborg: 'https://storage.livescore.com/images/team/high/enet/8460.png',
+  'Bodø/Glimt': 'https://storage.livescore.com/images/team/high/enet/8456.png',
 };
 
 export default function Home() {
@@ -39,7 +39,7 @@ export default function Home() {
         <div className="hero-split-inner">
           <div className="hero-content hero-content-split">
             <div className="hero-tag">
-              <span className="dot" /> BUNDESLIGA LIVE
+              <span className="dot" /> ELITESERIEN LIVE
             </div>
             <h1 className="hero-title">
               PICK THE<br />
@@ -102,7 +102,7 @@ export default function Home() {
         <div className="hero-intro">
           <div className="hero-intro-inner">
             <div className="section-label">Momentum Pool</div>
-            <div className="section-title">Germany & Norway Live</div>
+            <div className="section-title">Norway Eliteserien</div>
             <div className="section-desc">
               The first on-chain momentum pool built for football. Pick who controls each half,
               watch live events shift the momentum bar, and split the pot.
@@ -216,7 +216,7 @@ export default function Home() {
         <div className="footer-powered">
           <span>Momentum Pool</span>
           <span className="footer-powered-text">Powered by X Layer</span>
-          <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge footer-powered-img" />
+          <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-img footer-powered-img" />
         </div>
         <div className="footer-links">
           <a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a>
