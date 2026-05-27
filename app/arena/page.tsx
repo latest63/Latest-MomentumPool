@@ -33,13 +33,13 @@ const POOL_ABI = [
 
 interface MomentumData { homeScore: number; awayScore: number; homeTeam: string; awayTeam: string; half: string; diff: number; }
 interface EventItem { type: string; team: 'home' | 'away'; minute: number; player?: string; }
-interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; homeBadge?: string; awayBadge?: string; }
+interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; kickoff?: number; homeBadge?: string; awayBadge?: string; }
 
 const FALLBACK: MatchSummary[] = [
-  { matchId: 'aalesund-hamkam', homeTeam: 'Aalesund', awayTeam: 'HamKam', venue: 'Color Line Stadion' },
-  { matchId: 'brann-sarpsborg', homeTeam: 'Brann', awayTeam: 'Sarpsborg 08', venue: 'Brann Stadion' },
-  { matchId: 'fredrikstad-start', homeTeam: 'Fredrikstad', awayTeam: 'IK Start', venue: 'Fredrikstad Stadion' },
-  { matchId: 'rosenborg-glimt', homeTeam: 'Rosenborg', awayTeam: 'Bodø/Glimt', venue: 'Lerkendal Stadion' },
+  { matchId: 'aalesund-hamkam', homeTeam: 'Aalesund', awayTeam: 'HamKam', venue: 'Color Line Stadion', kickoff: 1749056400 },
+  { matchId: 'brann-sarpsborg', homeTeam: 'Brann', awayTeam: 'Sarpsborg 08', venue: 'Brann Stadion', kickoff: 1749056400 },
+  { matchId: 'fredrikstad-start', homeTeam: 'Fredrikstad', awayTeam: 'IK Start', venue: 'Fredrikstad Stadion', kickoff: 1749056400 },
+  { matchId: 'rosenborg-glimt', homeTeam: 'Rosenborg', awayTeam: 'Bodø/Glimt', venue: 'Lerkendal Stadion', kickoff: 1749056400 },
 ];
 
 const FLAGS: Record<string, string> = {
@@ -150,6 +150,7 @@ export default function ArenaPage() {
               matchId={selectedMatch.matchId}
               homeTeam={selectedMatch.homeTeam}
               awayTeam={selectedMatch.awayTeam}
+              kickoff={selectedMatch.kickoff}
               onDeposit={handleDeposit}
             />
             <EventFeed events={events} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />

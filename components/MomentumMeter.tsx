@@ -125,16 +125,39 @@ interface PoolCardProps {
   homeTeam: string;
   awayTeam: string;
   poolAddress?: string;
-  depositDeadline?: number;
-  halfEnd?: number;
+  kickoff?: number;
   onDeposit: (matchId: string, teamId: number, amount: string) => void;
 }
 
-export function PoolCard({ matchId, homeTeam, awayTeam, depositDeadline, onDeposit }: PoolCardProps) {
-  const now = Math.floor(Date.now() / 1000);
-  const isOpen = depositDeadline ? now < depositDeadline : true;
-  const timeLeft = depositDeadline ? depositDeadline - now : 0;
+const DEPOSIT_WINDOW = 3600; // 1 hour before kickoff
+
+function formatCountdown(seconds: number): string {
+  if (seconds <= 0) return '';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  return `${m}m ${s}s`;
+}
+
+export function PoolCard({ matchId, homeTeam, awayTeam, kickoff, onDeposit }: PoolCardProps) {
+  const [now, setNow] = useState(Math.floor(Date.now() / 1000));
   const [amount, setAmount] = useState('0.001');
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const depositOpensAt = kickoff ? kickoff - DEPOSIT_WINDOW : 0;
+  const depositClosesAt = kickoff || 0;
+
+  let phase: 'pre' | 'open' | 'closed';
+  if (!kickoff || now < depositOpensAt) phase = 'pre';
+  else if (now < depositClosesAt) phase = 'open';
+  else phase = 'closed';
+
+  const isOpen = phase === 'open';
 
   return (
     <div className="wc-pool">
@@ -174,9 +197,13 @@ export function PoolCard({ matchId, homeTeam, awayTeam, depositDeadline, onDepos
           </div>
         </button>
       </div>
-      {isOpen ? (
+      {phase === 'pre' && kickoff ? (
         <div className="wc-pool-clock">
-          Deposit closes in {Math.floor(timeLeft / 60)}m {timeLeft % 60}s
+          Deposit starts in {formatCountdown(depositOpensAt - now)}
+        </div>
+      ) : phase === 'open' && kickoff ? (
+        <div className="wc-pool-clock wc-pool-open">
+          Deposit closes in {formatCountdown(depositClosesAt - now)}
         </div>
       ) : (
         <div className="wc-pool-clock wc-pool-closed">Pool closed — awaiting settlement</div>
