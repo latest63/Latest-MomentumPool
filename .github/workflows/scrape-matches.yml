@@ -1,0 +1,15 @@
+name: Scrape Matches Daily
+
+on:
+  schedule:
+    # 1am UTC every day
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel scrape endpoint
+        run: |
+          curl -sSf "https://momentum-pool.vercel.app/api/cron/scrape"
