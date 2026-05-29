@@ -1,27 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MomentumBar, EventFeed, PoolCard, type MomentumData, type EventItem } from '@/components/MomentumMeter';
+import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import { useAccount, useReadContract, useWriteContract, useSwitchChain } from 'wagmi';
-import { parseEther } from 'viem';
+import { parseEther, formatEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
-import TeamLogo from '@/components/TeamLogo';
+import TeamBadge from '@/components/TeamBadge';
 
 const POOL_ABI = [
   { name: 'deposit', type: 'function', inputs: [{ name: 'teamId', type: 'uint8' }], stateMutability: 'payable', outputs: [] },
-  { name: 'getPoolTotals', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint256' }, { name: '', type: 'uint256' }], stateMutability: 'view' },
   { name: 'state', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint8' }], stateMutability: 'view' },
   { name: 'winnerTeamId', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint8' }], stateMutability: 'view' },
-  { name: 'winningScore', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
-  { name: 'losingScore', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
   { name: 'team0', type: 'function', inputs: [], outputs: [{ name: 'total', type: 'uint256' }], stateMutability: 'view' },
   { name: 'team1', type: 'function', inputs: [], outputs: [{ name: 'total', type: 'uint256' }], stateMutability: 'view' },
 ] as const;
 
-const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_POOL_FACTORY || '0x654E54963eE6440fB30AD92C19AfF8e89Dd15ac5') as `0x${string}`;
 const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df') as `0x${string}`;
 
 interface MatchSummary {
@@ -30,8 +26,6 @@ interface MatchSummary {
   awayTeam: string;
   homeCode?: string;
   awayCode?: string;
-  homeBadge?: string;
-  awayBadge?: string;
   homeScore?: number;
   awayScore?: number;
   status?: string;
@@ -55,11 +49,12 @@ export default function ArenaPage() {
   const { switchChain } = useSwitchChain();
   const { setLoading } = useLoading();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [depositAmount, setDepositAmount] = useState('0.001');
 
+  useEffect(() => setMounted(true), []);
   useEffect(() => { setLoading(isPending); }, [isPending, setLoading]);
 
-  // Fetch match list from Supabase
+  // Fetch matches
   useEffect(() => {
     fetch('/api/matches')
       .then(r => r.json())
@@ -72,19 +67,17 @@ export default function ArenaPage() {
       .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep selected in sync
   useEffect(() => {
     if (matches.length && !matches.find(m => m.matchId === selected)) {
       setSelected(matches[0].matchId);
     }
   }, [matches, selected]);
 
-  // Live poll momentum + events from Supabase
+  // Live poll momentum + events
   useEffect(() => {
     if (!selected) return;
     setMomLoaded(false);
     setMomentum(null);
-
     const fetchLive = async () => {
       try {
         const [momRes, evRes] = await Promise.all([
@@ -104,77 +97,41 @@ export default function ArenaPage() {
   const selectedMatch = matches.find(m => m.matchId === selected);
   const activePoolAddress = (selectedMatch?.poolAddress || POOL_ADDRESS) as `0x${string}`;
 
-  // On-chain state for settled pools
-  const { data: rawState } = useReadContract({
-    address: activePoolAddress,
-    abi: POOL_ABI,
-    functionName: 'state',
-  });
-  const { data: rawWinner } = useReadContract({
-    address: activePoolAddress,
-    abi: POOL_ABI,
-    functionName: 'winnerTeamId',
-  });
-  const { data: rawWinScore } = useReadContract({
-    address: activePoolAddress,
-    abi: POOL_ABI,
-    functionName: 'winningScore',
-  });
-  const { data: rawLoseScore } = useReadContract({
-    address: activePoolAddress,
-    abi: POOL_ABI,
-    functionName: 'losingScore',
-  });
-  const { data: rawHomeTotal } = useReadContract({
-    address: activePoolAddress,
-    abi: POOL_ABI,
-    functionName: 'team0',
-  });
-  const { data: rawAwayTotal } = useReadContract({
-    address: activePoolAddress,
-    abi: POOL_ABI,
-    functionName: 'team1',
-  });
-  const { data: rawPoolTotals } = useReadContract({
-    address: activePoolAddress,
-    abi: POOL_ABI,
-    functionName: 'getPoolTotals',
-  });
+  // On-chain pool state
+  const { data: rawState } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'state' });
+  const { data: rawWinner } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'winnerTeamId' });
+  const { data: rawHomeTotal } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'team0' });
+  const { data: rawAwayTotal } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'team1' });
 
   const chainState = mounted ? Number(rawState ?? 0) : 0;
   const isOnChainSettled = chainState === 2;
   const winner = Number(rawWinner ?? 0);
-  const winScore = Number(rawWinScore ?? 0);
-  const loseScore = Number(rawLoseScore ?? 0);
-  const homeTotal = Number(rawHomeTotal ?? 0);
-  const awayTotal = Number(rawAwayTotal ?? 0);
-  const [poolHome, poolAway] = rawPoolTotals ? [Number(rawPoolTotals[0]), Number(rawPoolTotals[1])] : [BigInt(0), BigInt(0)];
+  const homePool = rawHomeTotal ? Number(formatEther(rawHomeTotal as bigint)) : 0;
+  const awayPool = rawAwayTotal ? Number(formatEther(rawAwayTotal as bigint)) : 0;
+  const totalPool = homePool + awayPool;
 
   const isMatchSettled = selectedMatch?.settled || isOnChainSettled;
   const homeTeam = selectedMatch?.homeTeam || '';
   const awayTeam = selectedMatch?.awayTeam || '';
   const winnerName = winner === 0 ? homeTeam : awayTeam;
 
-  const handleDeposit = (matchId: string, teamId: number, amount: string) => {
+  const handleDeposit = (teamId: number) => {
     if (!isConnected) return alert('Connect your wallet first');
     if (chainId !== 196) {
       alert('Switch to X Layer in your wallet');
       switchChain?.({ chainId: 196 });
       return;
     }
-    const parsed = parseFloat(amount);
+    const parsed = parseFloat(depositAmount);
     if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
     writeContract({
       address: activePoolAddress,
       abi: POOL_ABI,
       functionName: 'deposit',
       args: [teamId],
-      value: parseEther(amount),
+      value: parseEther(depositAmount),
     }, {
-      onError(err) {
-        alert(`Transaction failed: ${err.message}`);
-        console.error('Deposit error:', err);
-      },
+      onError(err) { alert(`Failed: ${err.message}`); },
     });
   };
 
@@ -182,11 +139,9 @@ export default function ArenaPage() {
     return (
       <>
         <Nav />
-        <div className="main-content">
-          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#666' }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>⚽</div>
-            <p>No matches available yet.</p>
-          </div>
+        <div className="main-content" style={{ textAlign: 'center', padding: '80px 20px', color: '#666' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>⚽</div>
+          <p>No matches available yet.</p>
         </div>
       </>
     );
@@ -214,79 +169,95 @@ export default function ArenaPage() {
         </div>
 
         <div className="match-view">
+          {/* Match header: team names + badges */}
           <div className="match-header">
             <div className="match-header-team">
-              <TeamLogo
-                name={selectedMatch.homeTeam}
-                badge={selectedMatch.homeBadge}
-                code={selectedMatch.homeCode}
-              />
-              <span>{selectedMatch.homeTeam}</span>
+              <TeamBadge name={homeTeam} code={selectedMatch.homeCode} size={40} />
+              <span>{homeTeam}</span>
             </div>
             <div className="match-header-vs">
               VS
               {selectedMatch.group && <small>{selectedMatch.group}</small>}
             </div>
             <div className="match-header-team">
-              <TeamLogo
-                name={selectedMatch.awayTeam}
-                badge={selectedMatch.awayBadge}
-                code={selectedMatch.awayCode}
-              />
-              <span>{selectedMatch.awayTeam}</span>
+              <TeamBadge name={awayTeam} code={selectedMatch.awayCode} size={40} />
+              <span>{awayTeam}</span>
             </div>
           </div>
 
-          {/* Settlement banner */}
-          {isOnChainSettled && (
-            <div className="settle-banner">
-              <div className="settle-winner">
-                🏆 <strong>{winnerName}</strong> won{' '}
-                <span className="settle-score">{winScore}–{loseScore}</span>
-              </div>
-              <div className="settle-pool-totals">
-                Pool: {parseFloat((homeTotal / 1e18).toFixed(4))} OKB on {homeTeam} ·{' '}
-                {parseFloat((awayTotal / 1e18).toFixed(4))} OKB on {awayTeam}
-              </div>
-            </div>
-          )}
-
+          {/* Momentum bar */}
           <MomentumBar
             data={momentum}
             loading={!momLoaded}
-            homeTeam={selectedMatch.homeTeam}
-            awayTeam={selectedMatch.awayTeam}
+            homeTeam={homeTeam}
+            awayTeam={awayTeam}
           />
 
-          {isMatchSettled ? (
-            <>
-              <EventFeed events={events} homeTeam={homeTeam} awayTeam={awayTeam} />
-              {isConnected && (
-                <div style={{ textAlign: 'center', margin: '24px 0' }}>
-                  <a
-                    href={`https://www.okx.com/web3/explorer/xlayer/address/${activePoolAddress}`}
-                    target="_blank"
-                    rel="noopener"
-                    style={{
-                      display: 'inline-block', padding: '12px 24px',
-                      background: 'var(--accent-primary)', color: '#fff',
-                      borderRadius: 8, fontWeight: 600, textDecoration: 'none',
-                    }}
-                  >
-                    View on OKX Explorer ↗
-                  </a>
+          {/* Pool section */}
+          <div className="pool-section">
+            {isMatchSettled ? (
+              /* ─── SETTLED: show winner + total pool ─── */
+              <>
+                {homePool > 0 || awayPool > 0 ? (
+                  <div className="pool-settled">
+                    <div className="pool-settled-winner">
+                      🏆 <strong>{winnerName}</strong> won — Total pool: {totalPool.toFixed(4)} OKB
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pool-empty">Pool settled — no deposits</div>
+                )}
+                {isConnected && (
+                  <div style={{ textAlign: 'center', marginTop: 16 }}>
+                    <a
+                      href={`https://www.okx.com/web3/explorer/xlayer/address/${activePoolAddress}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="explorer-link"
+                    >
+                      View on OKX Explorer ↗
+                    </a>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* ─── LIVE / UPCOMING: show pool + deposit ─── */
+              <div className="pool-deposit">
+                <div className="pool-deposit-teams">
+                  <div className="pool-deposit-team">
+                    <TeamBadge name={homeTeam} code={selectedMatch.homeCode} size={32} />
+                    <span className="pool-deposit-team-name">{homeTeam}</span>
+                    <span className="pool-deposit-amount">{homePool.toFixed(4)} OKB</span>
+                    <button className="pool-deposit-btn" onClick={() => handleDeposit(0)}>
+                      Deposit
+                    </button>
+                  </div>
+                  <div className="pool-deposit-vs">VS</div>
+                  <div className="pool-deposit-team">
+                    <TeamBadge name={awayTeam} code={selectedMatch.awayCode} size={32} />
+                    <span className="pool-deposit-team-name">{awayTeam}</span>
+                    <span className="pool-deposit-amount">{awayPool.toFixed(4)} OKB</span>
+                    <button className="pool-deposit-btn" onClick={() => handleDeposit(1)}>
+                      Deposit
+                    </button>
+                  </div>
                 </div>
-              )}
-            </>
-          ) : (
-            <PoolCard
-              matchId={selectedMatch.matchId}
-              homeTeam={selectedMatch.homeTeam}
-              awayTeam={selectedMatch.awayTeam}
-              kickoff={selectedMatch.kickoff}
-              onDeposit={handleDeposit}
-            />
-          )}
+                <div className="pool-deposit-input">
+                  <label>Amount (OKB)</label>
+                  <input
+                    type="number"
+                    value={depositAmount}
+                    onChange={e => setDepositAmount(e.target.value)}
+                    min="0.0001"
+                    step="0.001"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Event feed */}
+          <EventFeed events={events} homeTeam={homeTeam} awayTeam={awayTeam} />
         </div>
 
         <footer className="app-footer">
@@ -294,7 +265,7 @@ export default function ArenaPage() {
             Built on <a href="https://www.xlayer.tech/" target="_blank" rel="noopener">X Layer</a> &middot;
             {' '}<a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a> &middot;
             {' '}<a href="https://github.com/latest63/Latest-MomentumPool" target="_blank" rel="noopener">GitHub</a>
-            {isOnChainSettled && (
+            {rawHomeTotal && (
               <> &middot; Pool <a href={`https://www.okx.com/web3/explorer/xlayer/address/${activePoolAddress}`} target="_blank" rel="noopener">{activePoolAddress.slice(0, 10)}...{activePoolAddress.slice(-4)}</a></>
             )}
           </p>
