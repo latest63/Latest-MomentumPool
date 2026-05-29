@@ -36,9 +36,11 @@ interface MomentumBarProps {
   loading?: boolean;
   homeTeam?: string;
   awayTeam?: string;
+  actualHomeScore?: number;
+  actualAwayScore?: number;
 }
 
-export function MomentumBar({ data, loading, homeTeam = '', awayTeam = '' }: MomentumBarProps) {
+export function MomentumBar({ data, loading, homeTeam = '', awayTeam = '', actualHomeScore, actualAwayScore }: MomentumBarProps) {
   if (loading) {
     return (
       <div className="wc-bar wc-skeleton" style={{ padding: 0 }}>
@@ -76,20 +78,27 @@ export function MomentumBar({ data, loading, homeTeam = '', awayTeam = '' }: Mom
 
   const total = Math.abs(data.homeScore) + Math.abs(data.awayScore) || 1;
   const homePct = (data.homeScore / total) * 100 || 50;
+  const showActual = actualHomeScore !== undefined && actualAwayScore !== undefined;
 
   return (
     <div className="wc-bar">
       <div className="wc-teams">
         <div className="wc-left">
           <span className="wc-name">{data.homeTeam}</span>
-          <span className="wc-score">{data.homeScore}</span>
+          <span className="wc-score">{showActual ? actualHomeScore : data.homeScore}</span>
         </div>
         <span className="wc-half-badge">{data.half} HALF</span>
         <div className="wc-right">
-          <span className="wc-score">{data.awayScore}</span>
+          <span className="wc-score">{showActual ? actualAwayScore : data.awayScore}</span>
           <span className="wc-name">{data.awayTeam}</span>
         </div>
       </div>
+      {showActual && (
+        <div className="wc-points">
+          <span>{data.homeScore} pts</span>
+          <span>{data.awayScore} pts</span>
+        </div>
+      )}
       <div className="wc-track">
         <div className="wc-fill" style={{ width: `${homePct}%` }} />
         <div className="wc-fill wc-fill-away" style={{ width: `${100 - homePct}%` }} />

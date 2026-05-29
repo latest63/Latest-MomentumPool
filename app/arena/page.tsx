@@ -193,6 +193,8 @@ export default function ArenaPage() {
             loading={!momLoaded}
             homeTeam={homeTeam}
             awayTeam={awayTeam}
+            actualHomeScore={selectedMatch.homeScore}
+            actualAwayScore={selectedMatch.awayScore}
           />
 
           {/* Pool section */}

@@ -1291,6 +1291,18 @@ body {
 .wc-fill-away { background: var(--bright-red); }
 .wc-divider { position: absolute; left: 50%; top: 0; width: 3px; height: 100%; background: rgba(255,255,255,0.15); transform: translateX(-50%); }
 .wc-dom { text-align: center; margin-top: var(--sp-3); font-family: var(--font-sports); font-size: 16px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-secondary); }
+
+/* Momentum points below score */
+.wc-points {
+  display: flex;
+  justify-content: space-between;
+  margin: -8px 0 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+.wc-points span:last-child { text-align: right; }
 .wc-skeleton { background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: var(--sp-6); }
 .wc-skel-bar { height: 20px; border-radius: var(--radius-round); background: rgba(255,255,255,0.05); }
 .wc-empty { text-align: center; color: var(--text-tertiary); padding: var(--sp-8); font-family: var(--font-sports); font-size: 18px; letter-spacing: 1.5px; }
