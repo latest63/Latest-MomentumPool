@@ -12,7 +12,10 @@ export async function GET() {
       return NextResponse.json({ matches: [] });
     }
 
-    const mapped = matches.map((m) => {
+    // Filter out knockout placeholders where teams aren't decided yet
+    const withTeams = matches.filter((m) => m.homeTeam?.name && m.awayTeam?.name);
+
+    const mapped = withTeams.map((m) => {
       const status = m.status;
       const isLive = status === 'IN_PLAY' || status === 'PAUSED';
       const ht = m.homeTeam;

@@ -9,6 +9,7 @@ interface TeamBadgeProps {
 
 export default function TeamBadge({ name, code, colors, size = 40 }: TeamBadgeProps) {
   const c = colors ?? { primary: '#374df5', secondary: '#1a1a2e', text: '#ffffff' };
+  if (!name) return null; // guard: don't crash on null team names (knockout placeholders)
   const initial = code ?? name.slice(0, 3).toUpperCase();
 
   return (
