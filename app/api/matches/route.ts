@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { fetchWorldCupMatches, fdStatusToHalf } from '@/lib/football-data';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 3600; // 1 hour cache
+// Cache for 1 hour — schedule barely changes, saves API quota
+export const revalidate = 3600;
 
 export async function GET() {
   try {
