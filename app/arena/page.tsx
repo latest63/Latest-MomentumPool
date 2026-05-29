@@ -57,6 +57,7 @@ export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [selected, setSelected] = useState('');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
+  const [momLoaded, setMomLoaded] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
   const { address, isConnected } = useAccount();
   const { writeContract, isPending } = useWriteContract();
@@ -84,6 +85,8 @@ export default function ArenaPage() {
 
   useEffect(() => {
     if (!selected) return;
+    setMomLoaded(false);
+    setMomentum(null);
     const fetchLive = async () => {
       try {
         const [momRes, evRes] = await Promise.all([
@@ -91,6 +94,7 @@ export default function ArenaPage() {
           fetch(`/api/match/${selected}`),
         ]);
         if (momRes.ok) setMomentum(await momRes.json());
+        setMomLoaded(true);
         if (evRes.ok) { const d = await evRes.json(); setEvents(d.recentEvents || []); }
       } catch {}
     };
@@ -154,7 +158,7 @@ export default function ArenaPage() {
                 <span>{selectedMatch.awayTeam}</span>
               </div>
             </div>
-            <MomentumBar data={momentum} loading={!momentum} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />
+            <MomentumBar data={momentum} loading={!momLoaded} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />
             <PoolCard
               matchId={selectedMatch.matchId}
               homeTeam={selectedMatch.homeTeam}
