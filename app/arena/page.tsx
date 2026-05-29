@@ -49,6 +49,8 @@ interface MatchSummary {
   group?: string;
   isLive?: boolean;
   half?: string;
+  poolAddress?: string;
+  settled?: boolean;
 }
 
 const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_POOL_FACTORY || '0x654E54963eE6440fB30AD92C19AfF8e89Dd15ac5') as `0x${string}`;
@@ -109,6 +111,9 @@ export default function ArenaPage() {
 
   const selectedMatch = matches.find(m => m.matchId === selected);
 
+  // Use match-specific pool address if available, else fallback to env/hardcoded
+  const activePoolAddress = (selectedMatch?.poolAddress || POOL_ADDRESS) as `0x${string}`;
+
   const handleDeposit = (matchId: string, teamId: number, amount: string) => {
     if (!isConnected) return alert('Connect your wallet first');
     if (chainId !== 196) {
@@ -119,7 +124,7 @@ export default function ArenaPage() {
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
     writeContract({
-      address: POOL_ADDRESS,
+      address: activePoolAddress,
       abi: POOL_ABI,
       functionName: 'deposit',
       args: [teamId],

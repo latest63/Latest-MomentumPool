@@ -1,0 +1,24 @@
+{
+  "matches": [
+    {
+      "id": "test-match",
+      "homeTeam": "Mexico",
+      "awayTeam": "South Africa",
+      "homeCode": "MEX",
+      "awayCode": "RSA",
+      "homeBadge": "https://crests.football-data.org/mex.png",
+      "awayBadge": "https://crests.football-data.org/rsa.png",
+      "competition": "Friendly",
+      "group": "",
+      "kickoff": 1780026988,
+      "half": "fulltime",
+      "status": "settled",
+      "poolAddress": "0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df",
+      "poolFactory": "0x654E54963eE6440fB30AD92C19AfF8e89Dd15ac5",
+      "settled": true,
+      "winner": 0,
+      "homeScore": 2,
+      "awayScore": 1
+    }
+  ]
+}
