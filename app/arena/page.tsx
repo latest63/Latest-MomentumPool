@@ -8,7 +8,7 @@ import { parseEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
-import TeamBadge from '@/components/TeamBadge';
+import TeamLogo from '@/components/TeamLogo';
 
 const POOL_ABI = [
   {
@@ -52,21 +52,6 @@ interface MatchSummary {
 }
 
 const POOL_ADDRESS = '0xEC817c04C503A8B641bfdD0CDC105135d13Eb590';
-
-function TeamLogo({ name, badge, code, size = 48 }: { name: string; badge?: string; code?: string; size?: number }) {
-  const [broken, setBroken] = useState(false);
-  if (badge && !broken) {
-    return (
-      <img
-        src={badge}
-        alt={name}
-        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'contain' }}
-        onError={() => setBroken(true)}
-      />
-    );
-  }
-  return <TeamBadge name={name} code={code} size={size} />;
-}
 
 export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>([]);

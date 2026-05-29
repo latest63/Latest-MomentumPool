@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useLayoutEffect } from 'react';
-import TeamBadge from './TeamBadge';
+import TeamLogo from '@/components/TeamLogo';
 
 interface MatchSummary {
   matchId: string;
@@ -86,12 +86,12 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
             onClick={() => onSelect(m.matchId)}
           >
             <div className="tab-team-row">
-              <TeamBadge name={m.homeTeam} code={m.homeCode} colors={m.homeColors} size={28} />
+              <TeamLogo name={m.homeTeam} badge={m.homeBadge} code={m.homeCode} size={28} />
               <span>{m.homeTeam}</span>
             </div>
             <div className="tab-vs-label">vs</div>
             <div className="tab-team-row">
-              <TeamBadge name={m.awayTeam} code={m.awayCode} colors={m.awayColors} size={28} />
+              <TeamLogo name={m.awayTeam} badge={m.awayBadge} code={m.awayCode} size={28} />
               <span>{m.awayTeam}</span>
             </div>
             <small>{m.competition || m.venue || 'Football'}</small>
@@ -115,8 +115,8 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
             onClick={() => onSelect(m.matchId)}
           >
             <div className="mc-flags">
-              <TeamBadge name={m.homeTeam} code={m.homeCode} colors={m.homeColors} size={36} />
-              <TeamBadge name={m.awayTeam} code={m.awayCode} colors={m.awayColors} size={36} />
+              <TeamLogo name={m.homeTeam} badge={m.homeBadge} code={m.homeCode} size={36} />
+              <TeamLogo name={m.awayTeam} badge={m.awayBadge} code={m.awayCode} size={36} />
             </div>
             <div className="mc-teams">
               <span className="mc-team">{m.homeTeam}</span>
