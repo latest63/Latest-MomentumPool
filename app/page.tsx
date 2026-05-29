@@ -60,9 +60,10 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  const upcoming = matches.filter(m => !m.isLive && m.status === 'timed' || m.status === 'scheduled').slice(0, 5);
   const live = matches.filter(m => m.isLive);
-  const display = [...live, ...upcoming].slice(0, 5);
+  const upcoming = matches.filter(m => !m.isLive && (m.status === 'timed' || m.status === 'scheduled'));
+  const settled = matches.filter(m => m.status === 'settled').slice(0, 3);
+  const display = [...live, ...upcoming, ...settled].slice(0, 6);
 
   return (
     <>

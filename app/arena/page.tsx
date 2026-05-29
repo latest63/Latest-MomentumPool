@@ -178,6 +178,19 @@ export default function ArenaPage() {
     });
   };
 
+  if (!selectedMatch && matches.length === 0) {
+    return (
+      <>
+        <Nav />
+        <div className="main-content">
+          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#666' }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>⚽</div>
+            <p>No matches available yet.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
   if (!selectedMatch) return null;
 
   return (
