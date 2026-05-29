@@ -34,9 +34,11 @@ const EVENT_LABELS: Record<string, string> = {
 interface MomentumBarProps {
   data: MomentumData | null;
   loading?: boolean;
+  homeTeam?: string;
+  awayTeam?: string;
 }
 
-export function MomentumBar({ data, loading }: MomentumBarProps) {
+export function MomentumBar({ data, loading, homeTeam = '', awayTeam = '' }: MomentumBarProps) {
   if (loading) {
     return (
       <div className="wc-bar wc-skeleton" style={{ padding: 0 }}>
@@ -44,8 +46,32 @@ export function MomentumBar({ data, loading }: MomentumBarProps) {
       </div>
     );
   }
+
+  // When no live data, show a default 50/50 bar with team names
+  const displayHome = data?.homeTeam || homeTeam;
+  const displayAway = data?.awayTeam || awayTeam;
   if (!data) {
-    return <div className="wc-bar wc-empty">⏳ Waiting for kickoff...</div>;
+    return (
+      <div className="wc-bar">
+        <div className="wc-teams">
+          <div className="wc-left">
+            <span className="wc-name">{displayHome}</span>
+            <span className="wc-score">0</span>
+          </div>
+          <span className="wc-half-badge">1ST HALF</span>
+          <div className="wc-right">
+            <span className="wc-score">0</span>
+            <span className="wc-name">{displayAway}</span>
+          </div>
+        </div>
+        <div className="wc-track">
+          <div className="wc-fill" style={{ width: '50%' }} />
+          <div className="wc-fill wc-fill-away" style={{ width: '50%' }} />
+          <div className="wc-divider" />
+        </div>
+        <div className="wc-dom">Level — awaiting kickoff</div>
+      </div>
+    );
   }
 
   const total = Math.abs(data.homeScore) + Math.abs(data.awayScore) || 1;

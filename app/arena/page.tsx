@@ -154,7 +154,7 @@ export default function ArenaPage() {
                 <span>{selectedMatch.awayTeam}</span>
               </div>
             </div>
-            <MomentumBar data={momentum} loading={!momentum} />
+            <MomentumBar data={momentum} loading={!momentum} homeTeam={selectedMatch.homeTeam} awayTeam={selectedMatch.awayTeam} />
             <PoolCard
               matchId={selectedMatch.matchId}
               homeTeam={selectedMatch.homeTeam}

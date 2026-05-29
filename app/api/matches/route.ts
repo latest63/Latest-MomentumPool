@@ -15,7 +15,11 @@ export async function GET() {
     // Filter out knockout placeholders where teams aren't decided yet
     const withTeams = matches.filter((m) => m.homeTeam?.name && m.awayTeam?.name);
 
-    const mapped = withTeams.map((m) => {
+    // Only show matches from the earliest matchday (group stage day 1)
+    const minMatchday = Math.min(...withTeams.map((m) => m.matchday ?? 999));
+    const dayMatches = withTeams.filter((m) => m.matchday === minMatchday);
+
+    const mapped = dayMatches.map((m) => {
       const status = m.status;
       const isLive = status === 'IN_PLAY' || status === 'PAUSED';
       const ht = m.homeTeam;
