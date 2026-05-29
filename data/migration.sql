@@ -28,3 +28,16 @@ CREATE TABLE IF NOT EXISTS matches (
 CREATE INDEX IF NOT EXISTS idx_matches_kickoff ON matches (kickoff);
 -- Index for status-based queries (live vs upcoming vs settled)
 CREATE INDEX IF NOT EXISTS idx_matches_status ON matches (status);
+
+-- Match events table (replaces in-memory store)
+CREATE TABLE IF NOT EXISTS match_events (
+  id        SERIAL PRIMARY KEY,
+  match_id  TEXT NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
+  type      TEXT NOT NULL,
+  team      TEXT NOT NULL CHECK (team IN ('home','away')),
+  minute    SMALLINT NOT NULL DEFAULT 0,
+  player    TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_match_events_match_id ON match_events (match_id);

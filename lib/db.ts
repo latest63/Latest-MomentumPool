@@ -1,5 +1,23 @@
 import postgres from 'postgres';
 
+/* ─── Types ─────────────────────────────────────────── */
+
+export type EventType =
+  | 'goal'
+  | 'woodwork'
+  | 'shot_on_target'
+  | 'corner'
+  | 'foul'
+  | 'yellow_card'
+  | 'red_card';
+
+export interface MatchEvent {
+  type: EventType;
+  team: 'home' | 'away';
+  minute: number;
+  player?: string;
+}
+
 export interface MatchRecord {
   id: string;
   homeTeam: string;
@@ -21,7 +39,8 @@ export interface MatchRecord {
   awayScore?: number;
 }
 
-/** Singleton connection — reuses across hot reloads in dev */
+/* ─── Connection ────────────────────────────────────── */
+
 let _sql: ReturnType<typeof postgres> | null = null;
 
 function getSql() {
@@ -29,16 +48,17 @@ function getSql() {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error('DATABASE_URL not set');
     _sql = postgres(url, {
-      max: 3,            // pool size — pooler handles the rest
-      idle_timeout: 10,  // close idle connections after 10s
-      max_lifetime: 60,  // recycle after 60s
+      max: 3,
+      idle_timeout: 10,
+      max_lifetime: 60,
       ssl: 'require',
     });
   }
   return _sql;
 }
 
-/** Get all matches */
+/* ─── Matches CRUD ──────────────────────────────────── */
+
 export async function getAllMatches(): Promise<MatchRecord[]> {
   const sql = getSql();
   const rows = await sql`
@@ -47,7 +67,6 @@ export async function getAllMatches(): Promise<MatchRecord[]> {
   return rows.map(matchRow);
 }
 
-/** Get match by ID */
 export async function getMatch(id: string): Promise<MatchRecord | undefined> {
   const sql = getSql();
   const [row] = await sql`
@@ -56,7 +75,6 @@ export async function getMatch(id: string): Promise<MatchRecord | undefined> {
   return row ? matchRow(row) : undefined;
 }
 
-/** Add or update a match */
 export async function upsertMatch(match: MatchRecord): Promise<void> {
   const sql = getSql();
   await sql`
@@ -101,7 +119,6 @@ export async function upsertMatch(match: MatchRecord): Promise<void> {
   `;
 }
 
-/** Delete match */
 export async function deleteMatch(id: string): Promise<void> {
   const sql = getSql();
   await sql`
@@ -109,7 +126,6 @@ export async function deleteMatch(id: string): Promise<void> {
   `;
 }
 
-/** Update settlement for a match */
 export async function settleMatch(
   id: string,
   winner: number,
@@ -126,6 +142,61 @@ export async function settleMatch(
         half    = 'fulltime',
         status  = 'settled'
     WHERE id = ${id}
+  `;
+}
+
+/* ─── Match Events (match_events table) ──────────────── */
+
+/** Get all events for a match, ordered by minute ascending */
+export async function getMatchEvents(matchId: string): Promise<MatchEvent[]> {
+  const sql = getSql();
+  const rows = await sql`
+    SELECT type, team, minute, player
+    FROM match_events
+    WHERE match_id = ${matchId}
+    ORDER BY minute ASC, id ASC
+  `;
+  return rows.map((r: any) => ({
+    type: r.type as EventType,
+    team: r.team as 'home' | 'away',
+    minute: r.minute,
+    player: r.player ?? undefined,
+  }));
+}
+
+/** Replace all events for a match (delete old, insert new) */
+export async function setMatchEvents(
+  matchId: string,
+  events: MatchEvent[]
+): Promise<void> {
+  const sql = getSql();
+  await sql.begin(async (tx) => {
+    await tx`DELETE FROM match_events WHERE match_id = ${matchId}`;
+    if (events.length > 0) {
+      for (const ev of events) {
+        await tx`
+          INSERT INTO match_events (match_id, type, team, minute, player)
+          VALUES (${matchId}, ${ev.type}, ${ev.team}, ${ev.minute}, ${ev.player ?? null})
+        `;
+      }
+    }
+  });
+}
+
+/** Append a single event to a match */
+export async function appendMatchEvent(matchId: string, ev: MatchEvent): Promise<void> {
+  const sql = getSql();
+  await sql`
+    INSERT INTO match_events (match_id, type, team, minute, player)
+    VALUES (${matchId}, ${ev.type}, ${ev.team}, ${ev.minute}, ${ev.player ?? null})
+  `;
+}
+
+/** Delete all events for a match */
+export async function deleteMatchEvents(matchId: string): Promise<void> {
+  const sql = getSql();
+  await sql`
+    DELETE FROM match_events WHERE match_id = ${matchId}
   `;
 }
 
