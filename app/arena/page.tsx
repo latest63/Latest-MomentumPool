@@ -51,7 +51,8 @@ interface MatchSummary {
   half?: string;
 }
 
-const POOL_ADDRESS = '0xEC817c04C503A8B641bfdD0CDC105135d13Eb590';
+const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_FACTORY_ADDRESS || '0x72EA03C062AF45F018Db52C96b80CC31295ef157') as `0x${string}`;
+const POOL_ADDRESS = FACTORY_ADDRESS;
 
 export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>([]);
