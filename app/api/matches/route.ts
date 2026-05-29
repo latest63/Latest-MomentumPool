@@ -10,7 +10,7 @@ export async function GET() {
 
     if (!matches.length) {
       // Fallback: show test match so the page isn't blank
-      const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x8f550f21824b56c2fd8d1398955ac043544ecfc7';
+      const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df';
       return NextResponse.json({
         matches: [{
           matchId: 'test-match',

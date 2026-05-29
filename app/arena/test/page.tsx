@@ -29,7 +29,7 @@ const POOL_ABI = [
   },
 ] as const;
 
-const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x8f550f21824b56c2fd8d1398955ac043544ecfc7') as `0x${string}`;
+const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df') as `0x${string}`;
 
 const HOME_TEAM = 'Mexico';
 const AWAY_TEAM = 'South Africa';
