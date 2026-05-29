@@ -4,52 +4,119 @@ import { useEffect, useState } from 'react';
 import { MomentumBar, PoolCard, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import TeamLogo from '@/components/TeamLogo';
-import { useAccount, useWriteContract, useSwitchChain } from 'wagmi';
-import { parseEther } from 'viem';
-import { useLoading } from '@/components/LoadingOverlay';
+import { useAccount, useReadContract } from 'wagmi';
 
 const POOL_ABI = [
-  { name: 'deposit', type: 'function', inputs: [{ name: 'teamId', type: 'uint8' }], stateMutability: 'payable', outputs: [] },
-  { name: 'getPoolTotals', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint256' }, { name: '', type: 'uint256' }], stateMutability: 'view' },
+  {
+    name: 'state',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint8' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'winnerTeamId',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint8' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'winningScore',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'losingScore',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'team0',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: 'total', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'team1',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: 'total', type: 'uint256' }],
+    stateMutability: 'view',
+  },
 ] as const;
 
 const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df') as `0x${string}`;
 const HOME_TEAM = 'Mexico';
 const AWAY_TEAM = 'South Africa';
-const XLAYER_ID = 196;
+
+// Settled momentum + events for display
+const SETTLED_MOMENTUM: MomentumData = {
+  homeScore: 2,
+  awayScore: 1,
+  homeTeam: HOME_TEAM,
+  awayTeam: AWAY_TEAM,
+  half: 'fulltime',
+  diff: 1,
+};
+
+const SETTLED_EVENTS: EventItem[] = [
+  { type: 'goal', team: 'home', minute: 12, player: 'Jiménez' },
+  { type: 'goal', team: 'home', minute: 23, player: 'Lozano' },
+  { type: 'goal', team: 'away', minute: 35, player: 'Tau' },
+];
 
 export default function TestArenaPage() {
-  const { isConnected, chainId } = useAccount();
-  const { writeContract, isPending } = useWriteContract();
-  const { switchChain } = useSwitchChain();
-  const { setLoading } = useLoading();
-  useEffect(() => { setLoading(isPending); }, [isPending, setLoading]);
+  const { isConnected } = useAccount();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  // Kickoff 1 hour from now — keeps deposit window open
-  const kickoff = Math.floor(Date.now() / 1000) + 3600;
+  const { data: rawState } = useReadContract({
+    address: POOL_ADDRESS,
+    abi: POOL_ABI,
+    functionName: 'state',
+  });
+  const { data: rawWinner } = useReadContract({
+    address: POOL_ADDRESS,
+    abi: POOL_ABI,
+    functionName: 'winnerTeamId',
+  });
+  const { data: rawWinScore } = useReadContract({
+    address: POOL_ADDRESS,
+    abi: POOL_ABI,
+    functionName: 'winningScore',
+  });
+  const { data: rawLoseScore } = useReadContract({
+    address: POOL_ADDRESS,
+    abi: POOL_ABI,
+    functionName: 'losingScore',
+  });
+  const { data: rawHomeTotal } = useReadContract({
+    address: POOL_ADDRESS,
+    abi: POOL_ABI,
+    functionName: 'team0',
+  });
+  const { data: rawAwayTotal } = useReadContract({
+    address: POOL_ADDRESS,
+    abi: POOL_ABI,
+    functionName: 'team1',
+  });
 
-  const handleDeposit = (_matchId: string, teamId: number, amount: string) => {
-    if (!isConnected) return alert('Connect wallet first');
-    if (chainId !== XLAYER_ID) {
-      alert('Switch to X Layer in your wallet');
-      switchChain?.({ chainId: XLAYER_ID });
-      return;
-    }
-    const parsed = parseFloat(amount);
-    if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
-    writeContract({
-      address: POOL_ADDRESS,
-      abi: POOL_ABI,
-      functionName: 'deposit',
-      args: [teamId],
-      value: parseEther(amount),
-    }, {
-      onError(err) {
-        alert(`Transaction failed: ${err.message}`);
-        console.error('Deposit error:', err);
-      },
-    });
-  };
+  const state = mounted ? Number(rawState ?? 0) : 0;
+  const winner = Number(rawWinner ?? 0);
+  const winScore = Number(rawWinScore ?? 0);
+  const loseScore = Number(rawLoseScore ?? 0);
+  const homeTotal = Number(rawHomeTotal ?? 0);
+  const awayTotal = Number(rawAwayTotal ?? 0);
+
+  const isSettled = state === 2;
+  const winnerName = winner === 0 ? HOME_TEAM : AWAY_TEAM;
+  const loserName = winner === 0 ? AWAY_TEAM : HOME_TEAM;
 
   return (
     <>
@@ -57,8 +124,8 @@ export default function TestArenaPage() {
       <div className="main-content">
         <div className="match-selector">
           <div className="match-selector-header">
-            <h2>Test Match</h2>
-            <div className="live-indicator" style={{ color: 'var(--accent-primary)' }}>POOL</div>
+            <h2>Test Pool</h2>
+            <div className="live-indicator" style={{ color: 'var(--bright-green)' }}>SETTLED</div>
           </div>
         </div>
 
@@ -78,12 +145,54 @@ export default function TestArenaPage() {
             </div>
           </div>
 
-          <MomentumBar data={null} loading={false} homeTeam={HOME_TEAM} awayTeam={AWAY_TEAM} />
-          <PoolCard matchId="test-match" homeTeam={HOME_TEAM} awayTeam={AWAY_TEAM} kickoff={kickoff} onDeposit={handleDeposit} />
+          {/* Settlement banner */}
+          {isSettled && (
+            <div className="settle-banner">
+              <div className="settle-winner">
+                🏆 <strong>{winnerName}</strong> won{' '}
+                <span className="settle-score">{winScore}–{loseScore}</span>
+              </div>
+              <div className="settle-pool-totals">
+                Pool: {parseFloat((homeTotal / 1e18).toFixed(4))} OKB on {HOME_TEAM} ·{' '}
+                {parseFloat((awayTotal / 1e18).toFixed(4))} OKB on {AWAY_TEAM}
+              </div>
+            </div>
+          )}
+
+          <MomentumBar data={SETTLED_MOMENTUM} homeTeam={HOME_TEAM} awayTeam={AWAY_TEAM} />
+          <EventFeed events={SETTLED_EVENTS} homeTeam={HOME_TEAM} awayTeam={AWAY_TEAM} />
+
+          {/* If connected, hide PoolCard and show claim button */}
+          {isConnected && isSettled && (
+            <div style={{ textAlign: 'center', margin: '24px 0' }}>
+              <a
+                href={`https://www.okx.com/web3/explorer/xlayer/address/${POOL_ADDRESS}`}
+                target="_blank"
+                rel="noopener"
+                style={{
+                  display: 'inline-block', padding: '12px 24px',
+                  background: 'var(--accent-primary)', color: '#fff',
+                  borderRadius: 8, fontWeight: 600, textDecoration: 'none',
+                }}
+              >
+                View on OKX Explorer ↗
+              </a>
+            </div>
+          )}
         </div>
 
         <footer className="app-footer">
-          <p>Test Pool · <a href={`https://www.okx.com/web3/explorer/xlayer/address/${POOL_ADDRESS}`} target="_blank" rel="noopener">{POOL_ADDRESS.slice(0, 10)}...{POOL_ADDRESS.slice(-4)}</a></p>
+          <p>
+            Pool ·{' '}
+            <a
+              href={`https://www.okx.com/web3/explorer/xlayer/address/${POOL_ADDRESS}`}
+              target="_blank"
+              rel="noopener"
+            >
+              {POOL_ADDRESS.slice(0, 10)}...{POOL_ADDRESS.slice(-4)}
+            </a>
+            · <a href="/arena" style={{ color: 'var(--accent-primary)' }}>Back to Arena →</a>
+          </p>
         </footer>
       </div>
     </>

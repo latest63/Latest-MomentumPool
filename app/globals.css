@@ -6,6 +6,7 @@
   --electric-blue: #2453BE;
   --neon-green: #28C16C;
   --bright-red: #E61A0A;
+  --bright-green: #22C55E;
   --orange: #FF4702;
   --yellow: #BEEE4F;
   --cyan: #00E5FF;
@@ -1016,6 +1017,24 @@ body {
   transition: all 0.2s; white-space: nowrap;
 }
 .test-link:hover { background: var(--accent-primary); color: #fff; }
+
+.settle-banner {
+  text-align: center; padding: 20px; margin: 16px 0;
+  background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05));
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 12px;
+}
+.settle-winner {
+  font-size: 20px; font-weight: 700; color: var(--bright-green);
+  margin-bottom: 6px;
+}
+.settle-score {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.settle-pool-totals {
+  font-size: 13px; color: var(--text-tertiary);
+}
 
 /* ═════════════════════ MATCH TABS (desktop) ═════════════════════ */
 
