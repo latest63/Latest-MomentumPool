@@ -9,7 +9,29 @@ export async function GET() {
     const matches = await fetchWorldCupMatches();
 
     if (!matches.length) {
-      return NextResponse.json({ matches: [] });
+      // Fallback: show test match so the page isn't blank
+      const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x8f550f21824b56c2fd8d1398955ac043544ecfc7';
+      return NextResponse.json({
+        matches: [{
+          matchId: 'test-match',
+          homeTeam: 'Mexico',
+          awayTeam: 'South Africa',
+          homeCode: 'MEX',
+          awayCode: 'RSA',
+          homeBadge: '',
+          awayBadge: '',
+          homeScore: 0,
+          awayScore: 0,
+          status: 'scheduled',
+          half: 'pre',
+          kickoff: Math.floor(Date.now() / 1000) + 3600,
+          competition: 'Preview Match',
+          group: 'Friendly',
+          isLive: false,
+        }],
+        total: 1,
+        fallback: true,
+      });
     }
 
     // Filter out knockout placeholders where teams aren't decided yet
