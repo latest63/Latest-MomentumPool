@@ -1,33 +1,48 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Nav from '@/components/Nav';
+import TeamBadge from '@/components/TeamBadge';
 
-const FALLBACK = [
-  { id: 'aalesund-hamkam', home: 'Aalesund', away: 'HamKam', venue: 'Color Line Stadion' },
-  { id: 'brann-sarpsborg', home: 'Brann', away: 'Sarpsborg 08', venue: 'Brann Stadion' },
-  { id: 'fredrikstad-start', home: 'Fredrikstad', away: 'IK Start', venue: 'Fredrikstad Stadion' },
-  { id: 'rosenborg-glimt', home: 'Rosenborg', away: 'Bodø/Glimt', venue: 'Lerkendal Stadion' },
-];
-
-const FLAGS: Record<string, string> = {
-  Aalesund: '🇳🇴', HamKam: '🇳🇴',
-  Brann: '🇳🇴', 'Sarpsborg 08': '🇳🇴',
-  Fredrikstad: '🇳🇴', 'IK Start': '🇳🇴',
-  Rosenborg: '🇳🇴', 'Bodø/Glimt': '🇳🇴',
-};
-
-const LOGOS: Record<string, string> = {
-  Aalesund: 'https://storage.livescore.com/images/team/high/enet/8404.png',
-  HamKam: 'https://storage.livescore.com/images/team/high/enet/8448.png',
-  Brann: 'https://storage.livescore.com/images/team/high/enet/8468.png',
-  'Sarpsborg 08': 'https://storage.livescore.com/images/team/high/enet/8509.png',
-  Fredrikstad: 'https://storage.livescore.com/images/team/high/enet/8417.png',
-  'IK Start': 'https://storage.livescore.com/images/team/high/enet/9919.png',
-  Rosenborg: 'https://storage.livescore.com/images/team/high/enet/8422.png',
-  'Bodø/Glimt': 'https://storage.livescore.com/images/team/high/enet/8402.png',
-};
+interface MatchData {
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  status: string;
+  kickoff: number;
+  competition: string;
+  homeColors: { primary: string; secondary: string; text: string };
+  awayColors: { primary: string; secondary: string; text: string };
+  homeCode: string;
+  awayCode: string;
+}
 
 export default function Home() {
+  const [matches, setMatches] = useState<MatchData[]>([]);
+
+  useEffect(() => {
+    fetch('/api/matches')
+      .then(r => r.json())
+      .then(d => { if (d.matches?.length) setMatches(d.matches); })
+      .catch(() => {});
+  }, []);
+
+  const top5 = matches.slice(0, 5);
+
+  function formatTime(ts: number): string {
+    const d = new Date(ts * 1000);
+    return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
+  }
+
+  function timeUntil(ts: number): string {
+    const diff = ts * 1000 - Date.now();
+    if (diff <= 0) return 'LIVE';
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  }
+
   return (
     <>
       <Nav />
@@ -39,7 +54,7 @@ export default function Home() {
         <div className="hero-split-inner">
           <div className="hero-content hero-content-split">
             <div className="hero-tag">
-              <span className="dot" /> ELITESERIEN LIVE
+              <span className="dot" /> {top5[0]?.competition || 'LIVE FOOTBALL'}
             </div>
             <h1 className="hero-title">
               PICK THE<br />
@@ -98,11 +113,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ────────── INTRODUCTION (on hero background) ────────── */}
+        {/* ────────── INTRODUCTION ────────── */}
         <div className="hero-intro">
           <div className="hero-intro-inner">
             <div className="section-label">Momentum Pool</div>
-            <div className="section-title">Norway Eliteserien</div>
+            <div className="section-title">Live Football Matches</div>
             <div className="section-desc">
               The first on-chain momentum pool built for football. Pick who controls each half,
               watch live events shift the momentum bar, and split the pot.
@@ -162,17 +177,25 @@ export default function Home() {
       <section className="section">
         <div className="section-inner">
           <div className="section-label">Schedule</div>
-          <div className="section-title">Qualifying & League Matches</div>
+          <div className="section-title">Upcoming & Live Matches</div>
           <div className="section-desc">Open matches. Pick your side before the half starts.</div>
           <div className="match-grid">
-            {FALLBACK.map((m) => (
-              <a key={m.id} href="/arena" className="match-card">
+            {top5.map((m) => (
+              <a key={m.matchId} href="/arena" className="match-card">
                 <div className="match-card-teams">
-                  <span className="match-card-team">{LOGOS[m.home] && <img src={LOGOS[m.home]} alt="" className="team-logo-sm" />} {m.home}</span>
+                  <span className="match-card-team">
+                    <TeamBadge name={m.homeTeam} code={m.homeCode} colors={m.homeColors} size={32} />
+                    {m.homeTeam}
+                  </span>
                   <span className="vs">vs</span>
-                  <span className="match-card-team">{LOGOS[m.away] && <img src={LOGOS[m.away]} alt="" className="team-logo-sm" />} {m.away}</span>
+                  <span className="match-card-team">
+                    <TeamBadge name={m.awayTeam} code={m.awayCode} colors={m.awayColors} size={32} />
+                    {m.awayTeam}
+                  </span>
                 </div>
-                <span className="match-card-venue">{m.venue}</span>
+                <span className="match-card-venue">
+                  {m.competition} &middot; {m.status === 'notstarted' ? formatTime(m.kickoff) : timeUntil(m.kickoff)}
+                </span>
               </a>
             ))}
           </div>
@@ -187,9 +210,9 @@ export default function Home() {
           <div className="section-desc">Fully on-chain settlement. No oracles. Just pure momentum.</div>
           <div className="stats-row">
             {[
-              { num: '0', label: 'Active Pools' },
+              { num: String(top5.length), label: 'Available Matches' },
               { num: '14K', label: 'Prize Pool (USDT)' },
-              { num: '4', label: 'Live Matches' },
+              { num: String(top5.filter(m => m.status !== 'notstarted').length), label: 'Live Now' },
             ].map((s, i) => (
               <div key={i} className="stat-card">
                 <div className="stat-number">{s.num}</div>

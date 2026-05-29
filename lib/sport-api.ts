@@ -27,6 +27,7 @@ export interface SportApiTeam {
   nameCode?: string;
   id?: number;
   country?: { name: string };
+  teamColors?: { primary: string; secondary: string; text: string };
 }
 
 export interface SportApiIncident {

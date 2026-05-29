@@ -8,6 +8,7 @@ import { parseEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
+import TeamBadge from '@/components/TeamBadge';
 
 const FACTORY = '0xB61bd43eDf36FA210079725FD2e9b1d6f143BC83';
 
@@ -33,39 +34,28 @@ const POOL_ABI = [
 
 interface MomentumData { homeScore: number; awayScore: number; homeTeam: string; awayTeam: string; half: string; diff: number; }
 interface EventItem { type: string; team: 'home' | 'away'; minute: number; player?: string; }
-interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; kickoff?: number; homeBadge?: string; awayBadge?: string; }
 
-const FALLBACK: MatchSummary[] = [
-  { matchId: 'aalesund-hamkam', homeTeam: 'Aalesund', awayTeam: 'HamKam', venue: 'Color Line Stadion', kickoff: 1780074000 },
-  { matchId: 'brann-sarpsborg', homeTeam: 'Brann', awayTeam: 'Sarpsborg 08', venue: 'Brann Stadion', kickoff: 1780074000 },
-  { matchId: 'fredrikstad-start', homeTeam: 'Fredrikstad', awayTeam: 'IK Start', venue: 'Fredrikstad Stadion', kickoff: 1780074000 },
-  { matchId: 'rosenborg-glimt', homeTeam: 'Rosenborg', awayTeam: 'Bodø/Glimt', venue: 'Lerkendal Stadion', kickoff: 1780074000 },
-];
+interface MatchSummary {
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore?: number;
+  awayScore?: number;
+  status?: string;
+  kickoff?: number;
+  competition?: string;
+  homeColors?: { primary: string; secondary: string; text: string };
+  awayColors?: { primary: string; secondary: string; text: string };
+  homeCode?: string;
+  awayCode?: string;
+}
 
-const FLAGS: Record<string, string> = {
-  Aalesund: '🇳🇴', HamKam: '🇳🇴',
-  Brann: '🇳🇴', 'Sarpsborg 08': '🇳🇴',
-  Fredrikstad: '🇳🇴', 'IK Start': '🇳🇴',
-  Rosenborg: '🇳🇴', 'Bodø/Glimt': '🇳🇴',
-};
-
-const LOGOS: Record<string, string> = {
-  Aalesund: 'https://storage.livescore.com/images/team/high/enet/8404.png',
-  HamKam: 'https://storage.livescore.com/images/team/high/enet/8448.png',
-  Brann: 'https://storage.livescore.com/images/team/high/enet/8468.png',
-  'Sarpsborg 08': 'https://storage.livescore.com/images/team/high/enet/8509.png',
-  Fredrikstad: 'https://storage.livescore.com/images/team/high/enet/8417.png',
-  'IK Start': 'https://storage.livescore.com/images/team/high/enet/9919.png',
-  Rosenborg: 'https://storage.livescore.com/images/team/high/enet/8422.png',
-  'Bodø/Glimt': 'https://storage.livescore.com/images/team/high/enet/8402.png',
-};
-
-// Pool address from on-chain deploy (Nigeria vs Brazil)
+// Pool address from on-chain deploy
 const POOL_ADDRESS = '0xEC817c04C503A8B641bfdD0CDC105135d13Eb590';
 
 export default function ArenaPage() {
-  const [matches, setMatches] = useState<MatchSummary[]>(FALLBACK);
-  const [selected, setSelected] = useState(FALLBACK[0]?.matchId ?? '');
+  const [matches, setMatches] = useState<MatchSummary[]>([]);
+  const [selected, setSelected] = useState('');
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
   const { address, isConnected } = useAccount();
@@ -75,8 +65,16 @@ export default function ArenaPage() {
   useEffect(() => { setLoading(isPending); }, [isPending, setLoading]);
 
   useEffect(() => {
-    fetch('/api/matches').then(r => r.json()).then(d => { if (d.matches?.length) setMatches(d.matches); }).catch(() => {});
-  }, []);
+    fetch('/api/matches')
+      .then(r => r.json())
+      .then(d => {
+        if (d.matches?.length) {
+          setMatches(d.matches);
+          if (!selected) setSelected(d.matches[0].matchId);
+        }
+      })
+      .catch(() => {});
+  }, [selected]);
 
   useEffect(() => {
     if (matches.length && !matches.find(m => m.matchId === selected)) setSelected(matches[0].matchId);
@@ -126,8 +124,6 @@ export default function ArenaPage() {
           <MatchCarousel
             matches={matches}
             selected={selected}
-            flags={FLAGS}
-            logos={LOGOS}
             onSelect={(id) => { playSelect(); setSelected(id); }}
           />
         </div>
@@ -136,12 +132,25 @@ export default function ArenaPage() {
           <div className="match-view">
             <div className="match-header">
               <div className="match-header-team">
-                {selectedMatch.homeBadge ? <img src={selectedMatch.homeBadge} alt="" className="team-logo" /> : LOGOS[selectedMatch.homeTeam] ? <img src={LOGOS[selectedMatch.homeTeam]} alt="" className="team-logo" /> : null}
+                <TeamBadge
+                  name={selectedMatch.homeTeam}
+                  code={selectedMatch.homeCode}
+                  colors={selectedMatch.homeColors}
+                  size={48}
+                />
                 <span>{selectedMatch.homeTeam}</span>
               </div>
-              <div className="match-header-vs">VS</div>
+              <div className="match-header-vs">
+                VS
+                {selectedMatch.competition && <small>{selectedMatch.competition}</small>}
+              </div>
               <div className="match-header-team">
-                {selectedMatch.awayBadge ? <img src={selectedMatch.awayBadge} alt="" className="team-logo" /> : LOGOS[selectedMatch.awayTeam] ? <img src={LOGOS[selectedMatch.awayTeam]} alt="" className="team-logo" /> : null}
+                <TeamBadge
+                  name={selectedMatch.awayTeam}
+                  code={selectedMatch.awayCode}
+                  colors={selectedMatch.awayColors}
+                  size={48}
+                />
                 <span>{selectedMatch.awayTeam}</span>
               </div>
             </div>

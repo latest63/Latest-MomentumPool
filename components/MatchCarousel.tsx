@@ -1,29 +1,40 @@
 'use client';
 
 import { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import TeamBadge from './TeamBadge';
 
-interface MatchSummary { matchId: string; homeTeam: string; awayTeam: string; venue?: string; homeBadge?: string; awayBadge?: string; }
+interface MatchSummary {
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  venue?: string;
+  status?: string;
+  competition?: string;
+  homeColors?: { primary: string; secondary: string; text: string };
+  awayColors?: { primary: string; secondary: string; text: string };
+  homeCode?: string;
+  awayCode?: string;
+}
 
 interface Props {
   matches: MatchSummary[];
   selected: string;
-  flags: Record<string, string>;
-  logos: Record<string, string>;
   onSelect: (id: string) => void;
 }
 
-export default function MatchCarousel({ matches, selected, flags, logos, onSelect }: Props) {
-const CARD_W = 160;
-const GAP = 20;
-const MOBILE_BP = 768;
+export default function MatchCarousel({ matches, selected, onSelect }: Props) {
+  const CARD_W = 160;
+  const GAP = 20;
+  const MOBILE_BP = 768;
 
-function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
-  if (!wrap || idx < 0) return 0;
-  const firstCard = wrap.querySelector('.mc-card') as HTMLElement | null;
-  const actualW = firstCard?.offsetWidth ?? CARD_W;
-  const step = actualW + GAP;
-  return wrap.offsetWidth / 2 - actualW / 2 - idx * step;
-}
+  function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
+    if (!wrap || idx < 0) return 0;
+    const firstCard = wrap.querySelector('.mc-card') as HTMLElement | null;
+    const actualW = firstCard?.offsetWidth ?? CARD_W;
+    const step = actualW + GAP;
+    return wrap.offsetWidth / 2 - actualW / 2 - idx * step;
+  }
+
   const [isMobile, setIsMobile] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
@@ -73,15 +84,15 @@ function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
             onClick={() => onSelect(m.matchId)}
           >
             <div className="tab-team-row">
-              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="tab-logo" /> : m.homeBadge ? <img src={m.homeBadge} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
+              <TeamBadge name={m.homeTeam} code={m.homeCode} colors={m.homeColors} size={28} />
               <span>{m.homeTeam}</span>
             </div>
             <div className="tab-vs-label">vs</div>
             <div className="tab-team-row">
-              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="tab-logo" /> : m.awayBadge ? <img src={m.awayBadge} alt="" className="tab-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
+              <TeamBadge name={m.awayTeam} code={m.awayCode} colors={m.awayColors} size={28} />
               <span>{m.awayTeam}</span>
             </div>
-            <small>{m.venue || 'WC 2026'}</small>
+            <small>{m.competition || m.venue || 'Football'}</small>
           </button>
         ))}
       </div>
@@ -102,15 +113,15 @@ function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
             onClick={() => onSelect(m.matchId)}
           >
             <div className="mc-flags">
-              {logos[m.homeTeam] ? <img src={logos[m.homeTeam]} alt="" className="mc-logo" /> : m.homeBadge ? <img src={m.homeBadge} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.homeTeam] || '🏳️'}</span>}
-              {logos[m.awayTeam] ? <img src={logos[m.awayTeam]} alt="" className="mc-logo" /> : m.awayBadge ? <img src={m.awayBadge} alt="" className="mc-logo" /> : <span className="flag-emoji">{flags[m.awayTeam] || '🏳️'}</span>}
+              <TeamBadge name={m.homeTeam} code={m.homeCode} colors={m.homeColors} size={36} />
+              <TeamBadge name={m.awayTeam} code={m.awayCode} colors={m.awayColors} size={36} />
             </div>
             <div className="mc-teams">
               <span className="mc-team">{m.homeTeam}</span>
               <span className="mc-vs">VS</span>
               <span className="mc-team">{m.awayTeam}</span>
             </div>
-            <small>{m.venue || 'WC 2026'}</small>
+            <small>{m.competition || m.venue || 'Football'}</small>
           </button>
         ))}
       </div>
