@@ -3,6 +3,7 @@ import { fetchWorldCupMatches, fdStatusToHalf } from '@/lib/football-data';
 
 // Cache for 1 hour — schedule barely changes, saves API quota
 export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 function fallbackMatch() {
   const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df';
