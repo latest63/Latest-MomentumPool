@@ -1,8 +1,17 @@
 /**
  * Momentum Engine — shared between API routes and cron
- * Sample data for today's live matches (Bundesliga Rel. + Eliteserien + Allsvenskan).
+ * Uses SportAPI (rapidsportapi) for live football data
  */
-import { fetchLivescoreMatch, mapLivescoreStatus, mapLivescoreType, LIVESCORE_MATCHES } from './livescore';
+import {
+  fetchLiveMatches,
+  fetchScheduledMatches,
+  fetchMatchIncidents,
+  todayDate,
+  mapIncidentToMomentum,
+  statusToHalf,
+  type SportApiMatch,
+  type MomentumEventType,
+} from './sport-api';
 
 export type EventType =
   | 'goal'
@@ -69,74 +78,9 @@ export function computeMomentum(events: MatchEvent[]): MomentumResult {
   };
 }
 
-export const WORLD_CUP_MATCHES: MatchState[] = [
-  {
-    matchId: 'aalesund-hamkam',
-    homeTeam: 'Aalesund',
-    awayTeam: 'HamKam',
-    kickoff: 1780074000,
-    venue: 'Color Line Stadion',
-    host: 'Norway',
-    homeScore: 0,
-    awayScore: 0,
-    half: 'pre',
-    events: [],
-    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8404.png',
-    awayBadge: 'https://storage.livescore.com/images/team/high/enet/8448.png',
-  },
-  {
-    matchId: 'brann-sarpsborg',
-    homeTeam: 'Brann',
-    awayTeam: 'Sarpsborg 08',
-    kickoff: 1780074000,
-    venue: 'Brann Stadion',
-    host: 'Norway',
-    homeScore: 0,
-    awayScore: 0,
-    half: 'pre',
-    events: [],
-    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8468.png',
-    awayBadge: 'https://storage.livescore.com/images/team/high/enet/8509.png',
-  },
-  {
-    matchId: 'fredrikstad-start',
-    homeTeam: 'Fredrikstad',
-    awayTeam: 'IK Start',
-    kickoff: 1780074000,
-    venue: 'Fredrikstad Stadion',
-    host: 'Norway',
-    homeScore: 0,
-    awayScore: 0,
-    half: 'pre',
-    events: [],
-    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8417.png',
-    awayBadge: 'https://storage.livescore.com/images/team/high/enet/9919.png',
-  },
-  {
-    matchId: 'rosenborg-glimt',
-    homeTeam: 'Rosenborg',
-    awayTeam: 'Bodø/Glimt',
-    kickoff: 1780074000,
-    venue: 'Lerkendal Stadion',
-    host: 'Norway',
-    homeScore: 0,
-    awayScore: 0,
-    half: 'pre',
-    events: [],
-    homeBadge: 'https://storage.livescore.com/images/team/high/enet/8422.png',
-    awayBadge: 'https://storage.livescore.com/images/team/high/enet/8402.png',
-  },
-];
+/* ─── In-memory store ──────────────────────────────────────────────── */
 
-const store = new Map<string, MatchState>(WORLD_CUP_MATCHES.map((m) => [m.matchId, { ...m }]));
-
-export const API_FOOTBALL_TYPE_MAP: Record<string, EventType> = {
-  Goal: 'goal',
-  'Card (yellow)': 'yellow_card',
-  'Card (red)': 'red_card',
-  subst: 'foul',
-  Var: 'foul',
-};
+export const store = new Map<string, MatchState>();
 
 export function registerMatch(
   matchId: string,
@@ -185,21 +129,35 @@ export function updateMatch(matchId: string, events: MatchEvent[]): MatchState |
   return match;
 }
 
-/** Parse livescore startDateTimeString (YYYYMMDDHHmmss) to Unix timestamp */
-function parseStartTime(s: string): number {
-  if (!s || s.length < 14) return Math.floor(Date.now() / 1000);
-  const y = parseInt(s.slice(0, 4)),
-        m = parseInt(s.slice(4, 6)) - 1,
-        d = parseInt(s.slice(6, 8)),
-        h = parseInt(s.slice(8, 10)),
-        min = parseInt(s.slice(10, 12)),
-        sec = parseInt(s.slice(12, 14));
-  return Math.floor(new Date(Date.UTC(y, m, d, h, min, sec)).getTime() / 1000);
+/* ─── Helpers ───────────────────────────────────────────────────────── */
+
+function toMatchState(m: SportApiMatch): MatchState {
+  const matchId = String(m.id);
+  const existing = store.get(matchId);
+
+  return {
+    matchId,
+    homeTeam: m.homeTeam.name,
+    awayTeam: m.awayTeam.name,
+    kickoff: m.startTimestamp,
+    homeScore: m.homeScore?.current ?? 0,
+    awayScore: m.awayScore?.current ?? 0,
+    events: existing?.events ?? [],
+    half: statusToHalf(m.status) as MatchState['half'],
+    venue: existing?.venue ?? '',
+    host: m.tournament?.uniqueTournament?.name ?? '',
+    poolAddress: existing?.poolAddress,
+    homeBadge: existing?.homeBadge ?? '',
+    awayBadge: existing?.awayBadge ?? '',
+  };
 }
 
+/* ─── Main fetch/scrape function ────────────────────────────────────── */
+
 /**
- * Scrape all configured matches from livescore.com and update the in-memory store.
- * Called by the daily GitHub Actions cron at 1am.
+ * Fetch all active matches and their incidents from SportAPI,
+ * then update the in-memory store.
+ * Called by the daily cron and live endpoint.
  */
 export async function scrapeAllMatches(): Promise<{
   updated: number;
@@ -210,50 +168,85 @@ export async function scrapeAllMatches(): Promise<{
   let updated = 0;
   let failed = 0;
 
-  for (const [matchId, lsPath] of Object.entries(LIVESCORE_MATCHES)) {
-    try {
-      const live = await fetchLivescoreMatch(lsPath);
-      if (!live) {
-        results.push({ matchId, status: 'failed (no data)' });
-        failed++;
-        continue;
+  try {
+    // 1. Get live matches
+    const liveMatches = await fetchLiveMatches();
+    const scheduledMatches = await fetchScheduledMatches(todayDate());
+
+    // Merge — prefer live over scheduled for same match (dedup by ID)
+    const seen = new Set<number>();
+    const allMatches: SportApiMatch[] = [];
+
+    for (const m of liveMatches) {
+      if (!seen.has(m.id)) {
+        allMatches.push(m);
+        seen.add(m.id);
       }
-
-      const events: MatchEvent[] = (live.incidents ?? []).map((inc) => ({
-        type: mapLivescoreType(inc.type) as EventType,
-        team: inc.team === 'home' ? 'home' : 'away',
-        minute: parseInt(inc.time) || 0,
-        player: inc.name || undefined,
-      }));
-
-      const result = computeMomentum(events);
-      const existing = store.get(matchId);
-
-      store.set(matchId, {
-        matchId,
-        homeTeam: live.homeTeam,
-        awayTeam: live.awayTeam,
-        kickoff: parseStartTime(live.startDateTimeString),
-        homeScore: result.homeScore,
-        awayScore: result.awayScore,
-        events,
-        half: mapLivescoreStatus(live.status) as MatchState['half'],
-        venue: existing?.venue,
-        host: existing?.host,
-        poolAddress: existing?.poolAddress,
-        homeBadge: live.homeBadge,
-        awayBadge: live.awayBadge,
-      });
-
-      updated++;
-      results.push({
-        matchId,
-        status: `ok (${live.homeTeam} ${live.homeScore}-${live.awayScore} ${live.awayTeam})`,
-      });
-    } catch (err) {
-      results.push({ matchId, status: `error: ${err}` });
-      failed++;
     }
+    for (const m of scheduledMatches) {
+      if (!seen.has(m.id)) {
+        allMatches.push(m);
+        seen.add(m.id);
+      }
+    }
+
+    if (allMatches.length === 0) {
+      results.push({ matchId: 'all', status: 'no matches found (live or scheduled)' });
+      return { updated: 0, failed: 0, results };
+    }
+
+    // 2. For each match, fetch incidents and compute momentum
+    for (const match of allMatches) {
+      try {
+        const matchId = String(match.id);
+
+        // Fetch incidents (goals, cards, shots, etc.)
+        const incidents = await fetchMatchIncidents(match.id);
+
+        // Map to our event format
+        const events: MatchEvent[] = incidents
+          .map((inc) => {
+            const type = mapIncidentToMomentum(inc);
+            if (!type) return null;
+            return {
+              type,
+              team: (inc.team === 'home' ? 'home' : 'away') as 'home' | 'away',
+              minute: inc.minute ?? 0,
+              player: inc.player?.name,
+            } as MatchEvent;
+          })
+          .filter((e): e is MatchEvent => e !== null);
+
+        const result = computeMomentum(events);
+
+        store.set(matchId, {
+          matchId,
+          homeTeam: match.homeTeam.name,
+          awayTeam: match.awayTeam.name,
+          kickoff: match.startTimestamp,
+          homeScore: result.homeScore,
+          awayScore: result.awayScore,
+          events,
+          half: statusToHalf(match.status) as MatchState['half'],
+          venue: '',
+          host: match.tournament?.uniqueTournament?.name ?? '',
+          homeBadge: '',
+          awayBadge: '',
+        });
+
+        updated++;
+        results.push({
+          matchId,
+          status: `ok (${match.homeTeam.name} ${match.homeScore?.current ?? 0}-${match.awayScore?.current ?? 0} ${match.awayTeam.name})`,
+        });
+      } catch (err) {
+        results.push({ matchId: String(match.id), status: `error: ${err}` });
+        failed++;
+      }
+    }
+  } catch (err) {
+    results.push({ matchId: 'all', status: `fetch error: ${err}` });
+    failed++;
   }
 
   return { updated, failed, results };
