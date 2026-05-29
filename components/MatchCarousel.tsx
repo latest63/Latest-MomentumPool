@@ -24,24 +24,19 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
+const CARD_W = 160;
+const GAP = 20;
+const MOBILE_BP = 768;
+
 export default function MatchCarousel({ matches, selected, onSelect }: Props) {
-  const CARD_W = 160;
-  const GAP = 20;
-  const MOBILE_BP = 768;
-
-  function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
-    if (!wrap || idx < 0) return 0;
-    const firstCard = wrap.querySelector('.mc-card') as HTMLElement | null;
-    const actualW = firstCard?.offsetWidth ?? CARD_W;
-    const step = actualW + GAP;
-    return wrap.offsetWidth / 2 - actualW / 2 - idx * step;
-  }
-
   const [isMobile, setIsMobile] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
 
-  const selectedIdx = matches.findIndex(m => m.matchId === selected);
+  // Desktop-only hooks (always declared at top level)
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < MOBILE_BP);
@@ -50,6 +45,9 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  const selectedIdx = matches.findIndex(m => m.matchId === selected);
+
+  // Mobile carousel offset
   useLayoutEffect(() => {
     if (!isMobile) return;
     setOffset(calcOffset(wrapRef.current, selectedIdx));
@@ -61,6 +59,23 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [selectedIdx, isMobile]);
+
+  // Desktop scroll state
+  const updateScrollState = () => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  };
+
+  useLayoutEffect(() => {
+    if (isMobile) return;
+    updateScrollState();
+    const el = tabsRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateScrollState);
+    return () => el.removeEventListener('scroll', updateScrollState);
+  }, [matches, isMobile]);
 
   const goNext = () => {
     const next = Math.min(selectedIdx + 1, matches.length - 1);
@@ -75,35 +90,16 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
   const atStart = selectedIdx <= 0;
   const atEnd = selectedIdx >= matches.length - 1;
 
-  // ─── Desktop: simple horizontal tabs ───
+  const scrollTabs = (dir: 'left' | 'right') => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const card = el.querySelector('.match-tab') as HTMLElement | null;
+    const step = (card?.offsetWidth ?? 170) + 12;
+    el.scrollBy({ left: dir === 'left' ? -step * 3 : step * 3, behavior: 'smooth' });
+  };
+
+  // ─── Desktop: horizontal tabs ───
   if (!isMobile) {
-    const tabsRef = useRef<HTMLDivElement>(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(true);
-
-    const updateScrollState = () => {
-      const el = tabsRef.current;
-      if (!el) return;
-      setCanScrollLeft(el.scrollLeft > 4);
-      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
-    };
-
-    useLayoutEffect(() => {
-      updateScrollState();
-      const el = tabsRef.current;
-      if (!el) return;
-      el.addEventListener('scroll', updateScrollState);
-      return () => el.removeEventListener('scroll', updateScrollState);
-    }, [matches]);
-
-    const scrollTabs = (dir: 'left' | 'right') => {
-      const el = tabsRef.current;
-      if (!el) return;
-      const card = el.querySelector('.match-tab') as HTMLElement | null;
-      const step = (card?.offsetWidth ?? 170) + 12; // card + gap
-      el.scrollBy({ left: dir === 'left' ? -step * 3 : step * 3, behavior: 'smooth' });
-    };
-
     return (
       <div className="match-tabs-wrap">
         <div className="match-tabs" ref={tabsRef}>
@@ -168,23 +164,26 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
           </button>
         ))}
       </div>
-
       <button
         className={`mc-arrow mc-arrow-left ${atStart ? 'disabled' : ''}`}
         onClick={goPrev}
         disabled={atStart}
         aria-label="Previous match"
-      >
-        ‹
-      </button>
+      >‹</button>
       <button
         className={`mc-arrow mc-arrow-right ${atEnd ? 'disabled' : ''}`}
         onClick={goNext}
         disabled={atEnd}
         aria-label="Next match"
-      >
-        ›
-      </button>
+      >›</button>
     </div>
   );
+}
+
+function calcOffset(wrap: HTMLDivElement | null, idx: number): number {
+  if (!wrap || idx < 0) return 0;
+  const firstCard = wrap.querySelector('.mc-card') as HTMLElement | null;
+  const actualW = firstCard?.offsetWidth ?? CARD_W;
+  const step = actualW + GAP;
+  return wrap.offsetWidth / 2 - actualW / 2 - idx * step;
 }
