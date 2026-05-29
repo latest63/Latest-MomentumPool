@@ -129,6 +129,7 @@ export default function ArenaPage() {
           <div className="match-selector-header">
             <h2>World Cup 2026</h2>
             <div className="live-indicator">LIVE</div>
+            <a href="/arena/test" className="test-link">🧪 Test</a>
           </div>
           <MatchCarousel
             matches={matches}
