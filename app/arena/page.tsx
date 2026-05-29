@@ -54,7 +54,7 @@ interface MatchSummary {
 const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_POOL_FACTORY || '0x654E54963eE6440fB30AD92C19AfF8e89Dd15ac5') as `0x${string}`;
 // Test pool: Mexico vs South Africa 1st half
 // Created: 0x52b94879d696bbe832d1a4ef14522e67f321bc2211b281255f834c12cddc3872
-const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df') as `0x${string}`;
+const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df') as `0x${string}`;
 
 export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>([]);

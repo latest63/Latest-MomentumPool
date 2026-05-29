@@ -6,7 +6,7 @@ export const revalidate = 3600;
 export const dynamic = 'force-dynamic';
 
 function fallbackMatch() {
-  const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df';
+  const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df';
   return NextResponse.json({
     matches: [{
       matchId: 'test-match',

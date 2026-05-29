@@ -13,7 +13,7 @@ const POOL_ABI = [
   { name: 'getPoolTotals', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint256' }, { name: '', type: 'uint256' }], stateMutability: 'view' },
 ] as const;
 
-const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df') as `0x${string}`;
+const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df') as `0x${string}`;
 const HOME_TEAM = 'Mexico';
 const AWAY_TEAM = 'South Africa';
 const XLAYER_ID = 196;
