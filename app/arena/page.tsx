@@ -8,7 +8,7 @@ import { parseEther, formatEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
-import TeamBadge from '@/components/TeamBadge';
+import TeamLogo from '@/components/TeamLogo';
 
 const POOL_ABI = [
   { name: 'deposit', type: 'function', inputs: [{ name: 'teamId', type: 'uint8' }], stateMutability: 'payable', outputs: [] },
@@ -26,6 +26,8 @@ interface MatchSummary {
   awayTeam: string;
   homeCode?: string;
   awayCode?: string;
+  homeBadge?: string;
+  awayBadge?: string;
   homeScore?: number;
   awayScore?: number;
   status?: string;
@@ -172,7 +174,7 @@ export default function ArenaPage() {
           {/* Match header: team names + badges */}
           <div className="match-header">
             <div className="match-header-team">
-              <TeamBadge name={homeTeam} code={selectedMatch.homeCode} size={40} />
+              <TeamLogo name={homeTeam} badge={selectedMatch.homeBadge} code={selectedMatch.homeCode} size={40} />
               <span>{homeTeam}</span>
             </div>
             <div className="match-header-vs">
@@ -180,7 +182,7 @@ export default function ArenaPage() {
               {selectedMatch.group && <small>{selectedMatch.group}</small>}
             </div>
             <div className="match-header-team">
-              <TeamBadge name={awayTeam} code={selectedMatch.awayCode} size={40} />
+              <TeamLogo name={awayTeam} badge={selectedMatch.awayBadge} code={selectedMatch.awayCode} size={40} />
               <span>{awayTeam}</span>
             </div>
           </div>
@@ -225,7 +227,7 @@ export default function ArenaPage() {
               <div className="pool-deposit">
                 <div className="pool-deposit-teams">
                   <div className="pool-deposit-team">
-                    <TeamBadge name={homeTeam} code={selectedMatch.homeCode} size={32} />
+                    <TeamLogo name={homeTeam} badge={selectedMatch.homeBadge} code={selectedMatch.homeCode} size={32} />
                     <span className="pool-deposit-team-name">{homeTeam}</span>
                     <span className="pool-deposit-amount">{homePool.toFixed(4)} OKB</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(0)}>
@@ -234,7 +236,7 @@ export default function ArenaPage() {
                   </div>
                   <div className="pool-deposit-vs">VS</div>
                   <div className="pool-deposit-team">
-                    <TeamBadge name={awayTeam} code={selectedMatch.awayCode} size={32} />
+                    <TeamLogo name={awayTeam} badge={selectedMatch.awayBadge} code={selectedMatch.awayCode} size={32} />
                     <span className="pool-deposit-team-name">{awayTeam}</span>
                     <span className="pool-deposit-amount">{awayPool.toFixed(4)} OKB</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(1)}>
