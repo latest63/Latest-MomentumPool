@@ -4,34 +4,39 @@ import { fetchWorldCupMatches, fdStatusToHalf } from '@/lib/football-data';
 // Cache for 1 hour — schedule barely changes, saves API quota
 export const revalidate = 3600;
 
+function fallbackMatch() {
+  const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df';
+  return NextResponse.json({
+    matches: [{
+      matchId: 'test-match',
+      homeTeam: 'Mexico',
+      awayTeam: 'South Africa',
+      homeCode: 'MEX',
+      awayCode: 'RSA',
+      homeBadge: '',
+      awayBadge: '',
+      homeScore: 0,
+      awayScore: 0,
+      status: 'scheduled',
+      half: 'pre',
+      kickoff: Math.floor(Date.now() / 1000) + 3600,
+      competition: 'Preview Match',
+      group: 'Friendly',
+      isLive: false,
+      poolAddress: testPool,
+    }],
+    total: 1,
+    fallback: true,
+  });
+}
+
 export async function GET() {
   try {
     const matches = await fetchWorldCupMatches();
 
     if (!matches.length) {
       // Fallback: show test match so the page isn't blank
-      const testPool = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df';
-      return NextResponse.json({
-        matches: [{
-          matchId: 'test-match',
-          homeTeam: 'Mexico',
-          awayTeam: 'South Africa',
-          homeCode: 'MEX',
-          awayCode: 'RSA',
-          homeBadge: '',
-          awayBadge: '',
-          homeScore: 0,
-          awayScore: 0,
-          status: 'scheduled',
-          half: 'pre',
-          kickoff: Math.floor(Date.now() / 1000) + 3600,
-          competition: 'Preview Match',
-          group: 'Friendly',
-          isLive: false,
-        }],
-        total: 1,
-        fallback: true,
-      });
+      return fallbackMatch();
     }
 
     // Filter out knockout placeholders where teams aren't decided yet
@@ -80,9 +85,6 @@ export async function GET() {
     return NextResponse.json({ matches: mapped, total: mapped.length });
   } catch (err: any) {
     console.error('Matches API error:', err);
-    return NextResponse.json(
-      { matches: [], error: err?.message ?? 'Unknown error' },
-      { status: 500 }
-    );
+    return fallbackMatch();
   }
 }
