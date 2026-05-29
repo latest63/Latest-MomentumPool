@@ -10,8 +10,6 @@ import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamBadge from '@/components/TeamBadge';
 
-const FACTORY = '0xB61bd43eDf36FA210079725FD2e9b1d6f143BC83';
-
 const POOL_ABI = [
   {
     name: 'deposit',
@@ -39,19 +37,36 @@ interface MatchSummary {
   matchId: string;
   homeTeam: string;
   awayTeam: string;
+  homeCode?: string;
+  awayCode?: string;
+  homeBadge?: string;
+  awayBadge?: string;
   homeScore?: number;
   awayScore?: number;
   status?: string;
   kickoff?: number;
   competition?: string;
-  homeColors?: { primary: string; secondary: string; text: string };
-  awayColors?: { primary: string; secondary: string; text: string };
-  homeCode?: string;
-  awayCode?: string;
+  group?: string;
+  isLive?: boolean;
+  half?: string;
 }
 
-// Pool address from on-chain deploy
 const POOL_ADDRESS = '0xEC817c04C503A8B641bfdD0CDC105135d13Eb590';
+
+function TeamLogo({ name, badge, code, size = 48 }: { name: string; badge?: string; code?: string; size?: number }) {
+  const [broken, setBroken] = useState(false);
+  if (badge && !broken) {
+    return (
+      <img
+        src={badge}
+        alt={name}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'contain' }}
+        onError={() => setBroken(true)}
+      />
+    );
+  }
+  return <TeamBadge name={name} code={code} size={size} />;
+}
 
 export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>([]);
@@ -74,10 +89,12 @@ export default function ArenaPage() {
         }
       })
       .catch(() => {});
-  }, [selected]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (matches.length && !matches.find(m => m.matchId === selected)) setSelected(matches[0].matchId);
+    if (matches.length && !matches.find(m => m.matchId === selected)) {
+      setSelected(matches[0].matchId);
+    }
   }, [matches, selected]);
 
   useEffect(() => {
@@ -118,7 +135,7 @@ export default function ArenaPage() {
       <div className="main-content">
         <div className="match-selector">
           <div className="match-selector-header">
-            <h2>Live Matches</h2>
+            <h2>World Cup 2026</h2>
             <div className="live-indicator">LIVE</div>
           </div>
           <MatchCarousel
@@ -132,24 +149,22 @@ export default function ArenaPage() {
           <div className="match-view">
             <div className="match-header">
               <div className="match-header-team">
-                <TeamBadge
+                <TeamLogo
                   name={selectedMatch.homeTeam}
+                  badge={selectedMatch.homeBadge}
                   code={selectedMatch.homeCode}
-                  colors={selectedMatch.homeColors}
-                  size={48}
                 />
                 <span>{selectedMatch.homeTeam}</span>
               </div>
               <div className="match-header-vs">
                 VS
-                {selectedMatch.competition && <small>{selectedMatch.competition}</small>}
+                {selectedMatch.group && <small>{selectedMatch.group}</small>}
               </div>
               <div className="match-header-team">
-                <TeamBadge
+                <TeamLogo
                   name={selectedMatch.awayTeam}
+                  badge={selectedMatch.awayBadge}
                   code={selectedMatch.awayCode}
-                  colors={selectedMatch.awayColors}
-                  size={48}
                 />
                 <span>{selectedMatch.awayTeam}</span>
               </div>

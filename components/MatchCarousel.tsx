@@ -14,6 +14,8 @@ interface MatchSummary {
   awayColors?: { primary: string; secondary: string; text: string };
   homeCode?: string;
   awayCode?: string;
+  homeBadge?: string;
+  awayBadge?: string;
 }
 
 interface Props {

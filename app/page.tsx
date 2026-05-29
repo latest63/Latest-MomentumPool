@@ -8,13 +8,46 @@ interface MatchData {
   matchId: string;
   homeTeam: string;
   awayTeam: string;
-  status: string;
-  kickoff: number;
-  competition: string;
-  homeColors: { primary: string; secondary: string; text: string };
-  awayColors: { primary: string; secondary: string; text: string };
   homeCode: string;
   awayCode: string;
+  homeBadge: string;
+  awayBadge: string;
+  status: string;
+  half: string;
+  kickoff: number;
+  competition: string;
+  group: string;
+  matchday: number;
+  isLive: boolean;
+}
+
+function TeamLogo({ name, badge, code }: { name: string; badge: string; code: string }) {
+  const [broken, setBroken] = useState(false);
+  if (badge && !broken) {
+    return (
+      <img
+        src={badge}
+        alt={name}
+        className="team-logo-sm"
+        onError={() => setBroken(true)}
+      />
+    );
+  }
+  return <TeamBadge name={name} code={code} size={28} />;
+}
+
+function formatTime(ts: number): string {
+  const d = new Date(ts * 1000);
+  return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
+}
+
+function timeUntil(ts: number): string {
+  const diff = ts * 1000 - Date.now();
+  if (diff <= 0) return 'LIVE';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 }
 
 export default function Home() {
@@ -27,21 +60,9 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  const top5 = matches.slice(0, 5);
-
-  function formatTime(ts: number): string {
-    const d = new Date(ts * 1000);
-    return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
-  }
-
-  function timeUntil(ts: number): string {
-    const diff = ts * 1000 - Date.now();
-    if (diff <= 0) return 'LIVE';
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
-  }
+  const upcoming = matches.filter(m => !m.isLive && m.status === 'timed' || m.status === 'scheduled').slice(0, 5);
+  const live = matches.filter(m => m.isLive);
+  const display = [...live, ...upcoming].slice(0, 5);
 
   return (
     <>
@@ -50,11 +71,10 @@ export default function Home() {
       {/* ────────── HERO ────────── */}
       <div className="hero-wrap split-hero">
         <div className="hero-beams" />
-
         <div className="hero-split-inner">
           <div className="hero-content hero-content-split">
             <div className="hero-tag">
-              <span className="dot" /> {top5[0]?.competition || 'LIVE FOOTBALL'}
+              <span className="dot" /> {live.length > 0 ? `${live.length} MATCHES LIVE` : 'FIFA WORLD CUP 2026'}
             </div>
             <h1 className="hero-title">
               PICK THE<br />
@@ -69,7 +89,6 @@ export default function Home() {
             </a>
           </div>
 
-          {/* ────────── Momentum Emblem ────────── */}
           <div className="hero-emblem-panel">
             <div className="emblem-stadium-light light-left" />
             <div className="emblem-stadium-light light-right" />
@@ -105,7 +124,6 @@ export default function Home() {
             <div className="emblem-platform" />
           </div>
 
-          {/* ────────── Powered by Badge ────────── */}
           <div className="hero-hint powered-by-badge-row">
             <span>Powered by X Layer</span>
             <img src="/assets/x-layer-powered.jpeg" alt="X Layer logo" className="xlayer-powered-badge" />
@@ -113,11 +131,10 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ────────── INTRODUCTION ────────── */}
         <div className="hero-intro">
           <div className="hero-intro-inner">
             <div className="section-label">Momentum Pool</div>
-            <div className="section-title">Live Football Matches</div>
+            <div className="section-title">FIFA World Cup 2026</div>
             <div className="section-desc">
               The first on-chain momentum pool built for football. Pick who controls each half,
               watch live events shift the momentum bar, and split the pot.
@@ -177,24 +194,24 @@ export default function Home() {
       <section className="section">
         <div className="section-inner">
           <div className="section-label">Schedule</div>
-          <div className="section-title">Upcoming & Live Matches</div>
+          <div className="section-title">World Cup 2026 Matches</div>
           <div className="section-desc">Open matches. Pick your side before the half starts.</div>
           <div className="match-grid">
-            {top5.map((m) => (
+            {display.map((m) => (
               <a key={m.matchId} href="/arena" className="match-card">
                 <div className="match-card-teams">
                   <span className="match-card-team">
-                    <TeamBadge name={m.homeTeam} code={m.homeCode} colors={m.homeColors} size={32} />
+                    <TeamLogo name={m.homeTeam} badge={m.homeBadge} code={m.homeCode} />
                     {m.homeTeam}
                   </span>
                   <span className="vs">vs</span>
                   <span className="match-card-team">
-                    <TeamBadge name={m.awayTeam} code={m.awayCode} colors={m.awayColors} size={32} />
+                    <TeamLogo name={m.awayTeam} badge={m.awayBadge} code={m.awayCode} />
                     {m.awayTeam}
                   </span>
                 </div>
                 <span className="match-card-venue">
-                  {m.competition} &middot; {m.status === 'notstarted' ? formatTime(m.kickoff) : timeUntil(m.kickoff)}
+                  {m.group} &middot; {m.isLive ? 'LIVE' : formatTime(m.kickoff)}
                 </span>
               </a>
             ))}
@@ -210,9 +227,9 @@ export default function Home() {
           <div className="section-desc">Fully on-chain settlement. No oracles. Just pure momentum.</div>
           <div className="stats-row">
             {[
-              { num: String(top5.length), label: 'Available Matches' },
+              { num: String(matches.length), label: 'World Cup Matches' },
               { num: '14K', label: 'Prize Pool (USDT)' },
-              { num: String(top5.filter(m => m.status !== 'notstarted').length), label: 'Live Now' },
+              { num: String(live.length), label: 'Live Now' },
             ].map((s, i) => (
               <div key={i} className="stat-card">
                 <div className="stat-number">{s.num}</div>

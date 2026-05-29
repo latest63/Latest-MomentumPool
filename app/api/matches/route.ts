@@ -1,70 +1,56 @@
 import { NextResponse } from 'next/server';
-import { todayDate, fetchScheduledMatches, fetchLiveMatches } from '@/lib/sport-api';
+import { fetchWorldCupMatches, fdStatusToHalf } from '@/lib/football-data';
 
-export const dynamic = 'force-dynamic'; // always fresh from SportAPI
-// Browser/edge cache for 5 min to save API quota
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // 1 hour cache
 
 export async function GET() {
   try {
-    // Get upcoming matches
-    const [live, scheduled] = await Promise.all([
-      fetchLiveMatches().catch(() => []),
-      fetchScheduledMatches(todayDate()).catch(() => []),
-    ]);
+    const matches = await fetchWorldCupMatches();
 
-    // Dedup by ID — live takes priority
-    const seen = new Set<number>();
-    const all: any[] = [];
-
-    for (const m of live) {
-      if (!seen.has(m.id)) {
-        const ht = m.homeTeam ?? {};
-        const at = m.awayTeam ?? {};
-        all.push({
-          matchId: String(m.id),
-          homeTeam: ht.name,
-          awayTeam: at.name,
-          homeScore: m.homeScore?.current ?? 0,
-          awayScore: m.awayScore?.current ?? 0,
-          status: m.status?.type ?? 'unknown',
-          kickoff: m.startTimestamp,
-          competition: m.tournament?.uniqueTournament?.name ?? m.tournament?.name ?? '',
-          homeColors: ht.teamColors ?? { primary: '#374df5', secondary: '#374df5', text: '#ffffff' },
-          awayColors: at.teamColors ?? { primary: '#374df5', secondary: '#374df5', text: '#ffffff' },
-          homeCode: ht.nameCode ?? ht.name?.slice(0, 3).toUpperCase() ?? 'HOM',
-          awayCode: at.nameCode ?? at.name?.slice(0, 3).toUpperCase() ?? 'AWY',
-        });
-        seen.add(m.id);
-      }
+    if (!matches.length) {
+      return NextResponse.json({ matches: [] });
     }
 
-    // Add upcoming — up to 5 to fill
-    for (const m of scheduled) {
-      if (all.length >= 5) break;
-      if (seen.has(m.id)) continue;
-      const ht = m.homeTeam ?? {};
-      const at = m.awayTeam ?? {};
-      all.push({
+    const mapped = matches.map((m) => {
+      const status = m.status;
+      const isLive = status === 'IN_PLAY' || status === 'PAUSED';
+      const ht = m.homeTeam;
+      const at = m.awayTeam;
+
+      return {
         matchId: String(m.id),
         homeTeam: ht.name,
         awayTeam: at.name,
-        homeScore: m.homeScore?.current ?? 0,
-        awayScore: m.awayScore?.current ?? 0,
-        status: m.status?.type ?? 'notstarted',
-        kickoff: m.startTimestamp,
-        competition: m.tournament?.uniqueTournament?.name ?? m.tournament?.name ?? '',
-        homeColors: ht.teamColors ?? { primary: '#374df5', secondary: '#374df5', text: '#ffffff' },
-        awayColors: at.teamColors ?? { primary: '#374df5', secondary: '#374df5', text: '#ffffff' },
-        homeCode: ht.nameCode ?? ht.name?.slice(0, 3).toUpperCase() ?? 'HOM',
-        awayCode: at.nameCode ?? at.name?.slice(0, 3).toUpperCase() ?? 'AWY',
-      });
-      seen.add(m.id);
-    }
+        homeCode: ht.tla,
+        awayCode: at.tla,
+        homeBadge: ht.crest,
+        awayBadge: at.crest,
+        homeScore: m.score.fullTime.home ?? 0,
+        awayScore: m.score.fullTime.away ?? 0,
+        status: status.toLowerCase().replace(/_/g, ''),
+        half: fdStatusToHalf(status),
+        kickoff: new Date(m.utcDate).getTime() / 1000,
+        competition: `FIFA World Cup 2026`,
+        group: m.group ?? m.stage ?? '',
+        matchday: m.matchday,
+        isLive,
+      };
+    });
 
-    return NextResponse.json({ matches: all.slice(0, 5) });
+    // Sorted: live first, then scheduled by date
+    mapped.sort((a, b) => {
+      if (a.isLive && !b.isLive) return -1;
+      if (!a.isLive && b.isLive) return 1;
+      return (a.kickoff || 0) - (b.kickoff || 0);
+    });
+
+    return NextResponse.json({ matches: mapped, total: mapped.length });
   } catch (err: any) {
     console.error('Matches API error:', err);
-    return NextResponse.json({ matches: [], error: err?.message });
+    return NextResponse.json(
+      { matches: [], error: err?.message ?? 'Unknown error' },
+      { status: 500 }
+    );
   }
 }
