@@ -114,7 +114,7 @@ contract MomentumPool {
             uint256 myBet = team1.deposits[msg.sender];
             if (myBet > 0 && team1.total > 0) {
                 uint256 losersNet = team0.total - protocolFees;
-                payout = myBet + (myBet * losersNet / team0.total);
+                payout = myBet + (myBet * losersNet / team1.total);
             }
         }
 
@@ -134,6 +134,18 @@ contract MomentumPool {
 
     function getUserDeposit(address user) external view returns (uint256, uint256) {
         return (team0.deposits[user], team1.deposits[user]);
+    }
+
+    /* ───── Owner: collect protocol fees after settlement ───── */
+    function withdrawFees() external {
+        require(msg.sender == owner, "Only owner");
+        require(state == State.SETTLED || state == State.CANCELLED, "Not settled");
+        uint256 fees = protocolFees;
+        require(fees > 0, "No fees to withdraw");
+        protocolFees = 0;
+        (bool ok,) = payable(owner).call{value: fees}("");
+        require(ok, "Transfer failed");
+        emit Withdrawn(owner, fees);
     }
 
     receive() external payable {}
