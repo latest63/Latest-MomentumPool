@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { todayDate, fetchScheduledMatches, fetchLiveMatches } from '@/lib/sport-api';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 300; // cache 5 min
+export const dynamic = 'force-dynamic'; // always fresh from SportAPI
+// Browser/edge cache for 5 min to save API quota
+export const revalidate = 300;
 
 export async function GET() {
   try {
