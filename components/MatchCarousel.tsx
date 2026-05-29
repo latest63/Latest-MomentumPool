@@ -77,26 +77,67 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
 
   // ─── Desktop: simple horizontal tabs ───
   if (!isMobile) {
+    const tabsRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
+
+    const updateScrollState = () => {
+      const el = tabsRef.current;
+      if (!el) return;
+      setCanScrollLeft(el.scrollLeft > 4);
+      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+    };
+
+    useLayoutEffect(() => {
+      updateScrollState();
+      const el = tabsRef.current;
+      if (!el) return;
+      el.addEventListener('scroll', updateScrollState);
+      return () => el.removeEventListener('scroll', updateScrollState);
+    }, [matches]);
+
+    const scrollTabs = (dir: 'left' | 'right') => {
+      const el = tabsRef.current;
+      if (!el) return;
+      const card = el.querySelector('.match-tab') as HTMLElement | null;
+      const step = (card?.offsetWidth ?? 170) + 12; // card + gap
+      el.scrollBy({ left: dir === 'left' ? -step * 3 : step * 3, behavior: 'smooth' });
+    };
+
     return (
-      <div className="match-tabs">
-        {matches.map(m => (
-          <button
-            key={m.matchId}
-            className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
-            onClick={() => onSelect(m.matchId)}
-          >
-            <div className="tab-team-row">
-              <TeamLogo name={m.homeTeam} badge={m.homeBadge} code={m.homeCode} size={28} />
-              <span>{m.homeTeam}</span>
-            </div>
-            <div className="tab-vs-label">vs</div>
-            <div className="tab-team-row">
-              <TeamLogo name={m.awayTeam} badge={m.awayBadge} code={m.awayCode} size={28} />
-              <span>{m.awayTeam}</span>
-            </div>
-            <small>{m.competition || m.venue || 'Football'}</small>
-          </button>
-        ))}
+      <div className="match-tabs-wrap">
+        <div className="match-tabs" ref={tabsRef}>
+          {matches.map(m => (
+            <button
+              key={m.matchId}
+              className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
+              onClick={() => onSelect(m.matchId)}
+            >
+              <div className="tab-team-row">
+                <TeamLogo name={m.homeTeam} badge={m.homeBadge} code={m.homeCode} size={28} />
+                <span>{m.homeTeam}</span>
+              </div>
+              <div className="tab-vs-label">vs</div>
+              <div className="tab-team-row">
+                <TeamLogo name={m.awayTeam} badge={m.awayBadge} code={m.awayCode} size={28} />
+                <span>{m.awayTeam}</span>
+              </div>
+              <small>{m.competition || m.venue || 'Football'}</small>
+            </button>
+          ))}
+        </div>
+        <button
+          className={`mc-arrow mc-arrow-left ${!canScrollLeft ? 'disabled' : ''}`}
+          onClick={() => scrollTabs('left')}
+          disabled={!canScrollLeft}
+          aria-label="Scroll matches left"
+        >‹</button>
+        <button
+          className={`mc-arrow mc-arrow-right ${!canScrollRight ? 'disabled' : ''}`}
+          onClick={() => scrollTabs('right')}
+          disabled={!canScrollRight}
+          aria-label="Scroll matches right"
+        >›</button>
       </div>
     );
   }

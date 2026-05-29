@@ -1018,6 +1018,11 @@ body {
 }
 .match-tabs::-webkit-scrollbar { display: none; }
 
+.match-tabs-wrap {
+  position: relative;
+  padding: 8px 0;
+}
+
 .match-tab {
   flex-shrink: 0;
   min-width: 170px;
