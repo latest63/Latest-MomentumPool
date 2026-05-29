@@ -4,7 +4,7 @@ import { getAllMatches } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const matches = getAllMatches();
+  const matches = await getAllMatches();
 
   // Sort: unscheduled first, then by kickoff
   const sorted = [...matches].sort((a, b) => {
@@ -33,5 +33,5 @@ export async function GET() {
     settled: !!m.settled,
   }));
 
-  return NextResponse.json({ matches: mapped, total: mapped.length, source: 'db' });
+  return NextResponse.json({ matches: mapped, total: mapped.length, source: 'supabase' });
 }
