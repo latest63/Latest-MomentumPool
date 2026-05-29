@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, PoolCard } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useSwitchChain } from 'wagmi';
 import { parseEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
@@ -62,8 +62,9 @@ export default function ArenaPage() {
   const [momentum, setMomentum] = useState<MomentumData | null>(null);
   const [momLoaded, setMomLoaded] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId } = useAccount();
   const { writeContract, isPending } = useWriteContract();
+  const { switchChain } = useSwitchChain();
   const { setLoading } = useLoading();
 
   useEffect(() => { setLoading(isPending); }, [isPending, setLoading]);
@@ -110,6 +111,11 @@ export default function ArenaPage() {
 
   const handleDeposit = (matchId: string, teamId: number, amount: string) => {
     if (!isConnected) return alert('Connect your wallet first');
+    if (chainId !== 196) {
+      alert('Switch to X Layer in your wallet');
+      switchChain?.({ chainId: 196 });
+      return;
+    }
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
     writeContract({
@@ -118,6 +124,11 @@ export default function ArenaPage() {
       functionName: 'deposit',
       args: [teamId],
       value: parseEther(amount),
+    }, {
+      onError(err) {
+        alert(`Transaction failed: ${err.message}`);
+        console.error('Deposit error:', err);
+      },
     });
   };
 

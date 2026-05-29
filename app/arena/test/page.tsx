@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { MomentumBar, PoolCard, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import TeamLogo from '@/components/TeamLogo';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useSwitchChain } from 'wagmi';
 import { parseEther } from 'viem';
 import { useLoading } from '@/components/LoadingOverlay';
 
@@ -16,10 +16,12 @@ const POOL_ABI = [
 const POOL_ADDRESS = (process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04Da66a885F7c1E52F984E7eFc013393aeeAA2df') as `0x${string}`;
 const HOME_TEAM = 'Mexico';
 const AWAY_TEAM = 'South Africa';
+const XLAYER_ID = 196;
 
 export default function TestArenaPage() {
-  const { isConnected } = useAccount();
+  const { isConnected, chainId } = useAccount();
   const { writeContract, isPending } = useWriteContract();
+  const { switchChain } = useSwitchChain();
   const { setLoading } = useLoading();
   useEffect(() => { setLoading(isPending); }, [isPending, setLoading]);
 
@@ -27,7 +29,12 @@ export default function TestArenaPage() {
   const kickoff = Math.floor(Date.now() / 1000) + 3600;
 
   const handleDeposit = (_matchId: string, teamId: number, amount: string) => {
-    if (!isConnected) return alert('Connect your wallet first');
+    if (!isConnected) return alert('Connect wallet first');
+    if (chainId !== XLAYER_ID) {
+      alert('Switch to X Layer in your wallet');
+      switchChain?.({ chainId: XLAYER_ID });
+      return;
+    }
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
     writeContract({
@@ -36,6 +43,11 @@ export default function TestArenaPage() {
       functionName: 'deposit',
       args: [teamId],
       value: parseEther(amount),
+    }, {
+      onError(err) {
+        alert(`Transaction failed: ${err.message}`);
+        console.error('Deposit error:', err);
+      },
     });
   };
 
