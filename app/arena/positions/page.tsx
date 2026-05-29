@@ -5,7 +5,7 @@ import Nav from '@/components/Nav';
 import { useState, useEffect } from 'react';
 import { useLoading } from '@/components/LoadingOverlay';
 
-const POOL_ADDRESS = '0x86ce525510b61d21de8ad122fc7f4e43a66c5f68';
+const POOL_ADDRESS = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x8f550f21824b56c2fd8d1398955ac043544ecfc7';
 
 const POOL_ABI = [
   {
