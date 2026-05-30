@@ -6,10 +6,10 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { FACTORY_ABI, POOL_ABI } from '@/lib/pool-abi';
 
 const xLayer = {
-  id: 196,
-  name: 'X Layer',
+  id: 195,
+  name: 'X Layer Testnet',
   nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.xlayer.tech'] } },
+  rpcUrls: { default: { http: ['https://testrpc.xlayer.tech'] } },
 } as const;
 
 function getClient() {

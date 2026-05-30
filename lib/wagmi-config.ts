@@ -1,17 +1,17 @@
 import { createConfig, http } from 'wagmi';
 import { injected, walletConnect } from 'wagmi/connectors';
 
-// ── X Layer chain ──
+// ── X Layer Testnet ──
 const xLayer = {
-  id: 196,
-  name: 'X Layer',
+  id: 195,
+  name: 'X Layer Testnet',
   nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://rpc.xlayer.tech'] },
-    public: { http: ['https://rpc.xlayer.tech'] },
+    default: { http: ['https://testrpc.xlayer.tech'] },
+    public: { http: ['https://testrpc.xlayer.tech'] },
   },
   blockExplorers: {
-    default: { name: 'OKX Explorer', url: 'https://www.okx.com/explorer/xlayer' },
+    default: { name: 'OKX Explorer', url: 'https://www.okx.com/explorer/xlayer-test' },
   },
 } as const;
 
