@@ -51,6 +51,7 @@ interface MatchSummary {
   isLive: boolean;
   poolAddress: string;
   settled: boolean;
+  isCurrentMatch: boolean;
 }
 
 /* ─── Flag badge URLs ─── */
@@ -133,6 +134,7 @@ export default function ArenaPage() {
         isLive: false,
         poolAddress: '',
         settled: false,
+        isCurrentMatch: false,
       };
     })
   );
@@ -146,7 +148,7 @@ export default function ArenaPage() {
   useEffect(() => {
     if (!state?.match) {
       // Clear live/settled flags when no active match
-      setMatches(prev => prev.map(m => ({ ...m, isLive: false, settled: false, poolAddress: '' })));
+      setMatches(prev => prev.map(m => ({ ...m, isLive: false, settled: false, poolAddress: '', isCurrentMatch: false })));
       return;
     }
     setMatches(prev => {
@@ -154,6 +156,7 @@ export default function ArenaPage() {
         ...m,
         isLive: m.matchId === state.match!.id && state.match!.phase === 'live',
         settled: m.matchId === state.match!.id && state.match!.phase === 'settled',
+        isCurrentMatch: m.matchId === state.match!.id,
         poolAddress: m.matchId === state.match!.id ? (state.match!.poolAddress ?? '') : '',
       }));
       return next;

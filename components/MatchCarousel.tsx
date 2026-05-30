@@ -18,6 +18,7 @@ interface MatchSummary {
   awayBadge?: string;
   isLive?: boolean;
   settled?: boolean;
+  isCurrentMatch?: boolean;
 }
 
 interface Props {
@@ -134,8 +135,8 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
               <div className="tab-status-row">
                 {m.isLive && <span className="tab-live-dot" />}
                 {m.settled && <span className="tab-settled-label">FT</span>}
-                {!m.isLive && !m.settled && selected === m.matchId && <span className="tab-open-label">OPEN</span>}
-                {!m.isLive && !m.settled && selected !== m.matchId && <span className="tab-upcoming-label">Next</span>}
+                {!m.isLive && !m.settled && m.isCurrentMatch && <span className="tab-open-label">OPEN</span>}
+                {!m.isLive && !m.settled && !m.isCurrentMatch && <span className="tab-upcoming-label">Next</span>}
               </div>
               <div className="tab-team-row">
                 <TeamLogo name={m.homeTeam} badge={m.homeBadge} code={m.homeCode} size={28} />
@@ -186,8 +187,8 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
             <div className="mc-status-row">
               {m.isLive && <span className="mc-live-badge">LIVE</span>}
               {m.settled && <span className="mc-ft-badge">FT</span>}
-              {!m.isLive && !m.settled && selected === m.matchId && <span className="mc-open-badge">OPEN</span>}
-              {!m.isLive && !m.settled && selected !== m.matchId && <span className="mc-next-badge">Next</span>}
+              {!m.isLive && !m.settled && m.isCurrentMatch && <span className="mc-open-badge">OPEN</span>}
+              {!m.isLive && !m.settled && !m.isCurrentMatch && <span className="mc-next-badge">Next</span>}
             </div>
           </button>
         ))}
