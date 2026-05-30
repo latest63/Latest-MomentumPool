@@ -1,4 +1,4 @@
-import { createConfig, http } from 'wagmi';
+import { createConfig, http, cookieStorage, createStorage } from 'wagmi';
 import { injected, walletConnect } from 'wagmi/connectors';
 
 // ── X Layer Testnet ──
@@ -27,4 +27,5 @@ export const config = createConfig({
     [xLayer.id]: http(),
   },
   ssr: true,
+  storage: createStorage({ storage: cookieStorage }),
 });
