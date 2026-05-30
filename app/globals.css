@@ -1352,6 +1352,15 @@ body {
   margin: 16px 0;
 }
 
+.pool-info-header {
+  font-family: var(--font-sports);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: var(--sp-4);
+}
+
 .pool-deposit-teams {
   display: flex;
   align-items: center;

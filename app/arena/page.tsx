@@ -287,9 +287,9 @@ export default function ArenaPage() {
               </>
             ) : (
               <div className="pool-deposit">
+                <div className="pool-info-header">Pool Info</div>
                 <div className="pool-deposit-teams">
                   <div className="pool-deposit-team">
-                    <TeamLogo name={homeTeam} badge={selectedMatch.homeBadge} code={selectedMatch.homeCode} size={32} />
                     <span className="pool-deposit-team-name">{homeTeam}</span>
                     <span className="pool-deposit-amount">{homePool.toFixed(4)} USDg</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(0)}>
@@ -298,7 +298,6 @@ export default function ArenaPage() {
                   </div>
                   <div className="pool-deposit-vs">VS</div>
                   <div className="pool-deposit-team">
-                    <TeamLogo name={awayTeam} badge={selectedMatch.awayBadge} code={selectedMatch.awayCode} size={32} />
                     <span className="pool-deposit-team-name">{awayTeam}</span>
                     <span className="pool-deposit-amount">{awayPool.toFixed(4)} USDg</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(1)}>
