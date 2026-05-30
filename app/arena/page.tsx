@@ -3,24 +3,57 @@
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useReadContract, useSwitchChain } from 'wagmi';
-import { formatEther } from 'viem';
+import { useAccount, useSwitchChain } from 'wagmi';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
 
-const POOL_ABI = [
-  { name: 'deposit', type: 'function', inputs: [{ name: 'teamId', type: 'uint8' }, { name: 'amount', type: 'uint256' }], stateMutability: 'nonpayable', outputs: [] },
-  { name: 'state', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint8' }], stateMutability: 'view' },
-  { name: 'winnerTeamId', type: 'function', inputs: [], outputs: [{ name: '', type: 'uint8' }], stateMutability: 'view' },
-  { name: 'team0', type: 'function', inputs: [], outputs: [{ name: 'total', type: 'uint256' }], stateMutability: 'view' },
-  { name: 'team1', type: 'function', inputs: [], outputs: [{ name: 'total', type: 'uint256' }], stateMutability: 'view' },
-] as const;
+/* ─── Types ─── */
+interface SimEvent {
+  minute: number;
+  type: string;
+  team: 'home' | 'away';
+  player?: string;
+}
 
-const USDG_ADDRESS = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
-const POOL_FACTORY = process.env.NEXT_PUBLIC_POOL_FACTORY || '';
+interface SimMatch {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  phase: 'open' | 'live' | 'settled';
+  phaseElapsed: number;
+  score: { home: number; away: number };
+  events: SimEvent[];
+  momentumHome: number;
+  deposits: { home: number; away: number };
+  poolAddress: string | null;
+}
 
-/* ─── Flag badge URLs (flagcdn.com) ─── */
+interface SimState {
+  match: SimMatch | null;
+  nextUp: { id: string; homeTeam: string; awayTeam: string } | null;
+  matchIndex: number;
+  totalMatches: number;
+  tick: number;
+  running: boolean;
+}
+
+interface MatchSummary {
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeCode: string;
+  awayCode: string;
+  homeBadge: string;
+  awayBadge: string;
+  competition: string;
+  group: string;
+  isLive: boolean;
+  poolAddress: string;
+  settled: boolean;
+}
+
+/* ─── Flag badge URLs ─── */
 const FLAGS: Record<string, string> = {
   Nigeria:   'https://flagcdn.com/w80/ng.png',
   Brazil:    'https://flagcdn.com/w80/br.png',
@@ -35,156 +68,110 @@ const FLAGS: Record<string, string> = {
 };
 
 /* ─── 5 World Cup matchups ─── */
-const SIM_MATCHUPS = [
-  { id: 'sim-1', homeTeam: 'Nigeria',   awayTeam: 'Brazil',    homeCode: 'NGA', awayCode: 'BRA' },
-  { id: 'sim-2', homeTeam: 'Argentina', awayTeam: 'France',   homeCode: 'ARG', awayCode: 'FRA' },
-  { id: 'sim-3', homeTeam: 'England',   awayTeam: 'Germany',  homeCode: 'ENG', awayCode: 'GER' },
-  { id: 'sim-4', homeTeam: 'Portugal',  awayTeam: 'Spain',    homeCode: 'POR', awayCode: 'ESP' },
-  { id: 'sim-5', homeTeam: 'Morocco',   awayTeam: 'Senegal',  homeCode: 'MAR', awayCode: 'SEN' },
-];
+const MATCHUP_IDS = ['sim-1', 'sim-2', 'sim-3', 'sim-4', 'sim-5'];
 
-/* ─── Mock event generator ─── */
-const EVENTS_POOL: { type: EventItem['type']; team: EventItem['team']; label: string }[] = [
-  { type: 'goal',            team: 'home', label: '' },
-  { type: 'goal',            team: 'away', label: '' },
-  { type: 'yellow_card',     team: 'home', label: '' },
-  { type: 'yellow_card',     team: 'away', label: '' },
-  { type: 'corner',          team: 'home', label: '' },
-  { type: 'corner',          team: 'away', label: '' },
-  { type: 'shot_on_target',  team: 'home', label: '' },
-  { type: 'shot_on_target',  team: 'away', label: '' },
-  { type: 'foul',            team: 'home', label: '' },
-  { type: 'foul',            team: 'away', label: '' },
-  { type: 'woodwork',        team: 'home', label: '' },
-  { type: 'red_card',        team: 'away', label: '' },
-];
+/* ─── Phase helpers ─── */
+const PHASE_DURATION = { open: 120, live: 120, settled: 15 };
 
-function generateMockMomentum(): MomentumData {
-  const homeScore = Math.floor(Math.random() * 4);
-  const awayScore = Math.floor(Math.random() * 4);
+const PHASE_LABEL: Record<string, string> = {
+  open: 'DEPOSIT',
+  live: 'LIVE',
+  settled: 'SETTLED',
+};
+
+function formatTime(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function simToMomentum(match: SimMatch): MomentumData {
   return {
-    homeScore,
-    awayScore,
-    homeTeam: '',
-    awayTeam: '',
-    half: Math.random() > 0.5 ? '1ST' : '2ND',
-    diff: homeScore - awayScore,
+    homeScore: match.score.home,
+    awayScore: match.score.away,
+    homeTeam: match.homeTeam,
+    awayTeam: match.awayTeam,
+    half: match.phase === 'live' ? '2ND' : match.phase === 'open' ? '1ST' : 'FT',
+    diff: match.score.home - match.score.away,
   };
 }
 
-function generateMockEvents(): EventItem[] {
-  const count = 3 + Math.floor(Math.random() * 6);
-  const events: EventItem[] = [];
-  for (let i = 0; i < count; i++) {
-    const pick = EVENTS_POOL[Math.floor(Math.random() * EVENTS_POOL.length)];
-    events.push({
-      type: pick.type,
-      team: pick.team,
-      minute: 5 + Math.floor(Math.random() * 85),
-    });
-  }
-  return events.sort((a, b) => a.minute - b.minute);
-}
-/* ─── Types ─── */
-interface MatchSummary {
-  matchId: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeCode?: string;
-  awayCode?: string;
-  homeBadge?: string;
-  awayBadge?: string;
-  homeScore?: number;
-  awayScore?: number;
-  status?: string;
-  kickoff?: number;
-  competition?: string;
-  group?: string;
-  isLive?: boolean;
-  half?: string;
-  poolAddress?: string;
-  settled?: boolean;
-}
-
-function formatTime(ts: number): string {
-  const d = new Date(ts * 1000);
-  return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
+function simToEventItems(events: SimEvent[]): EventItem[] {
+  return events.slice(-20).map(e => ({
+    type: e.type,
+    team: e.team,
+    minute: e.minute,
+    player: e.player,
+  }));
 }
 
 /* ═══════════════════════════════════════ PAGE ═══════════════════════════════════════ */
 export default function ArenaPage() {
+  const [state, setState] = useState<SimState | null>(null);
   const [matches, setMatches] = useState<MatchSummary[]>([]);
-  const [selected, setSelected] = useState('');
-  const [momentum, setMomentum] = useState<MomentumData | null>(null);
-  const [events, setEvents] = useState<EventItem[]>([]);
+  const [selected, setSelected] = useState('sim-1');
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('0.001');
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
-  const [mounted, setMounted] = useState(false);
-  const [depositAmount, setDepositAmount] = useState('0.001');
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
 
-  useEffect(() => setMounted(true), []);
-
-  // Load 5 matchups with flags
+  // Build carousel data from matchup IDs
   useEffect(() => {
-    const mapped = SIM_MATCHUPS.map(m => ({
-      matchId: m.id,
-      homeTeam: m.homeTeam,
-      awayTeam: m.awayTeam,
-      homeCode: m.homeCode,
-      awayCode: m.awayCode,
-      homeBadge: FLAGS[m.homeTeam] || '',
-      awayBadge: FLAGS[m.awayTeam] || '',
-      homeScore: 0,
-      awayScore: 0,
-      status: 'scheduled' as const,
-      half: '',
-      kickoff: Math.floor(Date.now() / 1000) + 3600,
-      competition: 'Momentum Pool — World Cup 2026',
-      group: 'Group Stage',
-      isLive: false,
-      poolAddress: '',
-      settled: false,
-    }));
-    setMatches(mapped);
-    if (!selected) setSelected(mapped[0].matchId);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (matches.length && !matches.find(m => m.matchId === selected)) {
-      setSelected(matches[0].matchId);
+    if (!state?.match) return;
+    const mapped = MATCHUP_IDS.map(id => {
+      const m = state.match?.id === id ? state.match : null;
+      return {
+        matchId: id,
+        homeTeam: m?.homeTeam ?? '',
+        awayTeam: m?.awayTeam ?? '',
+        homeCode: '',
+        awayCode: '',
+        homeBadge: '',
+        awayBadge: '',
+        competition: 'Momentum Pool — World Cup 2026',
+        group: 'Group Stage',
+        isLive: m?.phase === 'live',
+        poolAddress: m?.poolAddress ?? '',
+        settled: m?.phase === 'settled',
+      };
+    });
+    // Fill in team names from engine data
+    if (state.match) {
+      const idx = MATCHUP_IDS.indexOf(state.match.id);
+      if (idx !== -1) {
+        mapped[idx].homeTeam = state.match.homeTeam;
+        mapped[idx].awayTeam = state.match.awayTeam;
+        mapped[idx].homeCode = state.match.homeTeam.slice(0, 3).toUpperCase();
+        mapped[idx].awayCode = state.match.awayTeam.slice(0, 3).toUpperCase();
+        mapped[idx].homeBadge = FLAGS[state.match.homeTeam] || '';
+        mapped[idx].awayBadge = FLAGS[state.match.awayTeam] || '';
+        mapped[idx].isLive = state.match.phase === 'live';
+        mapped[idx].settled = state.match.phase === 'settled';
+        mapped[idx].poolAddress = state.match.poolAddress ?? '';
+      }
     }
-  }, [matches, selected]);
+    setMatches(mapped);
+  }, [state?.match?.id, state?.match?.homeTeam, state?.match?.awayTeam, state?.match?.phase]);
 
-  // Regenerate mock momentum + events when selected match changes
+  // Start engine on mount + poll state
   useEffect(() => {
-    if (!selected) return;
-    setMomentum(generateMockMomentum());
-    setEvents(generateMockEvents());
-  }, [selected]);
+    fetch('/api/sim/start', { method: 'POST' }).catch(() => {});
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/sim/state');
+        if (res.ok) setState(await res.json());
+      } catch {}
+    };
+    poll();
+    const interval = setInterval(poll, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const selectedMatch = matches.find(m => m.matchId === selected);
-  const activePoolAddress = (selectedMatch?.poolAddress || POOL_FACTORY) as `0x${string}`;
+  const match = state?.match ?? null;
+  const isFirstLoad = !state;
 
-  // On-chain pool state
-  const { data: rawState } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'state' });
-  const { data: rawWinner } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'winnerTeamId' });
-  const { data: rawHomeTotal } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'team0' });
-  const { data: rawAwayTotal } = useReadContract({ address: activePoolAddress, abi: POOL_ABI, functionName: 'team1' });
-
-  const chainState = mounted ? Number(rawState ?? 0) : 0;
-  const isOnChainSettled = chainState === 2;
-  const winner = Number(rawWinner ?? 0);
-  const homePool = rawHomeTotal ? Number(formatEther(rawHomeTotal as bigint)) : 0;
-  const awayPool = rawAwayTotal ? Number(formatEther(rawAwayTotal as bigint)) : 0;
-  const totalPool = homePool + awayPool;
-
-  const isMatchSettled = selectedMatch?.settled || isOnChainSettled;
-  const homeTeam = selectedMatch?.homeTeam || '';
-  const awayTeam = selectedMatch?.awayTeam || '';
-  const winnerName = winner === 0 ? homeTeam : awayTeam;
-
-  const handleDeposit = (teamId: number) => {
+  /* ─── Deposit handler ─── */
+  const handleDeposit = async (team: 'home' | 'away') => {
     if (!isConnected) return alert('Connect your wallet first');
     if (chainId !== 195) {
       alert('Switch to X Layer testnet in your wallet');
@@ -193,22 +180,54 @@ export default function ArenaPage() {
     }
     const parsed = parseFloat(depositAmount);
     if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
-    // Mock deposit — no pool deployed yet
-    alert(`Deposited ${depositAmount} USDG on ${selectedMatch?.homeTeam ?? ''} vs ${selectedMatch?.awayTeam ?? ''} (mock)`);
+    try {
+      const res = await fetch('/api/sim/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team, amount: parsed }),
+      });
+      const data = await res.json();
+      if (data.ok) alert(`Deposited ${depositAmount} USDG on ${match?.homeTeam ?? ''} vs ${match?.awayTeam ?? ''}`);
+      else alert('Deposit failed — not in deposit phase');
+    } catch {
+      alert('Deposit failed');
+    }
   };
 
-  if (!selectedMatch && matches.length === 0) {
+  /* ─── Loading state ─── */
+  if (isFirstLoad) {
     return (
       <>
         <Nav />
         <div className="main-content" style={{ textAlign: 'center', padding: '80px 20px', color: '#666' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>⚽</div>
-          <p>No matches available yet.</p>
+          <p>Starting matches...</p>
         </div>
       </>
     );
   }
-  if (!selectedMatch) return null;
+
+  if (!match) {
+    return (
+      <>
+        <Nav />
+        <div className="main-content" style={{ textAlign: 'center', padding: '80px 20px', color: '#666' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+          <p>Preparing next match...</p>
+        </div>
+      </>
+    );
+  }
+
+  const homeTeam = match.homeTeam;
+  const awayTeam = match.awayTeam;
+  const homeFlag = FLAGS[homeTeam] || '';
+  const awayFlag = FLAGS[awayTeam] || '';
+  const momentumData = simToMomentum(match);
+  const eventItems = simToEventItems(match.events);
+  const totalPool = match.deposits.home + match.deposits.away;
+  const phaseMax = PHASE_DURATION[match.phase] || 120;
+  const phasePct = Math.min(100, (match.phaseElapsed / phaseMax) * 100);
 
   return (
     <>
@@ -216,12 +235,10 @@ export default function ArenaPage() {
       <div className="main-content">
         <div className="match-selector">
           <div className="match-selector-header">
-            <h2>{selectedMatch.competition || 'Momentum Pool'}</h2>
-            {isMatchSettled ? (
-              <div className="live-indicator" style={{ color: 'var(--bright-green)' }}>SETTLED</div>
-            ) : selectedMatch.isLive ? (
-              <div className="live-indicator">LIVE</div>
-            ) : null}
+            <h2>{match.phase === 'open' ? 'Deposit Phase' : match.phase === 'live' ? 'Live Now' : 'Settled'}</h2>
+            <div className="live-indicator" style={{ color: match.phase === 'live' ? '#ff4444' : match.phase === 'open' ? '#ffcc00' : 'var(--bright-green)' }}>
+              {PHASE_LABEL[match.phase]}
+            </div>
           </div>
           <MatchCarousel
             matches={matches}
@@ -234,28 +251,39 @@ export default function ArenaPage() {
           {/* Match header: team names + badges */}
           <div className="match-header">
             <div className="match-header-team">
-              <TeamLogo name={homeTeam} badge={selectedMatch.homeBadge} code={selectedMatch.homeCode} size={40} />
+              <TeamLogo name={homeTeam} badge={homeFlag} code={homeTeam.slice(0, 3).toUpperCase()} size={40} />
               <span>{homeTeam}</span>
             </div>
             <div className="match-header-vs">
-              {selectedMatch.group && <small className="match-group-label">{selectedMatch.group}</small>}
+              <small className="match-group-label">Group Stage</small>
               VS
             </div>
             <div className="match-header-team">
-              <TeamLogo name={awayTeam} badge={selectedMatch.awayBadge} code={selectedMatch.awayCode} size={40} />
+              <TeamLogo name={awayTeam} badge={awayFlag} code={awayTeam.slice(0, 3).toUpperCase()} size={40} />
               <span>{awayTeam}</span>
             </div>
           </div>
 
           {/* Momentum bar */}
           <MomentumBar
-            data={momentum}
+            data={momentumData}
             loading={false}
             homeTeam={homeTeam}
             awayTeam={awayTeam}
-            actualHomeScore={selectedMatch.homeScore}
-            actualAwayScore={selectedMatch.awayScore}
+            actualHomeScore={match.score.home}
+            actualAwayScore={match.score.away}
           />
+
+          {/* Phase timer bar */}
+          <div className="phase-timer">
+            <div className="phase-timer-info">
+              <span className="phase-timer-label">{PHASE_LABEL[match.phase]}</span>
+              <span className="phase-timer-time">{formatTime(match.phaseElapsed)}</span>
+            </div>
+            <div className="phase-timer-track">
+              <div className={`phase-timer-fill phase-fill-${match.phase}`} style={{ width: `${phasePct}%` }} />
+            </div>
+          </div>
 
           {/* How it Works button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
@@ -266,50 +294,41 @@ export default function ArenaPage() {
 
           {/* Pool section */}
           <div className="pool-section">
-            {isMatchSettled ? (
-              <>
-                {homePool > 0 || awayPool > 0 ? (
-                  <div className="pool-settled">
-                    <div className="pool-settled-winner">
-                      🏆 <strong>{winnerName}</strong> won — Total pool: {totalPool.toFixed(4)} USDG
-                    </div>
-                  </div>
-                ) : (
-                  <div className="pool-empty">Pool settled — no deposits</div>
-                )}
-                {isConnected && (
-                  <div className="position-action" style={{ textAlign: 'center', marginTop: 12 }}>
-                    <a href="/arena/positions" className="claim-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>
-                      Claim in Positions
-                    </a>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="pool-deposit">
-                <div className="pool-info-header">
-                  <img src="/assets/usdg-logo.png" alt="USDG" className="pool-info-logo" />
-                  Pool Info
+            <div className="pool-info-header">
+              <img src="/assets/usdg-logo.png" alt="USDG" className="pool-info-logo" />
+              Pool Info
+            </div>
+            <div className="pool-deposit">
+              <div className="pool-total-row">
+                <span className="pool-total-label">Total Pool</span>
+                <span className="pool-total-amount">{totalPool.toFixed(4)} USDG</span>
+              </div>
+              <div className="pool-deposit-teams">
+                <div className="pool-deposit-team">
+                  <span className="pool-deposit-team-name">{homeTeam}</span>
+                  <span className="pool-deposit-amount">{match.deposits.home.toFixed(4)} USDG</span>
+                  <button
+                    className="pool-deposit-btn"
+                    onClick={() => handleDeposit('home')}
+                    disabled={match.phase !== 'open'}
+                  >
+                    {match.phase === 'open' ? 'Deposit' : match.phase === 'settled' ? 'Closed' : 'Live'}
+                  </button>
                 </div>
-                <div className="pool-total-row">
-                  <span className="pool-total-label">Total Pool</span>
-                  <span className="pool-total-amount">{totalPool.toFixed(4)} USDG</span>
+                <div className="pool-deposit-divider" />
+                <div className="pool-deposit-team">
+                  <span className="pool-deposit-team-name">{awayTeam}</span>
+                  <span className="pool-deposit-amount">{match.deposits.away.toFixed(4)} USDG</span>
+                  <button
+                    className="pool-deposit-btn"
+                    onClick={() => handleDeposit('away')}
+                    disabled={match.phase !== 'open'}
+                  >
+                    {match.phase === 'open' ? 'Deposit' : match.phase === 'settled' ? 'Closed' : 'Live'}
+                  </button>
                 </div>
-                <div className="pool-deposit-teams">
-                  <div className="pool-deposit-team">
-                    <span className="pool-deposit-team-name">{homeTeam}</span>
-                    <button className="pool-deposit-btn" onClick={() => handleDeposit(0)}>
-                      Deposit
-                    </button>
-                  </div>
-                  <div className="pool-deposit-divider" />
-                  <div className="pool-deposit-team">
-                    <span className="pool-deposit-team-name">{awayTeam}</span>
-                    <button className="pool-deposit-btn" onClick={() => handleDeposit(1)}>
-                      Deposit
-                    </button>
-                  </div>
-                </div>
+              </div>
+              {match.phase === 'open' && (
                 <div className="pool-deposit-input">
                   <label>Amount (USDG)</label>
                   <div className="pool-deposit-input-row">
@@ -330,12 +349,12 @@ export default function ArenaPage() {
                     </a>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Event feed */}
-          <EventFeed events={events} homeTeam={homeTeam} awayTeam={awayTeam} />
+          <EventFeed events={eventItems} homeTeam={homeTeam} awayTeam={awayTeam} />
         </div>
 
         <footer className="app-footer">
@@ -343,9 +362,6 @@ export default function ArenaPage() {
             Built on <a href="https://www.xlayer.tech/" target="_blank" rel="noopener">X Layer</a> &middot;
             {' '}<a href="https://x.com/XLayerOfficial" target="_blank" rel="noopener">@XLayerOfficial</a> &middot;
             {' '}<a href="https://github.com/latest63/Latest-MomentumPool" target="_blank" rel="noopener">GitHub</a>
-            {rawHomeTotal && (
-              <> &middot; Pool <a href={`https://www.okx.com/web3/explorer/xlayer/address/${activePoolAddress}`} target="_blank" rel="noopener">{activePoolAddress.slice(0, 10)}...{activePoolAddress.slice(-4)}</a></>
-            )}
           </p>
         </footer>
       </div>
@@ -357,13 +373,13 @@ export default function ArenaPage() {
             <button className="how-modal-close" onClick={() => setShowHowItWorks(false)}>✕</button>
             <h3>How it Works</h3>
             <ol className="how-steps">
-              <li><strong>Pick a Match</strong> — Browse the 5 World Cup matchups in the carousel</li>
-              <li><strong>Deposit USDG</strong> — Choose your team and enter your deposit amount</li>
-              <li><strong>Watch Momentum</strong> — The bar swings as mock match events play out</li>
-              <li><strong>Win the Pool</strong> — The team with more momentum when the match settles splits the pot</li>
+              <li><strong>Pick a Match</strong> — 5 World Cup matchups cycle one at a time</li>
+              <li><strong>Deposit Phase (2 min)</strong> — Enter your amount and pick a side. Timer counts down.</li>
+              <li><strong>Live Phase (2 min)</strong> — Watch random events (goals, cards, corners) swing the momentum bar in real time</li>
+              <li><strong>Settlement</strong> — The team with more momentum wins. Winners split the pot. Next match starts immediately.</li>
             </ol>
             <p className="how-footnote">
-              Use the <strong>Get Test Token</strong> button to claim from the faucet.
+              Use the <strong>Get Test Token</strong> button to claim USDG from the faucet.
             </p>
           </div>
         </div>

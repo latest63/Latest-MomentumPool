@@ -1309,6 +1309,45 @@ body {
 .wc-divider { position: absolute; left: 50%; top: 0; width: 3px; height: 100%; background: rgba(255,255,255,0.15); transform: translateX(-50%); }
 .wc-dom { text-align: center; margin-top: var(--sp-3); font-family: var(--font-sports); font-size: 16px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-secondary); }
 
+/* ─── Phase Timer ─── */
+.phase-timer {
+  margin: 12px 0;
+}
+.phase-timer-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.phase-timer-label {
+  font-family: var(--font-sports);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.phase-timer-time {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.phase-timer-track {
+  height: 6px;
+  background: rgba(0,0,0,0.3);
+  border-radius: var(--radius-round);
+  overflow: hidden;
+  border: 1px solid var(--border-glass);
+}
+.phase-timer-fill {
+  height: 100%;
+  border-radius: var(--radius-round);
+  transition: width 0.3s ease;
+}
+.phase-fill-open { background: linear-gradient(90deg, #f59e0b, #f97316); }
+.phase-fill-live { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.phase-fill-settled { background: linear-gradient(90deg, #22c55e, #16a34a); }
+
 /* Momentum points below score */
 .wc-points {
   display: flex;
@@ -1373,18 +1412,17 @@ body {
 /* ─── Total Pool row ─── */
 .pool-total-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: var(--sp-3) 0;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  align-items: center;
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  margin-bottom: var(--sp-4);
 }
 .pool-total-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-sports);
+  font-size: 11px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  letter-spacing: 1px;
   color: var(--text-tertiary);
 }
 .pool-total-amount {
@@ -1438,6 +1476,11 @@ body {
   transition: all 0.2s;
 }
 .pool-deposit-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+.pool-deposit-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .pool-deposit-divider {
   width: 1px;
