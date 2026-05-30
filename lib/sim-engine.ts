@@ -52,9 +52,9 @@ const MATCHES = [
 ];
 
 const PHASE_DURATION = {
-  open: 600,   // 10 min deposit window
-  live: 600,   // 10 min live action
-  settled: 30, // 30s settlement display
+  open: 120,   // 2 min deposit window
+  live: 120,   // 2 min live action
+  settled: 15, // 15s settlement display
 };
 
 /* ─── Player name pools ─── */
