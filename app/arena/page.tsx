@@ -67,7 +67,7 @@ function generateMockMomentum(): MomentumData {
     awayScore,
     homeTeam: '',
     awayTeam: '',
-    half: Math.random() > 0.5 ? '1st Half' : '2nd Half',
+    half: Math.random() > 0.5 ? '1ST' : '2ND',
     diff: homeScore - awayScore,
   };
 }

@@ -26,4 +26,5 @@ export const config = createConfig({
   transports: {
     [xLayer.id]: http(),
   },
+  ssr: true,
 });
