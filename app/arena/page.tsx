@@ -291,18 +291,20 @@ export default function ArenaPage() {
                   <img src="/assets/usdg-logo.png" alt="USDG" className="pool-info-logo" />
                   Pool Info
                 </div>
+                <div className="pool-total-row">
+                  <span className="pool-total-label">Total Pool</span>
+                  <span className="pool-total-amount">{totalPool.toFixed(4)} USDG</span>
+                </div>
                 <div className="pool-deposit-teams">
                   <div className="pool-deposit-team">
                     <span className="pool-deposit-team-name">{homeTeam}</span>
-                    <span className="pool-deposit-amount">{homePool.toFixed(4)} USDG</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(0)}>
                       Deposit
                     </button>
                   </div>
-                  <div className="pool-deposit-vs">VS</div>
+                  <div className="pool-deposit-divider" />
                   <div className="pool-deposit-team">
                     <span className="pool-deposit-team-name">{awayTeam}</span>
-                    <span className="pool-deposit-amount">{awayPool.toFixed(4)} USDG</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(1)}>
                       Deposit
                     </button>

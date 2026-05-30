@@ -1370,6 +1370,30 @@ body {
   flex-shrink: 0;
 }
 
+/* ─── Total Pool row ─── */
+.pool-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: var(--sp-4);
+}
+.pool-total-label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+}
+.pool-total-amount {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
 .pool-deposit-teams {
   display: flex;
   align-items: stretch;
@@ -1382,8 +1406,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: var(--sp-3) 0;
+  gap: 10px;
+  padding: var(--sp-2) 0;
 }
 
 .pool-deposit-team-name {
@@ -1415,13 +1439,11 @@ body {
 }
 .pool-deposit-btn:hover { transform: translateY(-1px); opacity: 0.9; }
 
-.pool-deposit-vs {
-  font-family: var(--font-sports);
-  font-size: 16px;
-  letter-spacing: 2px;
-  color: var(--text-tertiary);
-  min-width: 40px;
-  text-align: center;
+.pool-deposit-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }
 
 .pool-deposit-input {
