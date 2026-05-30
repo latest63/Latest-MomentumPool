@@ -109,6 +109,7 @@ export class SimEngine {
   constructor() {
     this.fillQueue();
     this.advanceToNext();
+    this.start(); // auto-run from server start — match doesn't wait
   }
 
   private fillQueue() {
