@@ -194,7 +194,7 @@ export default function ArenaPage() {
     const parsed = parseFloat(depositAmount);
     if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
     // Mock deposit — no pool deployed yet
-    alert(`Deposited ${depositAmount} USDg on ${selectedMatch?.homeTeam ?? ''} vs ${selectedMatch?.awayTeam ?? ''} (mock)`);
+    alert(`Deposited ${depositAmount} USDG on ${selectedMatch?.homeTeam ?? ''} vs ${selectedMatch?.awayTeam ?? ''} (mock)`);
   };
 
   if (!selectedMatch && matches.length === 0) {
@@ -271,7 +271,7 @@ export default function ArenaPage() {
                 {homePool > 0 || awayPool > 0 ? (
                   <div className="pool-settled">
                     <div className="pool-settled-winner">
-                      🏆 <strong>{winnerName}</strong> won — Total pool: {totalPool.toFixed(4)} USDg
+                      🏆 <strong>{winnerName}</strong> won — Total pool: {totalPool.toFixed(4)} USDG
                     </div>
                   </div>
                 ) : (
@@ -291,7 +291,7 @@ export default function ArenaPage() {
                 <div className="pool-deposit-teams">
                   <div className="pool-deposit-team">
                     <span className="pool-deposit-team-name">{homeTeam}</span>
-                    <span className="pool-deposit-amount">{homePool.toFixed(4)} USDg</span>
+                    <span className="pool-deposit-amount">{homePool.toFixed(4)} USDG</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(0)}>
                       Deposit
                     </button>
@@ -299,14 +299,14 @@ export default function ArenaPage() {
                   <div className="pool-deposit-vs">VS</div>
                   <div className="pool-deposit-team">
                     <span className="pool-deposit-team-name">{awayTeam}</span>
-                    <span className="pool-deposit-amount">{awayPool.toFixed(4)} USDg</span>
+                    <span className="pool-deposit-amount">{awayPool.toFixed(4)} USDG</span>
                     <button className="pool-deposit-btn" onClick={() => handleDeposit(1)}>
                       Deposit
                     </button>
                   </div>
                 </div>
                 <div className="pool-deposit-input">
-                  <label>Amount (USDg)</label>
+                  <label>Amount (USDG)</label>
                   <div className="pool-deposit-input-row">
                     <input
                       type="number"
@@ -353,13 +353,13 @@ export default function ArenaPage() {
             <h3>How it Works</h3>
             <ol className="how-steps">
               <li><strong>Pick a Match</strong> — Browse the 5 World Cup matchups in the carousel</li>
-              <li><strong>Deposit USDg</strong> — Choose your team and enter your deposit amount</li>
+              <li><strong>Deposit USDG</strong> — Choose your team and enter your deposit amount</li>
               <li><strong>Watch Momentum</strong> — The bar swings as mock match events play out</li>
               <li><strong>Win the Pool</strong> — The team with more momentum when the match settles splits the pot</li>
             </ol>
             <p className="how-footnote">
-              <img src="/assets/usdg-logo.png" alt="USDg" className="how-token-icon" />
-              Token: <strong>USDg</strong> on X Layer testnet (chain 195).
+              <img src="/assets/usdg-logo.png" alt="USDG" className="how-token-icon" />
+              Token: <strong>USDG</strong> on X Layer testnet (chain 195).
               Use the <strong>Get Test Token</strong> button to claim from the faucet.
             </p>
           </div>

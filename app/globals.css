@@ -1363,8 +1363,9 @@ body {
 
 .pool-deposit-teams {
   display: flex;
-  align-items: center;
-  gap: var(--sp-3);
+  align-items: stretch;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-4);
 }
 
 .pool-deposit-team {
@@ -1372,11 +1373,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-5) var(--sp-3);
-  background: rgba(0,0,0,0.3);
+  gap: 6px;
+  padding: var(--sp-3) 0;
 }
 
 .pool-deposit-team-name {
