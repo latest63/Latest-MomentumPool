@@ -1359,6 +1359,15 @@ body {
   text-transform: uppercase;
   color: var(--text-tertiary);
   margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pool-info-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .pool-deposit-teams {
@@ -1540,15 +1549,6 @@ body {
   font-size: 13px;
   color: var(--text-tertiary);
   line-height: 1.5;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.how-token-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 .how-footnote strong {
   color: var(--text-primary);

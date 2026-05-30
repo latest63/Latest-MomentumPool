@@ -287,7 +287,10 @@ export default function ArenaPage() {
               </>
             ) : (
               <div className="pool-deposit">
-                <div className="pool-info-header">Pool Info</div>
+                <div className="pool-info-header">
+                  <img src="/assets/usdg-logo.png" alt="USDG" className="pool-info-logo" />
+                  Pool Info
+                </div>
                 <div className="pool-deposit-teams">
                   <div className="pool-deposit-team">
                     <span className="pool-deposit-team-name">{homeTeam}</span>
@@ -358,8 +361,6 @@ export default function ArenaPage() {
               <li><strong>Win the Pool</strong> — The team with more momentum when the match settles splits the pot</li>
             </ol>
             <p className="how-footnote">
-              <img src="/assets/usdg-logo.png" alt="USDG" className="how-token-icon" />
-              Token: <strong>USDG</strong> on X Layer testnet (chain 195).
               Use the <strong>Get Test Token</strong> button to claim from the faucet.
             </p>
           </div>
