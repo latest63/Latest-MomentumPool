@@ -37,8 +37,8 @@ export async function deployPool(
 
   const client = getClient();
   const now = BigInt(Math.floor(Date.now() / 1000));
-  const depositDeadline = now + BigInt(5);   // 5s deposit window
-  const halfEnd = now + BigInt(10);           // 10s total match
+  const depositDeadline = now + BigInt(600);  // 10 min deposit window
+  const halfEnd = now + BigInt(1200);          // 20 min total match
 
   const hash = await client.writeContract({
     address: getAddress(factoryAddr),

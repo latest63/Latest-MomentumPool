@@ -51,9 +51,9 @@ const MATCHES = [
 ];
 
 const PHASE_DURATION = {
-  open: 120,
-  live: 120,
-  settled: 15,
+  open: 600,   // 10 min deposit window
+  live: 600,   // 10 min live action
+  settled: 30, // 30s settlement display
 };
 
 /* ─── Player name pools ─── */
@@ -112,10 +112,7 @@ export class SimEngine {
   }
 
   private fillQueue() {
-    // Shuffle for first round, then rotate through sequentially
-    if (this.queue.length === 0 && this.totalMatches === 0) {
-      this.queue = [...MATCHES].sort(() => Math.random() - 0.5);
-    } else if (this.queue.length === 0) {
+    if (this.queue.length === 0) {
       this.queue = [...MATCHES];
     }
   }
