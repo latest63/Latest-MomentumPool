@@ -48,6 +48,9 @@ export default function Nav() {
             <Link href="/arena" className={`nav-link ${pathname === '/arena' ? 'active' : ''}`}>
               Arena
             </Link>
+            <Link href="/arena/simulation" className={`nav-link ${pathname.startsWith('/arena/simulation') ? 'active' : ''}`}>
+              ⚡ Sim
+            </Link>
             <ConnectWallet />
           </div>
         </div>
@@ -79,6 +82,9 @@ export default function Nav() {
           </Link>
           <Link href="/arena/positions" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
             📊 Positions
+          </Link>
+          <Link href="/arena/simulation" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
+            ⚡ Simulation
           </Link>
         </div>
       </aside>

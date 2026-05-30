@@ -1748,3 +1748,344 @@ body {
   0%, 100% { filter: drop-shadow(0 20px 40px rgba(255, 215, 0, 0.3)); }
   50% { filter: drop-shadow(0 20px 60px rgba(255, 215, 0, 0.6)); }
 }
+
+/* ═══════════════════════════════════════════════════
+   SIMULATION MODE — 5 Match Grid
+   ═══════════════════════════════════════════════════ */
+
+.sim-round-badge {
+  font-family: var(--font-sports);
+  font-size: 18px;
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, var(--neon-green), #1a9e50);
+  color: #000;
+  border-radius: var(--radius-round, 30px);
+}
+
+.sim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+
+.sim-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.3s, transform 0.2s;
+}
+.sim-card:hover {
+  transform: translateY(-2px);
+}
+.sim-card-open {
+  border-color: rgba(36, 83, 190, 0.4);
+}
+.sim-card-live {
+  border-color: rgba(230, 26, 10, 0.5);
+  box-shadow: 0 0 20px rgba(230, 26, 10, 0.08);
+  animation: sim-live-pulse 3s ease-in-out infinite;
+}
+.sim-card-settled {
+  border-color: rgba(40, 193, 108, 0.4);
+}
+
+@keyframes sim-live-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(230, 26, 10, 0.08); }
+  50% { box-shadow: 0 0 30px rgba(230, 26, 10, 0.15); }
+}
+
+.sim-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.sim-teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sports);
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.sim-team {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.sim-vs {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-family: var(--font-sans);
+}
+
+.sim-phase {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+.sim-phase-open {
+  background: rgba(36, 83, 190, 0.15);
+  color: var(--electric-blue);
+}
+.sim-phase-live {
+  background: rgba(230, 26, 10, 0.15);
+  color: var(--bright-red);
+  animation: sim-blink 1s step-end infinite;
+}
+.sim-phase-settled {
+  background: rgba(40, 193, 108, 0.15);
+  color: var(--neon-green);
+}
+
+@keyframes sim-blink {
+  50% { opacity: 0.4; }
+}
+
+/* Timer track */
+.sim-timer-track {
+  position: relative;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.sim-timer-fill {
+  height: 100%;
+  transition: width 1s linear;
+  border-radius: 0 4px 4px 0;
+}
+.sim-timer-open { background: var(--electric-blue); }
+.sim-timer-live { background: var(--bright-red); }
+.sim-timer-settled { background: var(--neon-green); }
+.sim-timer-label {
+  position: absolute;
+  right: 6px;
+  top: -14px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+}
+
+/* Scoreboard */
+.sim-scoreboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: rgba(0,0,0,0.2);
+}
+
+.sim-score-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 100px;
+}
+.sim-score-winner .sim-score-num {
+  color: var(--neon-green);
+  text-shadow: 0 0 12px rgba(40, 193, 108, 0.5);
+}
+
+.sim-score-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sim-score-num {
+  font-family: var(--font-sports);
+  font-size: 42px;
+  line-height: 1;
+  color: var(--text-primary);
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+.sim-score-divider {
+  font-family: var(--font-sports);
+  font-size: 36px;
+  color: var(--text-tertiary);
+  margin-top: 12px;
+}
+
+/* Momentum bar */
+.sim-momentum {
+  padding: var(--sp-2) var(--sp-4);
+}
+.sim-mom-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.06);
+}
+.sim-mom-fill {
+  transition: width 1s ease;
+  height: 100%;
+}
+.sim-mom-home {
+  background: linear-gradient(90deg, var(--neon-green), #1a9e50);
+  border-radius: 4px 0 0 4px;
+}
+.sim-mom-away {
+  background: linear-gradient(90deg, var(--electric-blue), #1a3a7a);
+  border-radius: 0 4px 4px 0;
+}
+.sim-mom-divider {
+  width: 2px;
+  background: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+.sim-mom-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+  font-family: var(--font-mono);
+}
+
+/* Events */
+.sim-events {
+  padding: var(--sp-2) var(--sp-4);
+  min-height: 60px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.sim-ev-empty {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 10px 0;
+  font-style: italic;
+}
+.sim-ev {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 11px;
+  animation: sim-ev-in 0.3s ease;
+}
+@keyframes sim-ev-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sim-ev-home { justify-content: flex-start; }
+.sim-ev-away { justify-content: flex-end; }
+.sim-ev-min {
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  min-width: 24px;
+}
+.sim-ev-icon { font-size: 13px; }
+.sim-ev-type {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.sim-ev-player {
+  color: var(--text-tertiary);
+  font-size: 10px;
+}
+.sim-ev-away .sim-ev-type { color: var(--electric-blue); }
+.sim-ev-home .sim-ev-type { color: var(--neon-green); }
+
+/* Buttons */
+.sim-actions {
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--border-glass);
+}
+
+.sim-deposit-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sim-deposit-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-sports);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: all 0.2s;
+}
+.sim-deposit-btn:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.sim-claim-row {
+  text-align: center;
+}
+.sim-claim-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, var(--neon-green), #1a9e50);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-sports);
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 700;
+}
+.sim-claim-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(40, 193, 108, 0.4);
+}
+
+.sim-claimed-badge {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--neon-green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 0;
+}
+
+.sim-cycle-notice {
+  text-align: center;
+  margin-top: var(--sp-6);
+  padding: var(--sp-3);
+  background: rgba(40, 193, 108, 0.1);
+  border: 1px solid rgba(40, 193, 108, 0.3);
+  border-radius: 8px;
+  color: var(--neon-green);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Scrollable events */
+.sim-events::-webkit-scrollbar {
+  width: 3px;
+}
+.sim-events::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sim-events::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+}
