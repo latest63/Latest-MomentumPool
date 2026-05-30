@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import { useAccount, useReadContract, useSwitchChain } from 'wagmi';
 import { formatEther } from 'viem';
@@ -18,14 +19,92 @@ const POOL_ABI = [
 
 const USDG_ADDRESS = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
 const POOL_FACTORY = process.env.NEXT_PUBLIC_POOL_FACTORY || '';
+
+/* ─── Flag badge URLs (flagcdn.com) ─── */
+const FLAGS: Record<string, string> = {
+  Nigeria:   'https://flagcdn.com/w80/ng.png',
+  Brazil:    'https://flagcdn.com/w80/br.png',
+  Argentina: 'https://flagcdn.com/w80/ar.png',
+  France:    'https://flagcdn.com/w80/fr.png',
+  England:   'https://flagcdn.com/w80/gb-eng.png',
+  Germany:   'https://flagcdn.com/w80/de.png',
+  Portugal:  'https://flagcdn.com/w80/pt.png',
+  Spain:     'https://flagcdn.com/w80/es.png',
+  Morocco:   'https://flagcdn.com/w80/ma.png',
+  Senegal:   'https://flagcdn.com/w80/sn.png',
+};
+
+/* ─── 5 World Cup matchups ─── */
 const SIM_MATCHUPS = [
-  { id: 'sim-1', homeTeam: 'Nigeria',      awayTeam: 'Brazil',     homeCode: 'NGA', awayCode: 'BRA' },
-  { id: 'sim-2', homeTeam: 'Argentina',    awayTeam: 'France',     homeCode: 'ARG', awayCode: 'FRA' },
-  { id: 'sim-3', homeTeam: 'England',      awayTeam: 'Germany',    homeCode: 'ENG', awayCode: 'GER' },
-  { id: 'sim-4', homeTeam: 'Portugal',     awayTeam: 'Spain',      homeCode: 'POR', awayCode: 'ESP' },
-  { id: 'sim-5', homeTeam: 'Morocco',      awayTeam: 'Senegal',    homeCode: 'MAR', awayCode: 'SEN' },
+  { id: 'sim-1', homeTeam: 'Nigeria',   awayTeam: 'Brazil',    homeCode: 'NGA', awayCode: 'BRA' },
+  { id: 'sim-2', homeTeam: 'Argentina', awayTeam: 'France',   homeCode: 'ARG', awayCode: 'FRA' },
+  { id: 'sim-3', homeTeam: 'England',   awayTeam: 'Germany',  homeCode: 'ENG', awayCode: 'GER' },
+  { id: 'sim-4', homeTeam: 'Portugal',  awayTeam: 'Spain',    homeCode: 'POR', awayCode: 'ESP' },
+  { id: 'sim-5', homeTeam: 'Morocco',   awayTeam: 'Senegal',  homeCode: 'MAR', awayCode: 'SEN' },
 ];
 
+/* ─── Mock event generator ─── */
+const EVENTS_POOL: { type: EventItem['type']; team: EventItem['team']; label: string }[] = [
+  { type: 'goal',            team: 'home', label: '' },
+  { type: 'goal',            team: 'away', label: '' },
+  { type: 'yellow_card',     team: 'home', label: '' },
+  { type: 'yellow_card',     team: 'away', label: '' },
+  { type: 'corner',          team: 'home', label: '' },
+  { type: 'corner',          team: 'away', label: '' },
+  { type: 'shot_on_target',  team: 'home', label: '' },
+  { type: 'shot_on_target',  team: 'away', label: '' },
+  { type: 'foul',            team: 'home', label: '' },
+  { type: 'foul',            team: 'away', label: '' },
+  { type: 'woodwork',        team: 'home', label: '' },
+  { type: 'red_card',        team: 'away', label: '' },
+];
+
+function generateMockMomentum(): MomentumData {
+  const homeScore = Math.floor(Math.random() * 4);
+  const awayScore = Math.floor(Math.random() * 4);
+  return {
+    homeScore,
+    awayScore,
+    homeTeam: '',
+    awayTeam: '',
+    half: Math.random() > 0.5 ? '1st Half' : '2nd Half',
+    diff: homeScore - awayScore,
+  };
+}
+
+function generateMockEvents(): EventItem[] {
+  const count = 3 + Math.floor(Math.random() * 6);
+  const events: EventItem[] = [];
+  for (let i = 0; i < count; i++) {
+    const pick = EVENTS_POOL[Math.floor(Math.random() * EVENTS_POOL.length)];
+    events.push({
+      type: pick.type,
+      team: pick.team,
+      minute: 5 + Math.floor(Math.random() * 85),
+    });
+  }
+  return events.sort((a, b) => a.minute - b.minute);
+}
+
+/* ─── Inline SVG logo for USDg ─── */
+function UsdgLogo({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" style={{ borderRadius: '50%', flexShrink: 0 }}>
+      <defs>
+        <linearGradient id="usdg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#22c55e" />
+          <stop offset="100%" stopColor="#16a34a" />
+        </linearGradient>
+      </defs>
+      <circle cx="20" cy="20" r="20" fill="url(#usdg-grad)" />
+      <text x="20" y="20" textAnchor="middle" dominantBaseline="central"
+        fill="#fff" fontSize={size > 32 ? 18 : 16} fontWeight={800}
+        fontFamily="system-ui, sans-serif">$</text>
+    </svg>
+  );
+}
+
+/* ─── Types ─── */
 interface MatchSummary {
   matchId: string;
   homeTeam: string;
@@ -46,9 +125,17 @@ interface MatchSummary {
   settled?: boolean;
 }
 
+function formatTime(ts: number): string {
+  const d = new Date(ts * 1000);
+  return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
+}
+
+/* ═══════════════════════════════════════ PAGE ═══════════════════════════════════════ */
 export default function ArenaPage() {
   const [matches, setMatches] = useState<MatchSummary[]>([]);
   const [selected, setSelected] = useState('');
+  const [momentum, setMomentum] = useState<MomentumData | null>(null);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const [mounted, setMounted] = useState(false);
@@ -56,7 +143,7 @@ export default function ArenaPage() {
 
   useEffect(() => setMounted(true), []);
 
-  // Load 5 matchups
+  // Load 5 matchups with flags
   useEffect(() => {
     const mapped = SIM_MATCHUPS.map(m => ({
       matchId: m.id,
@@ -64,8 +151,8 @@ export default function ArenaPage() {
       awayTeam: m.awayTeam,
       homeCode: m.homeCode,
       awayCode: m.awayCode,
-      homeBadge: '',
-      awayBadge: '',
+      homeBadge: FLAGS[m.homeTeam] || '',
+      awayBadge: FLAGS[m.awayTeam] || '',
       homeScore: 0,
       awayScore: 0,
       status: 'scheduled' as const,
@@ -86,6 +173,13 @@ export default function ArenaPage() {
       setSelected(matches[0].matchId);
     }
   }, [matches, selected]);
+
+  // Regenerate mock momentum + events when selected match changes
+  useEffect(() => {
+    if (!selected) return;
+    setMomentum(generateMockMomentum());
+    setEvents(generateMockEvents());
+  }, [selected]);
 
   const selectedMatch = matches.find(m => m.matchId === selected);
   const activePoolAddress = (selectedMatch?.poolAddress || POOL_FACTORY) as `0x${string}`;
@@ -162,8 +256,8 @@ export default function ArenaPage() {
               <span>{homeTeam}</span>
             </div>
             <div className="match-header-vs">
+              {selectedMatch.group && <small className="match-group-label">{selectedMatch.group}</small>}
               VS
-              {selectedMatch.group && <small>{selectedMatch.group}</small>}
             </div>
             <div className="match-header-team">
               <TeamLogo name={awayTeam} badge={selectedMatch.awayBadge} code={selectedMatch.awayCode} size={40} />
@@ -171,9 +265,19 @@ export default function ArenaPage() {
             </div>
           </div>
 
+          {/* Momentum bar */}
+          <MomentumBar
+            data={momentum}
+            loading={false}
+            homeTeam={homeTeam}
+            awayTeam={awayTeam}
+            actualHomeScore={selectedMatch.homeScore}
+            actualAwayScore={selectedMatch.awayScore}
+          />
+
           {/* USDg token banner */}
           <div className="sim-token-banner" style={{ marginTop: 0, marginBottom: 12 }}>
-            <span className="sim-token-icon">🪙</span>
+            <UsdgLogo size={28} />
             <div className="sim-token-info">
               <strong>Token:</strong> USDg
             </div>
@@ -190,7 +294,6 @@ export default function ArenaPage() {
           {/* Pool section */}
           <div className="pool-section">
             {isMatchSettled ? (
-              /* ─── SETTLED: show winner + total pool ─── */
               <>
                 {homePool > 0 || awayPool > 0 ? (
                   <div className="pool-settled">
@@ -210,7 +313,6 @@ export default function ArenaPage() {
                 )}
               </>
             ) : (
-              /* ─── LIVE / UPCOMING: show pool + deposit ─── */
               <div className="pool-deposit">
                 <div className="pool-deposit-teams">
                   <div className="pool-deposit-team">
@@ -245,6 +347,8 @@ export default function ArenaPage() {
             )}
           </div>
 
+          {/* Event feed */}
+          <EventFeed events={events} homeTeam={homeTeam} awayTeam={awayTeam} />
         </div>
 
         <footer className="app-footer">
