@@ -20,6 +20,7 @@ export interface SimMatch {
   awayTeam: string;
   phase: SimPhase;
   phaseElapsed: number;
+  phaseStartedAt: number; // Date.now() when current phase began — enables wall-clock timing
   score: { home: number; away: number };
   events: SimEvent[];
   momentumHome: number; // 0-100 (home's momentum share)
@@ -132,6 +133,7 @@ export class SimEngine {
       awayTeam: pairing.away,
       phase: 'open',
       phaseElapsed: 0,
+      phaseStartedAt: Date.now(),
       score: { home: 0, away: 0 },
       events: [],
       momentumHome: 50,
@@ -184,8 +186,13 @@ export class SimEngine {
 
   getState(): SimState {
     const nextPairing = this.queue[0] || null;
+    const match = this.match ? {
+      ...this.match,
+      phaseElapsed: Math.floor((Date.now() - this.match.phaseStartedAt) / 1000),
+      events: this.match.events.slice(-50),
+    } : null;
     return {
-      match: this.match ? { ...this.match, events: this.match.events.slice(-50) } : null,
+      match,
       nextUp: nextPairing ? { id: nextPairing.id, homeTeam: nextPairing.home, awayTeam: nextPairing.away } : null,
       matchIndex: this.matchIndex,
       totalMatches: this.totalMatches,
@@ -229,7 +236,7 @@ export class SimEngine {
   private tick() {
     if (!this.match) return;
     this.tickCount++;
-    this.match.phaseElapsed++;
+    this.match.phaseElapsed = Math.floor((Date.now() - this.match.phaseStartedAt) / 1000);
 
     switch (this.match.phase) {
       case 'open':
@@ -248,6 +255,7 @@ export class SimEngine {
   private transitionToLive() {
     if (!this.match) return;
     this.match.phase = 'live';
+    this.match.phaseStartedAt = Date.now();
     this.match.phaseElapsed = 0;
     this.match.momentumHome = 50 + (Math.random() * 20 - 10);
     this.match.momentumHome = clamp(this.match.momentumHome, 20, 80);
@@ -257,6 +265,7 @@ export class SimEngine {
   private transitionToSettled() {
     if (!this.match) return;
     this.match.phase = 'settled';
+    this.match.phaseStartedAt = Date.now();
     this.match.phaseElapsed = 0;
 
     // Auto-settle on-chain if pool attached
