@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import { useAccount, useReadContract, useSwitchChain } from 'wagmi';
@@ -85,25 +85,6 @@ function generateMockEvents(): EventItem[] {
   }
   return events.sort((a, b) => a.minute - b.minute);
 }
-
-/* ─── Inline SVG logo for USDg ─── */
-function UsdgLogo({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 40 40" style={{ borderRadius: '50%', flexShrink: 0 }}>
-      <defs>
-        <linearGradient id="usdg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#22c55e" />
-          <stop offset="100%" stopColor="#16a34a" />
-        </linearGradient>
-      </defs>
-      <circle cx="20" cy="20" r="20" fill="url(#usdg-grad)" />
-      <text x="20" y="20" textAnchor="middle" dominantBaseline="central"
-        fill="#fff" fontSize={size > 32 ? 18 : 16} fontWeight={800}
-        fontFamily="system-ui, sans-serif">$</text>
-    </svg>
-  );
-}
-
 /* ─── Types ─── */
 interface MatchSummary {
   matchId: string;
@@ -140,6 +121,7 @@ export default function ArenaPage() {
   const { switchChain } = useSwitchChain();
   const [mounted, setMounted] = useState(false);
   const [depositAmount, setDepositAmount] = useState('0.001');
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -275,20 +257,11 @@ export default function ArenaPage() {
             actualAwayScore={selectedMatch.awayScore}
           />
 
-          {/* USDg token banner */}
-          <div className="sim-token-banner" style={{ marginTop: 0, marginBottom: 12 }}>
-            <UsdgLogo size={28} />
-            <div className="sim-token-info">
-              <strong>Token:</strong> USDg
-            </div>
-            <a
-              href="https://www.okx.com/xlayer/faucet"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sim-faucet-link"
-            >
-              🚰 X Layer Faucet
-            </a>
+          {/* How it Works button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+            <button className="how-it-works-btn" onClick={() => setShowHowItWorks(true)}>
+              ⓘ How it Works
+            </button>
           </div>
 
           {/* Pool section */}
@@ -335,13 +308,23 @@ export default function ArenaPage() {
                 </div>
                 <div className="pool-deposit-input">
                   <label>Amount (USDg)</label>
-                  <input
-                    type="number"
-                    value={depositAmount}
-                    onChange={e => setDepositAmount(e.target.value)}
-                    min="0.0001"
-                    step="0.001"
-                  />
+                  <div className="pool-deposit-input-row">
+                    <input
+                      type="number"
+                      value={depositAmount}
+                      onChange={e => setDepositAmount(e.target.value)}
+                      min="0.0001"
+                      step="0.001"
+                    />
+                    <a
+                      href="https://www.okx.com/xlayer/faucet"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="faucet-btn"
+                    >
+                      Get Test Token
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
@@ -362,6 +345,26 @@ export default function ArenaPage() {
           </p>
         </footer>
       </div>
+
+      {/* How it Works modal */}
+      {showHowItWorks && (
+        <div className="how-modal-overlay" onClick={() => setShowHowItWorks(false)}>
+          <div className="how-modal" onClick={e => e.stopPropagation()}>
+            <button className="how-modal-close" onClick={() => setShowHowItWorks(false)}>✕</button>
+            <h3>How it Works</h3>
+            <ol className="how-steps">
+              <li><strong>Pick a Match</strong> — Browse the 5 World Cup matchups in the carousel</li>
+              <li><strong>Deposit USDg</strong> — Choose your team and enter your deposit amount</li>
+              <li><strong>Watch Momentum</strong> — The bar swings as mock match events play out</li>
+              <li><strong>Win the Pool</strong> — The team with more momentum when the match settles splits the pot</li>
+            </ol>
+            <p className="how-footnote">
+              Token: <strong>USDg</strong> on X Layer testnet (chain 195).
+              Use the <strong>Get Test Token</strong> button to claim from the faucet.
+            </p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
