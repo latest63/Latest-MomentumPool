@@ -1,37 +1,37 @@
 import { NextResponse } from 'next/server';
-import { getAllMatches } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+const USDG = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
+
+const SIM_MATCHES = [
+  { id: 'sim-1', homeTeam: 'Nigeria', awayTeam: 'Brazil', homeScore: 0, awayScore: 0 },
+  { id: 'sim-2', homeTeam: 'Argentina', awayTeam: 'France', homeScore: 0, awayScore: 0 },
+  { id: 'sim-3', homeTeam: 'England', awayTeam: 'Germany', homeScore: 0, awayScore: 0 },
+  { id: 'sim-4', homeTeam: 'Portugal', awayTeam: 'Spain', homeScore: 0, awayScore: 0 },
+  { id: 'sim-5', homeTeam: 'Morocco', awayTeam: 'Senegal', homeScore: 0, awayScore: 0 },
+];
+
 export async function GET() {
-  const matches = await getAllMatches();
-
-  // Sort: unscheduled first, then by kickoff
-  const sorted = [...matches].sort((a, b) => {
-    if (!a.kickoff && b.kickoff) return -1;
-    if (a.kickoff && !b.kickoff) return 1;
-    return (a.kickoff || 0) - (b.kickoff || 0);
-  });
-
-  const mapped = sorted.map((m) => ({
+  const mapped = SIM_MATCHES.map((m) => ({
     matchId: m.id,
     homeTeam: m.homeTeam,
     awayTeam: m.awayTeam,
-    homeCode: m.homeCode || m.homeTeam.slice(0, 3).toUpperCase(),
-    awayCode: m.awayCode || m.awayTeam.slice(0, 3).toUpperCase(),
-    homeBadge: m.homeBadge || '',
-    awayBadge: m.awayBadge || '',
+    homeCode: m.homeTeam.slice(0, 3).toUpperCase(),
+    awayCode: m.awayTeam.slice(0, 3).toUpperCase(),
+    homeBadge: '',
+    awayBadge: '',
     homeScore: m.homeScore ?? 0,
     awayScore: m.awayScore ?? 0,
-    status: m.status,
-    half: m.half,
-    kickoff: m.kickoff,
-    competition: m.competition,
-    group: m.group || '',
-    isLive: m.status === 'inplay' || m.status === 'live',
-    poolAddress: m.poolAddress || '',
-    settled: !!m.settled,
+    status: 'scheduled',
+    half: '',
+    kickoff: Math.floor(Date.now() / 1000) + 3600,
+    competition: 'Momentum Pool — World Cup 2026',
+    group: 'Group Stage',
+    isLive: false,
+    poolAddress: '',
+    settled: false,
   }));
 
-  return NextResponse.json({ matches: mapped, total: mapped.length, source: 'supabase' });
+  return NextResponse.json({ matches: mapped, total: mapped.length, source: 'simulation' });
 }
