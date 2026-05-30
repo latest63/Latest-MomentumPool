@@ -95,15 +95,16 @@ export default function SimulationPage() {
     }
   }, [state?.match?.phase, state?.match?.round]);
 
-  const handleRealDeposit = useCallback(async (team: TeamSide, poolAddress: string) => {
+  const handleRealDeposit = useCallback(async (team: TeamSide, poolAddress: string, tokenAddress: string) => {
     if (!isConnected || !address) { alert('Connect your wallet first'); return; }
+    const isNative = tokenAddress === '0x0000000000000000000000000000000000000000';
     try {
       await writeContractAsync({
         address: poolAddress as `0x${string}`,
         abi: POOL_ABI,
         functionName: 'deposit',
-        args: [team === 'home' ? 0 : 1],
-        value: BigInt('1000000000000000'),
+        args: [team === 'home' ? 0 : 1, isNative ? BigInt(0) : BigInt('1000000')], // 0 for native (uses msg.value), 1 USDT for ERC20
+        value: isNative ? BigInt('1000000000000000') : BigInt(0), // 0.001 OKB
       });
     } catch (err: any) { alert(err?.message || 'Deposit failed'); }
   }, [address, isConnected, writeContractAsync]);
@@ -255,7 +256,7 @@ function SimMatchCard({
 }: {
   match: SimMatch;
   isConnected: boolean;
-  onRealDeposit: (team: TeamSide, poolAddress: string) => void;
+  onRealDeposit: (team: TeamSide, poolAddress: string, tokenAddress: string) => void;
   onRealClaim: (poolAddress: string, team: TeamSide) => void;
   whistleType: 'start' | 'end' | null;
 }) {
@@ -284,7 +285,7 @@ function SimMatchCard({
   };
 
   const handleDeposit = (team: TeamSide) => {
-    if (hasRealPool && isConnected) onRealDeposit(team, match.poolAddress!);
+    if (hasRealPool && isConnected) onRealDeposit(team, match.poolAddress!, match.tokenAddress || '0x0000000000000000000000000000000000000000');
     else fetch('/api/sim/deposit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ team, amount: 0.001 }) });
   };
 

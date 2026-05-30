@@ -19,11 +19,19 @@ function getClient() {
   return createWalletClient({ account, chain: xLayer, transport: http() });
 }
 
+/** address(0) = native OKB */
+const NATIVE = '0x0000000000000000000000000000000000000000';
+
 /**
  * Deploy a new MomentumPool with 2-min timestamps via the factory.
- * Returns the deployed pool address.
+ * @param tokenAddress address(0) for native OKB, or an ERC20 token address
  */
-export async function deployPool(matchId: string, homeTeam: string, awayTeam: string): Promise<string> {
+export async function deployPool(
+  matchId: string,
+  homeTeam: string,
+  awayTeam: string,
+  tokenAddress: string = NATIVE,
+): Promise<string> {
   const factoryAddr = process.env.NEXT_PUBLIC_POOL_FACTORY;
   if (!factoryAddr) throw new Error('POOL_FACTORY not configured');
 
@@ -36,7 +44,7 @@ export async function deployPool(matchId: string, homeTeam: string, awayTeam: st
     address: getAddress(factoryAddr),
     abi: FACTORY_ABI,
     functionName: 'createPool',
-    args: [matchId, 1, homeTeam, awayTeam, depositDeadline, halfEnd],
+    args: [matchId, 1, homeTeam, awayTeam, getAddress(tokenAddress), depositDeadline, halfEnd],
   });
 
   const receipt = await (client as any).waitForTransactionReceipt({ hash });

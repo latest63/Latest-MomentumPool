@@ -26,6 +26,7 @@ export interface SimMatch {
   deposits: { home: number; away: number };
   round: number;
   poolAddress: string | null;
+  tokenAddress: string; // address(0) = native OKB
   settledOnChain: boolean;
 }
 
@@ -39,12 +40,14 @@ export interface SimState {
 }
 
 /* ─── 5 Match Pairings (cycling) ─── */
+const ZERO = '0x0000000000000000000000000000000000000000'; // native OKB
+
 const MATCHES = [
-  { id: 'sim-1', home: 'Nigeria', away: 'Brazil', real: true },
-  { id: 'sim-2', home: 'Argentina', away: 'France', real: true },
-  { id: 'sim-3', home: 'England', away: 'Germany', real: true },
-  { id: 'sim-4', home: 'Portugal', away: 'Spain', real: true },
-  { id: 'sim-5', home: 'Morocco', away: 'Senegal', real: true },
+  { id: 'sim-1', home: 'Nigeria', away: 'Brazil', token: ZERO, label: 'OKB' },
+  { id: 'sim-2', home: 'Argentina', away: 'France', token: ZERO, label: 'USDT' },
+  { id: 'sim-3', home: 'England', away: 'Germany', token: ZERO, label: 'USDC' },
+  { id: 'sim-4', home: 'Portugal', away: 'Spain', token: ZERO, label: 'USDg' },
+  { id: 'sim-5', home: 'Morocco', away: 'Senegal', token: ZERO, label: 'OKB' },
 ];
 
 const PHASE_DURATION = {
@@ -101,7 +104,7 @@ export class SimEngine {
   /* Real contract integration */
   public onSettle: ((matchId: string, winner: TeamSide, homeScore: number, awayScore: number, poolAddress: string) => void) | null = null;
   /* Called when a new real match is about to start — should return the pool address */
-  public onNewMatch: ((matchId: string, homeTeam: string, awayTeam: string) => Promise<string | null>) | null = null;
+  public onNewMatch: ((matchId: string, homeTeam: string, awayTeam: string, tokenAddress: string) => Promise<string | null>) | null = null;
 
   constructor() {
     this.fillQueue();
@@ -137,14 +140,15 @@ export class SimEngine {
       deposits: { home: 0, away: 0 },
       round: this.round,
       poolAddress: null,
+      tokenAddress: pairing.token,
       settledOnChain: false,
     };
     this.eventTimer = 0;
     this.goalCluster = 0;
 
-    // Auto-deploy pool for real matches
-    if (pairing.real && this.onNewMatch) {
-      this.onNewMatch(pairing.id, pairing.home, pairing.away).then(addr => {
+    // Auto-deploy pool (all matches use real pools now)
+    if (this.onNewMatch) {
+      this.onNewMatch(pairing.id, pairing.home, pairing.away, pairing.token).then(addr => {
         if (addr && this.match && this.match.id === pairing.id) {
           this.match.poolAddress = addr;
         }

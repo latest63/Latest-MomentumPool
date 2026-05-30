@@ -17,10 +17,10 @@ export async function POST() {
     }
   };
 
-  // Auto-deploy a pool when a new real match starts
-  engine.onNewMatch = async (matchId, homeTeam, awayTeam) => {
+  // Auto-deploy a pool when a new match starts
+  engine.onNewMatch = async (matchId, homeTeam, awayTeam, tokenAddress) => {
     try {
-      const addr = await deployPool(matchId, homeTeam, awayTeam);
+      const addr = await deployPool(matchId, homeTeam, awayTeam, tokenAddress);
       console.log(`[sim] Deployed pool for ${matchId} (${homeTeam} vs ${awayTeam}): ${addr}`);
       return addr;
     } catch (err) {

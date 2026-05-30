@@ -1,12 +1,15 @@
 /* ═══════════════════════════════════════════
-   MomentumPool + Factory ABIs (X Layer)
+   MomentumPool + Factory ABIs (v2 — multi-token)
    ═══════════════════════════════════════════ */
 
 export const POOL_ABI = [
   {
     name: 'deposit',
     type: 'function',
-    inputs: [{ name: 'teamId', type: 'uint8' }],
+    inputs: [
+      { name: 'teamId', type: 'uint8' },
+      { name: 'amount', type: 'uint256' },
+    ],
     outputs: [],
     stateMutability: 'payable',
   },
@@ -22,6 +25,13 @@ export const POOL_ABI = [
     type: 'function',
     inputs: [],
     outputs: [{ name: '', type: 'uint8' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'token',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
     stateMutability: 'view',
   },
   {
@@ -83,20 +93,6 @@ export const POOL_ABI = [
     outputs: [{ name: '', type: 'address' }],
     stateMutability: 'view',
   },
-  {
-    name: 'depositDeadline',
-    type: 'function',
-    inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    name: 'halfEnd',
-    type: 'function',
-    inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-  },
 ] as const;
 
 export const FACTORY_ABI = [
@@ -108,6 +104,7 @@ export const FACTORY_ABI = [
       { name: '_halfNumber', type: 'uint8' },
       { name: '_homeTeam', type: 'string' },
       { name: '_awayTeam', type: 'string' },
+      { name: '_token', type: 'address' },
       { name: '_depositDeadline', type: 'uint256' },
       { name: '_halfEnd', type: 'uint256' },
     ],
@@ -131,6 +128,7 @@ export const FACTORY_ABI = [
       { name: 'halfNumber', type: 'uint8', indexed: false },
       { name: 'homeTeam', type: 'string', indexed: false },
       { name: 'awayTeam', type: 'string', indexed: false },
+      { name: 'token', type: 'address', indexed: false },
       { name: 'depositDeadline', type: 'uint256', indexed: false },
       { name: 'halfEnd', type: 'uint256', indexed: false },
     ],

@@ -9,17 +9,18 @@ contract MomentumPoolFactory {
 
     struct PoolInfo {
         address pool;
-        string matchId;      // external sports API match ID
-        uint8 halfNumber;    // 1 or 2
+        string matchId;
+        uint8 halfNumber;
         string homeTeam;
         string awayTeam;
+        address token;       // address(0) = native OKB
         uint256 depositDeadline;
         uint256 halfEnd;
         bool settled;
     }
 
     PoolInfo[] public pools;
-    mapping(address => uint256) public poolIndex; // pool addr → index + 1 (0 = invalid)
+    mapping(address => uint256) public poolIndex;
 
     event PoolCreated(
         address indexed pool,
@@ -27,6 +28,7 @@ contract MomentumPoolFactory {
         uint8 halfNumber,
         string homeTeam,
         string awayTeam,
+        address token,
         uint256 depositDeadline,
         uint256 halfEnd
     );
@@ -36,12 +38,12 @@ contract MomentumPoolFactory {
     }
 
     /// @notice Spin up a new pool for a match-half
-    /// @dev Only owner (backend) creates pools
     function createPool(
         string calldata _matchId,
         uint8 _halfNumber,
         string calldata _homeTeam,
         string calldata _awayTeam,
+        address _token,
         uint256 _depositDeadline,
         uint256 _halfEnd
     ) external returns (address) {
@@ -49,7 +51,7 @@ contract MomentumPoolFactory {
         require(_halfNumber == 1 || _halfNumber == 2, "Invalid half");
         require(_depositDeadline < _halfEnd, "Deadline must be before half-end");
 
-        MomentumPool pool = new MomentumPool(msg.sender, _depositDeadline, _halfEnd);
+        MomentumPool pool = new MomentumPool(msg.sender, _token, _depositDeadline, _halfEnd);
         address poolAddr = address(pool);
 
         pools.push(PoolInfo({
@@ -58,23 +60,22 @@ contract MomentumPoolFactory {
             halfNumber: _halfNumber,
             homeTeam: _homeTeam,
             awayTeam: _awayTeam,
+            token: _token,
             depositDeadline: _depositDeadline,
             halfEnd: _halfEnd,
             settled: false
         }));
 
-        poolIndex[poolAddr] = pools.length; // 1-indexed
+        poolIndex[poolAddr] = pools.length;
 
-        emit PoolCreated(poolAddr, _matchId, _halfNumber, _homeTeam, _awayTeam, _depositDeadline, _halfEnd);
+        emit PoolCreated(poolAddr, _matchId, _halfNumber, _homeTeam, _awayTeam, _token, _depositDeadline, _halfEnd);
         return poolAddr;
     }
 
-    /// @notice Count of all pools
     function poolCount() external view returns (uint256) {
         return pools.length;
     }
 
-    /// @notice Get a range of pools (pagination for frontend)
     function getPools(uint256 offset, uint256 limit) external view returns (PoolInfo[] memory) {
         if (offset >= pools.length) return new PoolInfo[](0);
         uint256 end = offset + limit;
@@ -88,7 +89,6 @@ contract MomentumPoolFactory {
         return result;
     }
 
-    /// @notice Mark a pool as settled (called after settlement tx)
     function markSettled(address poolAddr) external {
         require(msg.sender == owner, "Only owner");
         uint256 idx = poolIndex[poolAddr];

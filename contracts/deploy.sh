@@ -76,26 +76,36 @@ echo -e "${GREEN}✅ Factory deployed: $FACTORY${NC}"
 echo -e "   ${EXPLORER}/$FACTORY"
 echo ""
 
-# ── Set up a test match pool ──
-echo -e "${YELLOW}📋 Creating a test match pool...${NC}"
+# Set up a test match pool
+echo -e "${YELLOW}📋 Creating test match pools (OKB + stablecoins)...${NC}"
 
 # Example: Nigeria vs Brazil, kickoff in 5 min, half-end in 55 min
 KICKOFF=$(date +%s -d '+5 minutes')
 DEADLINE=$(date +%s -d '+15 minutes')   # deposit window: +15 min
 HALF_END=$(date +%s -d '+60 minutes')   # half ends: +60 min from now
 
-echo "  Match: Nigeria vs Brazil (Half 1)"
-echo "  Deposit deadline: $(date -d @$DEADLINE)"
-echo "  Half ends: $(date -d @$HALF_END)"
+# address(0) = native OKB
+ZERO="0x0000000000000000000000000000000000000000"
 
+echo "  Match: Nigeria vs Brazil (Half 1) — OKB"
 cast send "$FACTORY" \
-    'createPool(string,uint8,string,string,uint256,uint256)' \
-    'example_001' 1 'Nigeria' 'Brazil' \
+    'createPool(string,uint8,string,string,address,uint256,uint256)' \
+    'example_001' 1 'Nigeria' 'Brazil' "$ZERO" \
     "$DEADLINE" "$HALF_END" \
     --rpc-url "$RPC" \
     --private-key "$PRIVATE_KEY" > /dev/null
+echo -e "${GREEN}✅ OKB pool created${NC}"
 
-echo -e "${GREEN}✅ Pool created${NC}"
+echo "  Match: Argentina vs France — USDT"
+# USDT address on X Layer mainnet/testnet — replace with actual
+USDT="0x0000000000000000000000000000000000000000"
+cast send "$FACTORY" \
+    'createPool(string,uint8,string,string,address,uint256,uint256)' \
+    'example_002' 1 'Argentina' 'France' "$USDT" \
+    "$DEADLINE" "$HALF_END" \
+    --rpc-url "$RPC" \
+    --private-key "$PRIVATE_KEY" > /dev/null
+echo -e "${GREEN}✅ USDT pool created${NC}"
 echo ""
 
 # ── Summary ──

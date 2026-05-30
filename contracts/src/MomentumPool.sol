@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title MomentumPool — settle at half-time, no live oracle needed
+/// @title MomentumPool — multi-token, settle at half-time
 contract MomentumPool {
     /* ───── State ───── */
     address public owner;
+    /// @dev address(0) = native OKB; any other address = ERC20 token
+    address public token;
     uint256 public depositDeadline;
     uint256 public halfEnd;
     uint256 public createdAt;
@@ -12,7 +14,7 @@ contract MomentumPool {
     enum State { OPEN, LIVE, SETTLED, CANCELLED }
     State public state;
 
-    uint8 public winnerTeamId; // 0 = home, 1 = away
+    uint8 public winnerTeamId;
     uint256 public winningScore;
     uint256 public losingScore;
 
@@ -21,8 +23,8 @@ contract MomentumPool {
         mapping(address => uint256) deposits;
     }
 
-    PoolSide public team0; // home
-    PoolSide public team1; // away
+    PoolSide public team0;
+    PoolSide public team1;
 
     mapping(address => bool) public claimed;
     uint256 public protocolFees;
@@ -38,8 +40,9 @@ contract MomentumPool {
     event Withdrawn(address indexed user, uint256 amount);
 
     /* ───── Init ───── */
-    constructor(address _owner, uint256 _depositDeadline, uint256 _halfEnd) {
+    constructor(address _owner, address _token, uint256 _depositDeadline, uint256 _halfEnd) {
         owner = _owner;
+        token = _token;
         depositDeadline = _depositDeadline;
         halfEnd = _halfEnd;
         createdAt = block.timestamp;
@@ -47,17 +50,26 @@ contract MomentumPool {
     }
 
     /* ───── Deposit ───── */
-    function deposit(uint8 teamId) external payable {
+    function deposit(uint8 teamId, uint256 amount) external payable {
         require(state == State.OPEN, "Pool not open");
         require(block.timestamp < depositDeadline, "Deposit window closed");
         require(teamId == 0 || teamId == 1, "Invalid team");
-        require(msg.value > 0, "Deposit must be > 0");
+
+        if (token == address(0)) {
+            // Native OKB
+            require(msg.value > 0, "Deposit must be > 0");
+            amount = msg.value;
+        } else {
+            // ERC20
+            require(amount > 0, "Amount must be > 0");
+            IERC20(token).transferFrom(msg.sender, address(this), amount);
+        }
 
         PoolSide storage side = teamId == 0 ? team0 : team1;
-        side.deposits[msg.sender] += msg.value;
-        side.total += msg.value;
+        side.deposits[msg.sender] += amount;
+        side.total += amount;
 
-        emit Deposited(msg.sender, teamId, msg.value);
+        emit Deposited(msg.sender, teamId, amount);
     }
 
     /* ───── Settlement (called by backend at half-time) ───── */
@@ -80,7 +92,6 @@ contract MomentumPool {
         emit Settled(_winner, score0, score1);
     }
 
-    /// @dev Cancel — called when scores are tied (everyone gets refunded)
     function cancel() external {
         require(msg.sender == owner, "Only owner");
         require(block.timestamp >= halfEnd, "Half hasn't ended");
@@ -91,7 +102,6 @@ contract MomentumPool {
     }
 
     /* ───── Withdraw ───── */
-    /// @notice Claim winnings or refund (if cancelled/tied)
     function withdraw() external {
         require(state == State.SETTLED || state == State.CANCELLED, "Not settled yet");
         require(!claimed[msg.sender], "Already claimed");
@@ -99,18 +109,14 @@ contract MomentumPool {
         uint256 payout;
 
         if (state == State.CANCELLED) {
-            // Tie → everyone gets their deposit back
             payout = team0.deposits[msg.sender] + team1.deposits[msg.sender];
         } else if (winnerTeamId == 0) {
-            // Home team won
             uint256 myBet = team0.deposits[msg.sender];
             if (myBet > 0 && team0.total > 0) {
-                // Winners split: their deposit + proportional share of losing pool (minus fee)
                 uint256 losersNet = team1.total - protocolFees;
                 payout = myBet + (myBet * losersNet / team0.total);
             }
         } else {
-            // Away team won
             uint256 myBet = team1.deposits[msg.sender];
             if (myBet > 0 && team1.total > 0) {
                 uint256 losersNet = team0.total - protocolFees;
@@ -121,8 +127,12 @@ contract MomentumPool {
         require(payout > 0, "Nothing to claim");
         claimed[msg.sender] = true;
 
-        (bool ok,) = payable(msg.sender).call{value: payout}("");
-        require(ok, "Transfer failed");
+        if (token == address(0)) {
+            (bool ok,) = payable(msg.sender).call{value: payout}("");
+            require(ok, "Transfer failed");
+        } else {
+            IERC20(token).transfer(msg.sender, payout);
+        }
 
         emit Withdrawn(msg.sender, payout);
     }
@@ -143,10 +153,23 @@ contract MomentumPool {
         uint256 fees = protocolFees;
         require(fees > 0, "No fees to withdraw");
         protocolFees = 0;
-        (bool ok,) = payable(owner).call{value: fees}("");
-        require(ok, "Transfer failed");
+
+        if (token == address(0)) {
+            (bool ok,) = payable(owner).call{value: fees}("");
+            require(ok, "Transfer failed");
+        } else {
+            IERC20(token).transfer(owner, fees);
+        }
+
         emit Withdrawn(owner, fees);
     }
 
     receive() external payable {}
+}
+
+/// @dev Minimal ERC20 interface for token deposits
+interface IERC20 {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
 }
