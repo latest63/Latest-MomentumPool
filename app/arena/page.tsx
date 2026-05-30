@@ -67,6 +67,15 @@ const FLAGS: Record<string, string> = {
   Senegal:   'https://flagcdn.com/w80/sn.png',
 };
 
+/* ─── All 5 matchups static data ─── */
+const MATCH_BY_ID: Record<string, { homeTeam: string; awayTeam: string }> = {
+  'sim-1': { homeTeam: 'Nigeria', awayTeam: 'Brazil' },
+  'sim-2': { homeTeam: 'Argentina', awayTeam: 'France' },
+  'sim-3': { homeTeam: 'England', awayTeam: 'Germany' },
+  'sim-4': { homeTeam: 'Portugal', awayTeam: 'Spain' },
+  'sim-5': { homeTeam: 'Morocco', awayTeam: 'Senegal' },
+};
+
 /* ─── 5 World Cup matchups ─── */
 const MATCHUP_IDS = ['sim-1', 'sim-2', 'sim-3', 'sim-4', 'sim-5'];
 
@@ -108,50 +117,53 @@ function simToEventItems(events: SimEvent[]): EventItem[] {
 /* ═══════════════════════════════════════ PAGE ═══════════════════════════════════════ */
 export default function ArenaPage() {
   const [state, setState] = useState<SimState | null>(null);
-  const [matches, setMatches] = useState<MatchSummary[]>([]);
+  const [matches, setMatches] = useState<MatchSummary[]>(
+    () => MATCHUP_IDS.map(id => {
+      const entry = MATCH_BY_ID[id] || { homeTeam: '', awayTeam: '' };
+      return {
+        matchId: id,
+        homeTeam: entry.homeTeam,
+        awayTeam: entry.awayTeam,
+        homeCode: entry.homeTeam.slice(0, 3).toUpperCase(),
+        awayCode: entry.awayTeam.slice(0, 3).toUpperCase(),
+        homeBadge: FLAGS[entry.homeTeam] || '',
+        awayBadge: FLAGS[entry.awayTeam] || '',
+        competition: 'Momentum Pool — World Cup 2026',
+        group: 'Group Stage',
+        isLive: false,
+        poolAddress: '',
+        settled: false,
+      };
+    })
+  );
   const [selected, setSelected] = useState('sim-1');
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [depositAmount, setDepositAmount] = useState('0.001');
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
-  // Build carousel data from matchup IDs
+  // Sync live/settled/upcoming state from engine
   useEffect(() => {
-    if (!state?.match) return;
-    const mapped = MATCHUP_IDS.map(id => {
-      const m = state.match?.id === id ? state.match : null;
-      return {
-        matchId: id,
-        homeTeam: m?.homeTeam ?? '',
-        awayTeam: m?.awayTeam ?? '',
-        homeCode: '',
-        awayCode: '',
-        homeBadge: '',
-        awayBadge: '',
-        competition: 'Momentum Pool — World Cup 2026',
-        group: 'Group Stage',
-        isLive: m?.phase === 'live',
-        poolAddress: m?.poolAddress ?? '',
-        settled: m?.phase === 'settled',
-      };
-    });
-    // Fill in team names from engine data
-    if (state.match) {
-      const idx = MATCHUP_IDS.indexOf(state.match.id);
-      if (idx !== -1) {
-        mapped[idx].homeTeam = state.match.homeTeam;
-        mapped[idx].awayTeam = state.match.awayTeam;
-        mapped[idx].homeCode = state.match.homeTeam.slice(0, 3).toUpperCase();
-        mapped[idx].awayCode = state.match.awayTeam.slice(0, 3).toUpperCase();
-        mapped[idx].homeBadge = FLAGS[state.match.homeTeam] || '';
-        mapped[idx].awayBadge = FLAGS[state.match.awayTeam] || '';
-        mapped[idx].isLive = state.match.phase === 'live';
-        mapped[idx].settled = state.match.phase === 'settled';
-        mapped[idx].poolAddress = state.match.poolAddress ?? '';
-      }
+    if (!state?.match) {
+      // Clear live/settled flags when no active match
+      setMatches(prev => prev.map(m => ({ ...m, isLive: false, settled: false, poolAddress: '' })));
+      return;
     }
-    setMatches(mapped);
-  }, [state?.match?.id, state?.match?.homeTeam, state?.match?.awayTeam, state?.match?.phase]);
+    setMatches(prev => {
+      const next = prev.map(m => ({
+        ...m,
+        isLive: m.matchId === state.match!.id && state.match!.phase === 'live',
+        settled: m.matchId === state.match!.id && state.match!.phase === 'settled',
+        poolAddress: m.matchId === state.match!.id ? (state.match!.poolAddress ?? '') : '',
+      }));
+      return next;
+    });
+  }, [state?.match?.id, state?.match?.phase]);
+
+  // Auto-select the current match when the engine cycles to a new one
+  useEffect(() => {
+    if (state?.match?.id) setSelected(state.match.id);
+  }, [state?.match?.id]);
 
   // Start engine on mount + poll state
   useEffect(() => {

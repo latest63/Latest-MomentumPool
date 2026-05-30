@@ -16,6 +16,8 @@ interface MatchSummary {
   awayCode?: string;
   homeBadge?: string;
   awayBadge?: string;
+  isLive?: boolean;
+  settled?: boolean;
 }
 
 interface Props {
@@ -77,6 +79,20 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
     return () => el.removeEventListener('scroll', updateScrollState);
   }, [matches, isMobile]);
 
+  // Auto-scroll to selected tab on desktop
+  useLayoutEffect(() => {
+    if (isMobile) return;
+    const el = tabsRef.current;
+    if (!el) return;
+    const activeTab = el.querySelector('.match-tab.active') as HTMLElement | null;
+    if (!activeTab) return;
+    const containerRect = el.getBoundingClientRect();
+    const tabRect = activeTab.getBoundingClientRect();
+    if (tabRect.left < containerRect.left || tabRect.right > containerRect.right) {
+      activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+  }, [selected, isMobile]);
+
   const goNext = () => {
     const next = Math.min(selectedIdx + 1, matches.length - 1);
     if (next !== selectedIdx) onSelect(matches[next].matchId);
@@ -102,13 +118,25 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
   if (!isMobile) {
     return (
       <div className="match-tabs-wrap">
+        <button
+          className={`mc-arrow mc-arrow-left ${atStart ? 'disabled' : ''}`}
+          onClick={goPrev}
+          disabled={atStart}
+          aria-label="Previous match"
+        >‹</button>
         <div className="match-tabs" ref={tabsRef}>
           {matches.map(m => (
             <button
               key={m.matchId}
-              className={`match-tab ${selected === m.matchId ? 'active' : ''}`}
+              className={`match-tab ${selected === m.matchId ? 'active' : ''} ${m.settled ? 'settled' : ''}`}
               onClick={() => onSelect(m.matchId)}
             >
+              <div className="tab-status-row">
+                {m.isLive && <span className="tab-live-dot" />}
+                {m.settled && <span className="tab-settled-label">FT</span>}
+                {!m.isLive && !m.settled && selected === m.matchId && <span className="tab-open-label">OPEN</span>}
+                {!m.isLive && !m.settled && selected !== m.matchId && <span className="tab-upcoming-label">Next</span>}
+              </div>
               <div className="tab-team-row">
                 <TeamLogo name={m.homeTeam} badge={m.homeBadge} code={m.homeCode} size={28} />
                 <span>{m.homeTeam}</span>
@@ -123,16 +151,10 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
           ))}
         </div>
         <button
-          className={`mc-arrow mc-arrow-left ${!canScrollLeft ? 'disabled' : ''}`}
-          onClick={() => scrollTabs('left')}
-          disabled={!canScrollLeft}
-          aria-label="Scroll matches left"
-        >‹</button>
-        <button
-          className={`mc-arrow mc-arrow-right ${!canScrollRight ? 'disabled' : ''}`}
-          onClick={() => scrollTabs('right')}
-          disabled={!canScrollRight}
-          aria-label="Scroll matches right"
+          className={`mc-arrow mc-arrow-right ${atEnd ? 'disabled' : ''}`}
+          onClick={goNext}
+          disabled={atEnd}
+          aria-label="Next match"
         >›</button>
       </div>
     );
@@ -161,6 +183,12 @@ export default function MatchCarousel({ matches, selected, onSelect }: Props) {
               <span className="mc-team">{m.awayTeam}</span>
             </div>
             <small>{m.competition || m.venue || 'Football'}</small>
+            <div className="mc-status-row">
+              {m.isLive && <span className="mc-live-badge">LIVE</span>}
+              {m.settled && <span className="mc-ft-badge">FT</span>}
+              {!m.isLive && !m.settled && selected === m.matchId && <span className="mc-open-badge">OPEN</span>}
+              {!m.isLive && !m.settled && selected !== m.matchId && <span className="mc-next-badge">Next</span>}
+            </div>
           </button>
         ))}
       </div>

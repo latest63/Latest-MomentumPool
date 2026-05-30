@@ -1068,6 +1068,13 @@ body {
 }
 .match-tab:hover { background: rgba(0,0,0,0.55); transform: translateY(-2px); }
 .match-tab.active { border-color: var(--electric-blue); }
+.match-tab.settled { opacity: 0.5; }
+
+.tab-status-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; min-height: 14px; }
+.tab-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bright-red); animation: liveBlink 1.4s ease-in-out infinite; }
+.tab-settled-label { font-size: 9px; font-weight: 700; color: var(--bright-green); letter-spacing: 1px; }
+.tab-open-label { font-size: 8px; font-weight: 700; color: var(--yellow); letter-spacing: 1px; }
+.tab-upcoming-label { font-size: 8px; font-weight: 600; color: var(--text-tertiary); letter-spacing: 1px; text-transform: uppercase; }
 
 .tab-team-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); }
 .tab-team-row .flag-emoji { font-size: 20px; line-height: 1; }
@@ -1153,6 +1160,12 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+.mc-status-row { display: flex; justify-content: center; margin-top: 6px; min-height: 14px; }
+.mc-live-badge { font-size: 8px; font-weight: 700; color: var(--bright-red); letter-spacing: 1px; animation: liveBlink 1.4s ease-in-out infinite; }
+.mc-ft-badge { font-size: 8px; font-weight: 700; color: var(--bright-green); letter-spacing: 1px; }
+.mc-open-badge { font-size: 7px; font-weight: 700; color: var(--yellow); letter-spacing: 1px; }
+.mc-next-badge { font-size: 7px; font-weight: 600; color: var(--text-tertiary); letter-spacing: 1px; text-transform: uppercase; }
 
 /* Arrow buttons */
 .mc-arrow {
