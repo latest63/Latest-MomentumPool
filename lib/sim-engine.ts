@@ -25,6 +25,8 @@ export interface SimMatch {
   momentumHome: number; // 0-100 (home's momentum share)
   deposits: { home: number; away: number };
   round: number;
+  poolAddress: string | null; // real pool contract (null = mock only)
+  settledOnChain: boolean;    // whether settle() has been called
 }
 
 export interface SimState {
@@ -93,6 +95,10 @@ export class SimEngine {
   private eventTimers: Map<string, number> = new Map();
   private goalClusters: Map<string, number> = new Map(); // for rarity of second goals close together
 
+  /* Real contract integration */
+  private poolAddresses: Map<string, string> = new Map();
+  public onSettle: ((matchId: string, winner: TeamSide, homeScore: number, awayScore: number, poolAddress: string) => void) | null = null;
+
   constructor() {
     this.initMatches();
   }
@@ -109,6 +115,8 @@ export class SimEngine {
       momentumHome: 50,
       deposits: { home: 0, away: 0 },
       round: 1,
+      poolAddress: null,
+      settledOnChain: false,
     }));
     this.eventTimers.clear();
     this.goalClusters.clear();
@@ -134,10 +142,14 @@ export class SimEngine {
 
   getState(): SimState {
     return {
-      matches: this.matches.map((m) => ({
-        ...m,
-        events: m.events.slice(-50), // keep last 50 events for display
-      })),
+      matches: this.matches.map((m) => {
+        const poolAddr = this.poolAddresses.get(m.id) || m.poolAddress;
+        return {
+          ...m,
+          poolAddress: poolAddr,
+          events: m.events.slice(-50),
+        };
+      }),
       tick: this.tickCount,
       running: this.running,
     };
@@ -149,6 +161,13 @@ export class SimEngine {
     if (!match || match.phase !== 'open') return false;
     match.deposits[team] += amount;
     return true;
+  }
+
+  /* ─── Set real pool address ─── */
+  setPoolAddress(matchId: string, address: string) {
+    this.poolAddresses.set(matchId, address);
+    const match = this.matches.find((m) => m.id === matchId);
+    if (match) match.poolAddress = address;
   }
 
   /* ─── Claim winnings ─── */
@@ -211,6 +230,15 @@ export class SimEngine {
   private transitionToSettled(match: SimMatch) {
     match.phase = 'settled';
     match.phaseElapsed = 0;
+    // Fire on-chain settlement if a pool is attached
+    if (match.poolAddress && !match.settledOnChain && this.onSettle) {
+      match.settledOnChain = true;
+      const winner: TeamSide =
+        match.score.home > match.score.away ? 'home'
+        : match.score.away > match.score.home ? 'away'
+        : Math.random() < 0.5 ? 'home' : 'away';
+      this.onSettle(match.id, winner, match.score.home, match.score.away, match.poolAddress);
+    }
   }
 
   private restartMatch(match: SimMatch) {
@@ -221,6 +249,8 @@ export class SimEngine {
     match.deposits = { home: 0, away: 0 };
     match.round++;
     match.events = [];
+    match.poolAddress = null;
+    match.settledOnChain = false;
     this.eventTimers.set(match.id, 0);
     this.goalClusters.delete(match.id);
   }

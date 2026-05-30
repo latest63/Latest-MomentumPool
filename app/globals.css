@@ -2078,6 +2078,85 @@ body {
   letter-spacing: 1px;
 }
 
+/* ─── Whistle overlay (kick-off / full-time) ─── */
+.sim-whistle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  animation: sim-whistle-fade 2.5s ease forwards;
+  pointer-events: none;
+}
+.sim-whistle-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: sim-whistle-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sim-whistle-icon {
+  font-size: 48px;
+  animation: sim-whistle-shake 0.3s ease 3;
+}
+.sim-whistle-text {
+  font-family: var(--font-sports);
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255,215,0,0.5);
+}
+@keyframes sim-whistle-fade {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes sim-whistle-pop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes sim-whistle-shake {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-15deg); }
+}
+
+/* ─── Real pool badge ─── */
+.sim-pool-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #000;
+  text-transform: uppercase;
+  animation: sim-pool-glow 1.5s ease-in-out infinite;
+}
+@keyframes sim-pool-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
+  50% { box-shadow: 0 0 16px rgba(255, 215, 0, 0.7); }
+}
+
+/* ─── Deposit hints ─── */
+.sim-deposit-hint {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+  font-style: italic;
+}
+.sim-deposit-hint-mock {
+  color: rgba(255,255,255,0.25);
+}
+
 /* Scrollable events */
 .sim-events::-webkit-scrollbar {
   width: 3px;
