@@ -212,14 +212,9 @@ export default function ArenaPage() {
                   <div className="pool-empty">Pool settled — no deposits</div>
                 )}
                 {isConnected && (
-                  <div style={{ textAlign: 'center', marginTop: 16 }}>
-                    <a
-                      href={`https://www.okx.com/web3/explorer/xlayer/address/${activePoolAddress}`}
-                      target="_blank"
-                      rel="noopener"
-                      className="explorer-link"
-                    >
-                      View on OKX Explorer ↗
+                  <div className="position-action" style={{ textAlign: 'center', marginTop: 12 }}>
+                    <a href="/arena/positions" className="claim-btn" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                      Claim in Positions
                     </a>
                   </div>
                 )}

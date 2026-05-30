@@ -2,8 +2,9 @@
 
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import Nav from '@/components/Nav';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLoading } from '@/components/LoadingOverlay';
+import confetti from 'canvas-confetti';
 
 const POOL_ADDRESS = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df';
 
@@ -83,6 +84,8 @@ export default function PositionsPage() {
   const { setLoading } = useLoading();
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState('');
+  const [showCup, setShowCup] = useState(false);
+  const hasFired = useRef(false);
 
   useEffect(() => { setLoading(isPending || claiming); }, [isPending, claiming, setLoading]);
 
@@ -135,6 +138,15 @@ export default function PositionsPage() {
   const isCancelled = poolState === 3;
   const canClaim = isConnected && (isSettled || isCancelled) && !hasClaimed && totalDeposit > 0;
 
+  const fireConfetti = () => {
+    if (hasFired.current) return;
+    hasFired.current = true;
+    confetti({ particleCount: 150, spread: 100, origin: { x: 0.5, y: 0.4 }, colors: ['#ffd700', '#ff6b6b', '#48dbfb', '#ff9ff3', '#feca57'] });
+    setTimeout(() => confetti({ particleCount: 80, spread: 80, origin: { x: 0.2, y: 0.5 }, colors: ['#ffd700', '#ff6b6b', '#48dbfb'] }), 200);
+    setTimeout(() => confetti({ particleCount: 80, spread: 80, origin: { x: 0.8, y: 0.5 }, colors: ['#ffd700', '#ff9ff3', '#feca57'] }), 400);
+    setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { x: 0.5, y: 0.3 } }), 600);
+  };
+
   const handleClaim = async () => {
     if (!canClaim) return;
     setClaiming(true);
@@ -147,6 +159,8 @@ export default function PositionsPage() {
       });
       await refetchDeposits();
       await refetchTotals();
+      setShowCup(true);
+      setTimeout(fireConfetti, 500);
     } catch (err) {
       setClaimError(err instanceof Error ? err.message : 'Claim failed');
     } finally {
@@ -234,6 +248,18 @@ export default function PositionsPage() {
           </div>
         )}
       </div>
+
+      {showCup && (
+        <div className="cup-overlay" onClick={() => setShowCup(false)}>
+          <div className="cup-popup" onClick={e => e.stopPropagation()}>
+            <img src="/assets/worldcup.png" alt="Champion" className="cup-image" />
+            <div className="cup-text">🏆 You Won! 🏆</div>
+            <button className="cup-close" onClick={() => setShowCup(false)}>
+              Claimed!
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

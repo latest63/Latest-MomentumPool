@@ -1682,3 +1682,69 @@ body {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.25; transform: scale(0.95); }
 }
+
+/* ═══════════════════════ COUP / CLAIM POPUP ═══════════════════════ */
+
+.cup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  animation: fade-in 0.3s ease;
+}
+
+.cup-popup {
+  text-align: center;
+  animation: cup-pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cup-image {
+  width: 280px;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(255, 215, 0, 0.3));
+  animation: cup-glow 2s ease-in-out infinite;
+}
+
+.cup-text {
+  font-family: var(--font-sports);
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: #ffd700;
+  margin-top: 20px;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.cup-close {
+  margin-top: 24px;
+  padding: 12px 32px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: var(--radius-round);
+  font-family: var(--font-sports);
+  font-size: 14px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.cup-close:hover { background: rgba(255,255,255,0.2); }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cup-pop-in {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes cup-glow {
+  0%, 100% { filter: drop-shadow(0 20px 40px rgba(255, 215, 0, 0.3)); }
+  50% { filter: drop-shadow(0 20px 60px rgba(255, 215, 0, 0.6)); }
+}
