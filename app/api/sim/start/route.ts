@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function POST() {
   const engine = getEngine();
 
-  // Wire up on-chain settlement
+  // Auto-settle when a match ends
   engine.onSettle = async (_matchId, winner, homeScore, awayScore, poolAddress) => {
     try {
       const result = await settlePool(poolAddress, winner, homeScore, awayScore);
@@ -17,16 +17,19 @@ export async function POST() {
     }
   };
 
-  engine.start();
+  // Auto-deploy a pool when a new real match starts
+  engine.onNewMatch = async (matchId, homeTeam, awayTeam) => {
+    try {
+      const addr = await deployPool(matchId, homeTeam, awayTeam);
+      console.log(`[sim] Deployed pool for ${matchId} (${homeTeam} vs ${awayTeam}): ${addr}`);
+      return addr;
+    } catch (err) {
+      console.warn(`[sim] Deploy failed for ${matchId}, proceeding mock:`, err);
+      return null;
+    }
+  };
 
-  // Deploy a real pool for the first match (Nigeria vs Brazil — real: true)
-  try {
-    const poolAddress = await deployPool('sim-1', 'Nigeria', 'Brazil');
-    engine.setPoolAddress(poolAddress);
-    console.log(`[sim] Deployed pool: ${poolAddress}`);
-  } catch (err) {
-    console.warn('[sim] Pool deploy skipped (proceeding mock):', err);
-  }
+  engine.start();
 
   return NextResponse.json({ ok: true });
 }

@@ -41,10 +41,10 @@ export interface SimState {
 /* ─── 5 Match Pairings (cycling) ─── */
 const MATCHES = [
   { id: 'sim-1', home: 'Nigeria', away: 'Brazil', real: true },
-  { id: 'sim-2', home: 'Argentina', away: 'France', real: false },
-  { id: 'sim-3', home: 'England', away: 'Germany', real: false },
-  { id: 'sim-4', home: 'Portugal', away: 'Spain', real: false },
-  { id: 'sim-5', home: 'Morocco', away: 'Senegal', real: false },
+  { id: 'sim-2', home: 'Argentina', away: 'France', real: true },
+  { id: 'sim-3', home: 'England', away: 'Germany', real: true },
+  { id: 'sim-4', home: 'Portugal', away: 'Spain', real: true },
+  { id: 'sim-5', home: 'Morocco', away: 'Senegal', real: true },
 ];
 
 const PHASE_DURATION = {
@@ -100,6 +100,8 @@ export class SimEngine {
 
   /* Real contract integration */
   public onSettle: ((matchId: string, winner: TeamSide, homeScore: number, awayScore: number, poolAddress: string) => void) | null = null;
+  /* Called when a new real match is about to start — should return the pool address */
+  public onNewMatch: ((matchId: string, homeTeam: string, awayTeam: string) => Promise<string | null>) | null = null;
 
   constructor() {
     this.fillQueue();
@@ -134,11 +136,22 @@ export class SimEngine {
       momentumHome: 50,
       deposits: { home: 0, away: 0 },
       round: this.round,
-      poolAddress: pairing.real ? null : null, // set externally via setPoolAddress
+      poolAddress: null,
       settledOnChain: false,
     };
     this.eventTimer = 0;
     this.goalCluster = 0;
+
+    // Auto-deploy pool for real matches
+    if (pairing.real && this.onNewMatch) {
+      this.onNewMatch(pairing.id, pairing.home, pairing.away).then(addr => {
+        if (addr && this.match && this.match.id === pairing.id) {
+          this.match.poolAddress = addr;
+        }
+      }).catch(err => {
+        console.error(`[sim] Failed to deploy pool for ${pairing.id}:`, err);
+      });
+    }
   }
 
   start() {
