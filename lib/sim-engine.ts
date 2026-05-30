@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════
    Momentum Pool — Simulation Engine
-   5 matches, 2min deposit → 2min live → restart
+   1 match at a time, cycles through 5 pairings
    ═══════════════════════════════════════════════════ */
 
 export type SimPhase = 'open' | 'live' | 'settled';
@@ -25,32 +25,35 @@ export interface SimMatch {
   momentumHome: number; // 0-100 (home's momentum share)
   deposits: { home: number; away: number };
   round: number;
-  poolAddress: string | null; // real pool contract (null = mock only)
-  settledOnChain: boolean;    // whether settle() has been called
+  poolAddress: string | null;
+  settledOnChain: boolean;
 }
 
 export interface SimState {
-  matches: SimMatch[];
+  match: SimMatch | null;
+  nextUp: { id: string; homeTeam: string; awayTeam: string } | null;
+  matchIndex: number; // 0-4 which of the 5 pairings is current
+  totalMatches: number; // how many matches played this cycle
   tick: number;
   running: boolean;
 }
 
-/* ─── 5 Match Pairings ─── */
+/* ─── 5 Match Pairings (cycling) ─── */
 const MATCHES = [
-  { id: 'sim-1', home: 'Nigeria', away: 'Brazil' },
-  { id: 'sim-2', home: 'Argentina', away: 'France' },
-  { id: 'sim-3', home: 'England', away: 'Germany' },
-  { id: 'sim-4', home: 'Portugal', away: 'Spain' },
-  { id: 'sim-5', home: 'Morocco', away: 'Senegal' },
+  { id: 'sim-1', home: 'Nigeria', away: 'Brazil', real: true },
+  { id: 'sim-2', home: 'Argentina', away: 'France', real: false },
+  { id: 'sim-3', home: 'England', away: 'Germany', real: false },
+  { id: 'sim-4', home: 'Portugal', away: 'Spain', real: false },
+  { id: 'sim-5', home: 'Morocco', away: 'Senegal', real: false },
 ];
 
 const PHASE_DURATION = {
-  open: 120,     // 2 min deposit window
-  live: 120,     // 2 min match
-  settled: 15,   // 15s pause before restart
+  open: 120,
+  live: 120,
+  settled: 15,
 };
 
-/* ─── Player name pools for realistic commentary ─── */
+/* ─── Player name pools ─── */
 const FIRST_NAMES = [
   'A.', 'B.', 'C.', 'D.', 'E.', 'F.', 'G.', 'H.', 'I.', 'J.',
   'K.', 'L.', 'M.', 'N.', 'O.', 'P.', 'R.', 'S.', 'T.', 'V.',
@@ -80,47 +83,62 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-/* ─── Engine ─── */
+/* ─── Engine: one match at a time ─── */
 export class SimEngine {
-  private matches: SimMatch[] = [];
+  private match: SimMatch | null = null;
+  private queue: typeof MATCHES = [];
+  private matchIndex = 0;
+  private totalMatches = 0;
+  private round = 1;
   private tickCount = 0;
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
-  /* Per-match event generation tracking */
-  private eventTimers: Map<string, number> = new Map();
-  private goalClusters: Map<string, number> = new Map(); // for rarity of second goals close together
+  /* per-match event timing */
+  private eventTimer = 0;
+  private goalCluster = 0;
 
   /* Real contract integration */
-  private poolAddresses: Map<string, string> = new Map();
   public onSettle: ((matchId: string, winner: TeamSide, homeScore: number, awayScore: number, poolAddress: string) => void) | null = null;
 
   constructor() {
-    this.initMatches();
+    this.fillQueue();
+    this.advanceToNext();
   }
 
-  private initMatches() {
-    this.matches = MATCHES.map((m) => ({
-      id: m.id,
-      homeTeam: m.home,
-      awayTeam: m.away,
-      phase: 'open' as SimPhase,
+  private fillQueue() {
+    // Shuffle for first round, then rotate through sequentially
+    if (this.queue.length === 0 && this.totalMatches === 0) {
+      this.queue = [...MATCHES].sort(() => Math.random() - 0.5);
+    } else if (this.queue.length === 0) {
+      this.queue = [...MATCHES];
+    }
+  }
+
+  private advanceToNext() {
+    this.fillQueue();
+    if (this.queue.length === 0) return;
+
+    const pairing = this.queue.shift()!;
+    this.matchIndex = MATCHES.findIndex(m => m.id === pairing.id);
+    this.totalMatches++;
+
+    this.match = {
+      id: pairing.id,
+      homeTeam: pairing.home,
+      awayTeam: pairing.away,
+      phase: 'open',
       phaseElapsed: 0,
       score: { home: 0, away: 0 },
       events: [],
       momentumHome: 50,
       deposits: { home: 0, away: 0 },
-      round: 1,
-      poolAddress: null,
+      round: this.round,
+      poolAddress: pairing.real ? null : null, // set externally via setPoolAddress
       settledOnChain: false,
-    }));
-    this.eventTimers.clear();
-    this.goalClusters.clear();
-    this.tickCount = 0;
+    };
+    this.eventTimer = 0;
+    this.goalCluster = 0;
   }
 
   start() {
@@ -137,197 +155,160 @@ export class SimEngine {
 
   reset() {
     this.stop();
-    this.initMatches();
+    this.queue = [];
+    this.totalMatches = 0;
+    this.round = 1;
+    this.matchIndex = 0;
+    this.tickCount = 0;
+    this.match = null;
+    this.eventTimer = 0;
+    this.goalCluster = 0;
+    this.fillQueue();
+    this.advanceToNext();
   }
 
   getState(): SimState {
+    const nextPairing = this.queue[0] || null;
     return {
-      matches: this.matches.map((m) => {
-        const poolAddr = this.poolAddresses.get(m.id) || m.poolAddress;
-        return {
-          ...m,
-          poolAddress: poolAddr,
-          events: m.events.slice(-50),
-        };
-      }),
+      match: this.match ? { ...this.match, events: this.match.events.slice(-50) } : null,
+      nextUp: nextPairing ? { id: nextPairing.id, homeTeam: nextPairing.home, awayTeam: nextPairing.away } : null,
+      matchIndex: this.matchIndex,
+      totalMatches: this.totalMatches,
       tick: this.tickCount,
       running: this.running,
     };
   }
 
-  /* ─── Deposit ─── */
-  deposit(matchId: string, team: TeamSide, amount: number): boolean {
-    const match = this.matches.find((m) => m.id === matchId);
-    if (!match || match.phase !== 'open') return false;
-    match.deposits[team] += amount;
+  /* ─── Deposit (mock) ─── */
+  deposit(team: TeamSide, amount: number): boolean {
+    if (!this.match || this.match.phase !== 'open') return false;
+    this.match.deposits[team] += amount;
     return true;
   }
 
-  /* ─── Set real pool address ─── */
-  setPoolAddress(matchId: string, address: string) {
-    this.poolAddresses.set(matchId, address);
-    const match = this.matches.find((m) => m.id === matchId);
-    if (match) match.poolAddress = address;
+  setPoolAddress(address: string) {
+    if (this.match) this.match.poolAddress = address;
   }
 
-  /* ─── Claim winnings ─── */
-  claim(matchId: string, team: TeamSide): { won: boolean; payout: number } | null {
-    const match = this.matches.find((m) => m.id === matchId);
-    if (!match || match.phase !== 'settled') return null;
-    const total = match.deposits.home + match.deposits.away;
+  /* ─── Claim (mock) ─── */
+  claim(team: TeamSide): { won: boolean; payout: number } | null {
+    if (!this.match || this.match.phase !== 'settled') return null;
+    const total = this.match.deposits.home + this.match.deposits.away;
     if (total === 0) return { won: false, payout: 0 };
 
     const winner: TeamSide =
-      match.score.home > match.score.away ? 'home'
-      : match.score.away > match.score.home ? 'away'
-      : Math.random() < 0.5 ? 'home' : 'away'; // draws settled randomly
+      this.match.score.home > this.match.score.away ? 'home'
+      : this.match.score.away > this.match.score.home ? 'away'
+      : Math.random() < 0.5 ? 'home' : 'away';
 
     if (team !== winner) return { won: false, payout: 0 };
 
-    // Payout: their share of total pool minus 2% fee
-    const myDeposit = match.deposits[team];
-    const opponentDeposit = match.deposits[team === 'home' ? 'away' : 'home'];
+    const myDeposit = this.match.deposits[team];
+    const opponentDeposit = this.match.deposits[team === 'home' ? 'away' : 'home'];
     const share = total === 0 ? 0 : myDeposit / (myDeposit + opponentDeposit);
-    const payout = total * 0.98 * share; // 2% fee
+    const payout = total * 0.98 * share;
     return { won: true, payout };
   }
 
   /* ─── Main tick ─── */
   private tick() {
+    if (!this.match) return;
     this.tickCount++;
+    this.match.phaseElapsed++;
 
-    for (const match of this.matches) {
-      match.phaseElapsed++;
-
-      switch (match.phase) {
-        case 'open':
-          if (match.phaseElapsed >= PHASE_DURATION.open) {
-            this.transitionToLive(match);
-          }
-          break;
-        case 'live':
-          this.simulateEvents(match);
-          if (match.phaseElapsed >= PHASE_DURATION.live) {
-            this.transitionToSettled(match);
-          }
-          break;
-        case 'settled':
-          if (match.phaseElapsed >= PHASE_DURATION.settled) {
-            this.restartMatch(match);
-          }
-          break;
-      }
+    switch (this.match.phase) {
+      case 'open':
+        if (this.match.phaseElapsed >= PHASE_DURATION.open) this.transitionToLive();
+        break;
+      case 'live':
+        this.simulateEvents();
+        if (this.match.phaseElapsed >= PHASE_DURATION.live) this.transitionToSettled();
+        break;
+      case 'settled':
+        if (this.match.phaseElapsed >= PHASE_DURATION.settled) this.restartCycle();
+        break;
     }
   }
 
-  private transitionToLive(match: SimMatch) {
-    match.phase = 'live';
-    match.phaseElapsed = 0;
-    match.momentumHome = 50 + (Math.random() * 20 - 10); // slight initial bias
-    match.momentumHome = clamp(match.momentumHome, 20, 80);
+  private transitionToLive() {
+    if (!this.match) return;
+    this.match.phase = 'live';
+    this.match.phaseElapsed = 0;
+    this.match.momentumHome = 50 + (Math.random() * 20 - 10);
+    this.match.momentumHome = clamp(this.match.momentumHome, 20, 80);
+    this.eventTimer = 0;
   }
 
-  private transitionToSettled(match: SimMatch) {
-    match.phase = 'settled';
-    match.phaseElapsed = 0;
-    // Fire on-chain settlement if a pool is attached
-    if (match.poolAddress && !match.settledOnChain && this.onSettle) {
-      match.settledOnChain = true;
+  private transitionToSettled() {
+    if (!this.match) return;
+    this.match.phase = 'settled';
+    this.match.phaseElapsed = 0;
+
+    // Auto-settle on-chain if pool attached
+    if (this.match.poolAddress && !this.match.settledOnChain && this.onSettle) {
+      this.match.settledOnChain = true;
       const winner: TeamSide =
-        match.score.home > match.score.away ? 'home'
-        : match.score.away > match.score.home ? 'away'
+        this.match.score.home > this.match.score.away ? 'home'
+        : this.match.score.away > this.match.score.home ? 'away'
         : Math.random() < 0.5 ? 'home' : 'away';
-      this.onSettle(match.id, winner, match.score.home, match.score.away, match.poolAddress);
+      this.onSettle(this.match.id, winner, this.match.score.home, this.match.score.away, this.match.poolAddress);
     }
   }
 
-  private restartMatch(match: SimMatch) {
-    match.phase = 'open';
-    match.phaseElapsed = 0;
-    match.score = { home: 0, away: 0 };
-    match.momentumHome = 50;
-    match.deposits = { home: 0, away: 0 };
-    match.round++;
-    match.events = [];
-    match.poolAddress = null;
-    match.settledOnChain = false;
-    this.eventTimers.set(match.id, 0);
-    this.goalClusters.delete(match.id);
+  private restartCycle() {
+    this.advanceToNext();
+    // If queue wrapped around, increment round
+    const playedCount = this.totalMatches;
+    if (playedCount > 0 && playedCount % 5 === 0) this.round++;
   }
 
   /* ─── Event Generation ─── */
-  private simulateEvents(match: SimMatch) {
-    const minute = match.phaseElapsed;
+  private simulateEvents() {
+    if (!this.match) return;
 
-    // Every match tick has varying probability of an event
-    // We use a timer so events are spaced out randomly (1-5s apart)
-    let timer = this.eventTimers.get(match.id) ?? 0;
-    timer -= 1;
-    if (timer > 0) {
-      this.eventTimers.set(match.id, timer);
-      return;
-    }
+    this.eventTimer -= 1;
+    if (this.eventTimer > 0) return;
 
-    // Set a random delay until next event (1-5 seconds)
-    const nextDelay = randomInt(1, 5);
-    this.eventTimers.set(match.id, nextDelay);
+    this.eventTimer = randomInt(1, 5);
 
-    // Late match urgency: higher event frequency in final 30s
+    const minute = this.match.phaseElapsed;
     const lateBonus = minute > PHASE_DURATION.live - 30 ? 1.5 : 1.0;
-
-    // Pick event type
     const roll = Math.random() * 100;
-
-    // Decide which team (weighted by momentum)
-    const homeProb = match.momentumHome / 100;
+    const homeProb = this.match.momentumHome / 100;
     const team: TeamSide = Math.random() < homeProb ? 'home' : 'away';
-    const opponent: TeamSide = team === 'home' ? 'away' : 'home';
 
-    // Generate events with dynamic probabilities
     if (roll < 4 * lateBonus) {
       // ⚽ GOAL!
-      match.score[team]++;
-      match.events.push({ minute, type: 'goal', team, player: getRandomPlayer(team === 'home' ? match.homeTeam : match.awayTeam) });
-      // Goal cluster protection: 25% chance of another goal within 2 events if not recently clustered
-      if (Math.random() < 0.25 && !this.goalClusters.has(match.id)) {
-        this.goalClusters.set(match.id, 1);
-        setTimeout(() => this.goalClusters.delete(match.id), 8000);
+      this.match.score[team]++;
+      this.match.events.push({ minute, type: 'goal', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
+      if (Math.random() < 0.25 && !this.goalCluster) {
+        this.goalCluster = 1;
+        setTimeout(() => { this.goalCluster = 0; }, 8000);
       }
-      // Momentum: big swing toward scoring team
-      match.momentumHome += team === 'home' ? 12 : -12;
+      this.match.momentumHome += team === 'home' ? 12 : -12;
     } else if (roll < 10 * lateBonus) {
-      // 🟥 RED CARD
-      match.events.push({ minute, type: 'red_card', team, player: getRandomPlayer(team === 'home' ? match.homeTeam : match.awayTeam) });
-      // Red card = big momentum swing to opponent
-      match.momentumHome += team === 'home' ? -15 : 15;
+      this.match.events.push({ minute, type: 'red_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
+      this.match.momentumHome += team === 'home' ? -15 : 15;
     } else if (roll < 22 * lateBonus) {
-      // 🟨 YELLOW CARD
-      match.events.push({ minute, type: 'yellow_card', team, player: getRandomPlayer(team === 'home' ? match.homeTeam : match.awayTeam) });
-      match.momentumHome += team === 'home' ? -5 : 5;
+      this.match.events.push({ minute, type: 'yellow_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
+      this.match.momentumHome += team === 'home' ? -5 : 5;
     } else if (roll < 35 * lateBonus) {
-      // 🚩 CORNER
-      match.events.push({ minute, type: 'corner', team, player: '' });
-      match.momentumHome += team === 'home' ? 1 : -1;
+      this.match.events.push({ minute, type: 'corner', team, player: '' });
+      this.match.momentumHome += team === 'home' ? 1 : -1;
     } else if (roll < 55 * lateBonus) {
-      // 💥 WOODWORK
-      match.events.push({ minute, type: 'woodwork', team, player: getRandomPlayer(team === 'home' ? match.homeTeam : match.awayTeam) });
-      match.momentumHome += team === 'home' ? 2 : -2;
+      this.match.events.push({ minute, type: 'woodwork', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
+      this.match.momentumHome += team === 'home' ? 2 : -2;
     } else if (roll < 75 * lateBonus) {
-      // 🎯 SHOT ON TARGET
-      match.events.push({ minute, type: 'shot_on_target', team, player: getRandomPlayer(team === 'home' ? match.homeTeam : match.awayTeam) });
-      match.momentumHome += team === 'home' ? 1.5 : -1.5;
+      this.match.events.push({ minute, type: 'shot_on_target', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
+      this.match.momentumHome += team === 'home' ? 1.5 : -1.5;
     } else {
-      // FOUL
-      match.events.push({ minute, type: 'foul', team, player: getRandomPlayer(team === 'home' ? match.homeTeam : match.awayTeam) });
-      match.momentumHome += team === 'home' ? -0.5 : 0.5;
+      this.match.events.push({ minute, type: 'foul', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
+      this.match.momentumHome += team === 'home' ? -0.5 : 0.5;
     }
 
-    // Clamp momentum between 0 and 100
-    match.momentumHome = clamp(match.momentumHome, 0, 100);
-
-    // Random drift: momentum slowly equalizes over time
-    match.momentumHome += (Math.random() - 0.5) * 2;
-    match.momentumHome = clamp(match.momentumHome, 5, 95);
+    this.match.momentumHome = clamp(this.match.momentumHome, 0, 100);
+    this.match.momentumHome += (Math.random() - 0.5) * 2;
+    this.match.momentumHome = clamp(this.match.momentumHome, 5, 95);
   }
 }
 

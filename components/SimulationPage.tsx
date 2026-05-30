@@ -37,16 +37,14 @@ const TEAM_COLORS: Record<string, { home: string; away: string }> = {
    ══════════════════════════════════════════════════ */
 export default function SimulationPage() {
   const [state, setState] = useState<SimState | null>(null);
-  const [claimPopups, setClaimPopups] = useState<Set<string>>(new Set());
-  const [claimed, setClaimed] = useState<Set<string>>(new Set());
-  const confettiFired = useRef<Set<string>>(new Set());
-  const [whistles, setWhistles] = useState<Set<string>>(new Set());
+  const [showCup, setShowCup] = useState(false);
+  const confettiFired = useRef(false);
+  const [whistleType, setWhistleType] = useState<'start' | 'end' | null>(null);
 
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
 
-  /* Track previous phases for whistle detection */
-  const prevPhases = useRef<Map<string, SimPhase>>(new Map());
+  const prevPhase = useRef<SimPhase | null>(null);
 
   /* Start engine on mount */
   useEffect(() => {
@@ -66,86 +64,61 @@ export default function SimulationPage() {
     return () => clearInterval(interval);
   }, []);
 
-  /* Detect phase transitions for whistle animation */
+  /* Detect phase transitions */
   useEffect(() => {
-    if (!state) return;
-    for (const match of state.matches) {
-      const prev = prevPhases.current.get(match.id);
-      if (prev && prev !== match.phase) {
-        // Transition detected!
-        if (match.phase === 'live') {
-          // Whistle for match START
-          const key = `${match.id}-start-r${match.round}`;
-          setWhistles(prev => new Set(prev).add(key));
-          setTimeout(() => setWhistles(s => { const n = new Set(s); n.delete(key); return n; }), 2500);
-        } else if (match.phase === 'settled') {
-          // Whistle for FULL TIME
-          const key = `${match.id}-end-r${match.round}`;
-          setWhistles(prev => new Set(prev).add(key));
-          setTimeout(() => setWhistles(s => { const n = new Set(s); n.delete(key); return n; }), 2500);
-        }
-      }
-      prevPhases.current.set(match.id, match.phase);
-    }
-  }, [state]);
+    if (!state?.match) return;
+    const current = state.match.phase;
+    const prev = prevPhase.current;
 
-  /* Check for newly settled matches to auto-show cup */
-  useEffect(() => {
-    if (!state) return;
-    for (const match of state.matches) {
-      const key = `${match.id}-r${match.round}`;
-      if (match.phase === 'settled' && !claimPopups.has(key) && !confettiFired.current.has(key)) {
-        const hasDeposit = match.deposits.home > 0 || match.deposits.away > 0;
-        if (hasDeposit) {
-          confettiFired.current.add(key);
-          setTimeout(() => setClaimPopups(prev => new Set(prev).add(key)), 800);
-        }
+    if (prev && prev !== current) {
+      if (current === 'live') {
+        setWhistleType('start');
+        setTimeout(() => setWhistleType(null), 2500);
+      } else if (current === 'settled') {
+        setWhistleType('end');
+        setTimeout(() => setWhistleType(null), 2500);
       }
     }
-  }, [state, claimPopups]);
+    prevPhase.current = current;
+  }, [state?.match?.phase]);
 
-  const handleRealDeposit = useCallback(async (matchId: string, team: TeamSide, poolAddress: string) => {
-    if (!isConnected || !address) {
-      alert('Connect your wallet first');
-      return;
+  /* Auto-show cup on settlement */
+  useEffect(() => {
+    if (!state?.match) return;
+    if (state.match.phase === 'settled' && !confettiFired.current) {
+      confettiFired.current = true;
+      setTimeout(() => setShowCup(true), 800);
     }
+    if (state.match.phase === 'open') {
+      confettiFired.current = false;
+      setShowCup(false);
+    }
+  }, [state?.match?.phase, state?.match?.round]);
+
+  const handleRealDeposit = useCallback(async (team: TeamSide, poolAddress: string) => {
+    if (!isConnected || !address) { alert('Connect your wallet first'); return; }
     try {
       await writeContractAsync({
         address: poolAddress as `0x${string}`,
         abi: POOL_ABI,
         functionName: 'deposit',
         args: [team === 'home' ? 0 : 1],
-        value: BigInt('1000000000000000'), // 0.001 OKB
+        value: BigInt('1000000000000000'),
       });
-    } catch (err: any) {
-      alert(err?.message || 'Deposit failed');
-    }
+    } catch (err: any) { alert(err?.message || 'Deposit failed'); }
   }, [address, isConnected, writeContractAsync]);
 
-  const handleMockDeposit = useCallback((matchId: string, team: TeamSide) => {
-    fetch('/api/sim/deposit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId, team, amount: 0.001 }),
-    });
-  }, []);
-
-  const handleRealClaim = useCallback(async (poolAddress: string, matchId: string, team: TeamSide) => {
-    if (!isConnected || !address) {
-      alert('Connect your wallet first');
-      return;
-    }
+  const handleRealClaim = useCallback(async (poolAddress: string, team: TeamSide) => {
+    if (!isConnected || !address) { alert('Connect your wallet first'); return; }
     try {
       await writeContractAsync({
         address: poolAddress as `0x${string}`,
         abi: POOL_ABI,
         functionName: 'withdraw',
       });
-      setClaimed(prev => new Set(prev).add(`${matchId}-${team}`));
       confetti({ particleCount: 120, spread: 100, origin: { x: 0.5, y: 0.5 } });
-    } catch (err: any) {
-      alert(err?.message || 'Claim failed');
-    }
+      setShowCup(false);
+    } catch (err: any) { alert(err?.message || 'Claim failed'); }
   }, [address, isConnected, writeContractAsync]);
 
   if (!state) {
@@ -160,83 +133,96 @@ export default function SimulationPage() {
     );
   }
 
+  const match = state.match;
+  const totalCycles = Math.floor(state.totalMatches / 5) + 1;
+
   return (
     <>
       <Nav />
       <div className="main-content">
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1>⚡ Simulation Mode</h1>
-            <p className="page-subtitle">5 matches running live — 2min deposit → 2min play → repeat</p>
+            <h1>⚡ Simulation</h1>
+            <p className="page-subtitle">2min deposit → 2min play → cycles through 5 matchups</p>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <ConnectWallet />
-            <div className="sim-round-badge">
-              Round {Math.max(...state.matches.map(m => m.round))}
+            <span className="sim-round-badge">Round {totalCycles}</span>
+          </div>
+        </div>
+
+        {!match ? (
+          <div className="empty-state" style={{ marginTop: 40 }}>
+            <span className="empty-icon">⏳</span>
+            <h3>Preparing next match...</h3>
+          </div>
+        ) : (
+          <>
+            <div className="sim-single-container">
+              <SimMatchCard
+                key={`${match.id}-r${match.round}`}
+                match={match}
+                isConnected={isConnected}
+                onRealDeposit={handleRealDeposit}
+                onRealClaim={handleRealClaim}
+                whistleType={whistleType}
+              />
+
+              {/* Next up banner */}
+              {state.nextUp && (
+                <div className="sim-next-up">
+                  <span className="sim-next-label">NEXT UP</span>
+                  <span className="sim-next-teams">
+                    {state.nextUp.homeTeam} <span className="sim-vs">vs</span> {state.nextUp.awayTeam}
+                  </span>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
 
-        <div className="sim-grid">
-          {state.matches.map((match) => (
-            <SimMatchCard
-              key={`${match.id}-r${match.round}`}
-              match={match}
-              isConnected={isConnected}
-              onRealDeposit={handleRealDeposit}
-              onMockDeposit={handleMockDeposit}
-              onRealClaim={handleRealClaim}
-              claimed={claimed}
-              whistles={whistles}
-            />
-          ))}
-        </div>
-
-        {state.matches.filter(m => m.phase === 'settled').length === 5 && (
-          <div className="sim-cycle-notice">
-            🔄 All matches settled — next round starting soon...
-          </div>
+            {/* Match counter */}
+            <div className="sim-counter">
+              Match {state.totalMatches} of 5 ·&nbsp;
+              {state.match && state.match.phase === 'open' && 'Deposit phase'}
+              {state.match && state.match.phase === 'live' && 'Live'}
+              {state.match && state.match.phase === 'settled' && 'Settled'}
+            </div>
+          </>
         )}
 
         <footer className="app-footer">
-          <p>Simulation — {state.tick}s elapsed · {state.matches.filter(m => m.phase === 'live').length} live matches</p>
+          <p>Simulation — {state.tick}s elapsed</p>
         </footer>
       </div>
 
-      {/* Cup popups for settled matches */}
-      {state.matches.map((match) => {
-        const key = `${match.id}-r${match.round}`;
-        if (!claimPopups.has(key)) return null;
-        return (
-          <div key={key} className="cup-overlay" onClick={() => setClaimPopups(prev => { const n = new Set(prev); n.delete(key); return n; })}>
-            <div className="cup-popup" onClick={e => e.stopPropagation()}>
-              <img src="/assets/worldcup.png" alt="Champion" className="cup-image" />
-              <div className="cup-text">
-                🏆 {match.score.home > match.score.away ? match.homeTeam : match.awayTeam} Won! 🏆
-              </div>
-              <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>
-                {match.homeTeam} {match.score.home} – {match.score.away} {match.awayTeam}
-              </p>
-              {match.poolAddress && isConnected ? (
-                <button
-                  className="cup-close"
-                  onClick={async () => {
-                    const winner: TeamSide = match.score.home > match.score.away ? 'home' : match.score.away > match.score.home ? 'away' : 'home';
-                    await handleRealClaim(match.poolAddress!, match.id, winner);
-                    setClaimPopups(prev => { const n = new Set(prev); n.delete(key); return n; });
-                  }}
-                >
-                  Claim Real Winnings
-                </button>
-              ) : (
-                <button className="cup-close" onClick={() => setClaimPopups(prev => { const n = new Set(prev); n.delete(key); return n; })}>
-                  Awesome!
-                </button>
-              )}
+      {/* Cup popup */}
+      {showCup && match && (
+        <div className="cup-overlay" onClick={() => setShowCup(false)}>
+          <div className="cup-popup" onClick={e => e.stopPropagation()}>
+            <img src="/assets/worldcup.png" alt="Champion" className="cup-image" />
+            <div className="cup-text">
+              🏆 {match.score.home > match.score.away ? match.homeTeam : match.awayTeam} Won! 🏆
             </div>
+            <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>
+              {match.homeTeam} {match.score.home} – {match.score.away} {match.awayTeam}
+            </p>
+            {match.poolAddress && isConnected ? (
+              <button
+                className="cup-close"
+                onClick={async () => {
+                  const winner: TeamSide = match.score.home > match.score.away ? 'home' : match.score.away > match.score.home ? 'away' : 'home';
+                  await handleRealClaim(match.poolAddress!, winner);
+                }}
+              >
+                Claim Real Winnings
+              </button>
+            ) : (
+              <button className="cup-close" onClick={() => { confetti({ particleCount: 100, spread: 80 }); setShowCup(false); }}>
+                Awesome!
+              </button>
+            )}
           </div>
-        );
-      })}
+        </div>
+      )}
     </>
   );
 }
@@ -250,11 +236,7 @@ function WhistleOverlay({ type }: { type: 'start' | 'end' }) {
       <div className="sim-whistle-inner">
         <span className="sim-whistle-icon">📣</span>
         <span className="sim-whistle-text">
-          {type === 'start' ? (
-            <>🔊 KICK OFF!</>
-          ) : (
-            <>🔊 FULL TIME!</>
-          )}
+          {type === 'start' ? '🔊 KICK OFF!' : '🔊 FULL TIME!'}
         </span>
       </div>
     </div>
@@ -262,24 +244,20 @@ function WhistleOverlay({ type }: { type: 'start' | 'end' }) {
 }
 
 /* ══════════════════════════════════════════════════
-   SINGLE MATCH CARD
+   MATCH CARD
    ══════════════════════════════════════════════════ */
 function SimMatchCard({
   match,
   isConnected,
   onRealDeposit,
-  onMockDeposit,
   onRealClaim,
-  claimed,
-  whistles,
+  whistleType,
 }: {
   match: SimMatch;
   isConnected: boolean;
-  onRealDeposit: (id: string, team: TeamSide, poolAddress: string) => void;
-  onMockDeposit: (id: string, team: TeamSide) => void;
-  onRealClaim: (poolAddress: string, matchId: string, team: TeamSide) => void;
-  claimed: Set<string>;
-  whistles: Set<string>;
+  onRealDeposit: (team: TeamSide, poolAddress: string) => void;
+  onRealClaim: (poolAddress: string, team: TeamSide) => void;
+  whistleType: 'start' | 'end' | null;
 }) {
   const colors = TEAM_COLORS[match.homeTeam] || { home: '#333', away: '#666' };
   const recentEvents = match.events.slice(-8).reverse();
@@ -290,6 +268,7 @@ function SimMatchCard({
   const homeMomentumPct = match.momentumHome;
   const awayMomentumPct = 100 - match.momentumHome;
 
+  const hasRealPool = !!match.poolAddress;
   const hasDeposit = match.deposits.home > 0 || match.deposits.away > 0;
   const matchWinner: TeamSide | null =
     match.phase === 'settled'
@@ -298,12 +277,6 @@ function SimMatchCard({
         : Math.random() < 0.5 ? 'home' : 'away'
       : null;
 
-  const hasRealPool = !!match.poolAddress;
-  const startKey = `${match.id}-start-r${match.round}`;
-  const endKey = `${match.id}-end-r${match.round}`;
-  const showWhistleStart = whistles.has(startKey);
-  const showWhistleEnd = whistles.has(endKey);
-
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
@@ -311,39 +284,21 @@ function SimMatchCard({
   };
 
   const handleDeposit = (team: TeamSide) => {
-    if (hasRealPool && isConnected) {
-      onRealDeposit(match.id, team, match.poolAddress!);
-    } else {
-      onMockDeposit(match.id, team);
-    }
+    if (hasRealPool && isConnected) onRealDeposit(team, match.poolAddress!);
+    else fetch('/api/sim/deposit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ team, amount: 0.001 }) });
   };
 
   const handleClaim = () => {
     if (!matchWinner) return;
-    if (hasRealPool && isConnected) {
-      onRealClaim(match.poolAddress!, match.id, matchWinner);
-    } else {
-      // Mock claim
-      fetch('/api/sim/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matchId: match.id, team: matchWinner }),
-      }).then(r => r.json()).then(data => {
-        if (data.won) confetti({ particleCount: 100, spread: 80, origin: { x: 0.5, y: 0.4 } });
-      });
-    }
+    if (hasRealPool && isConnected) onRealClaim(match.poolAddress!, matchWinner);
+    else fetch('/api/sim/claim', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ team: matchWinner }) })
+      .then(r => r.json()).then(d => { if (d.won) confetti({ particleCount: 100, spread: 80, origin: { x: 0.5, y: 0.4 } }); });
   };
 
   return (
-    <div className={`sim-card sim-card-${match.phase}`} style={{ position: 'relative' }}>
-      {/* Whistle animations */}
-      {showWhistleStart && <WhistleOverlay type="start" />}
-      {showWhistleEnd && <WhistleOverlay type="end" />}
-
-      {/* Pool badge */}
-      {hasRealPool && (
-        <div className="sim-pool-badge">REAL POOL</div>
-      )}
+    <div className={`sim-card sim-card-single sim-card-${match.phase}`} style={{ position: 'relative' }}>
+      {whistleType && <WhistleOverlay type={whistleType} />}
+      {hasRealPool && <div className="sim-pool-badge">REAL POOL</div>}
 
       {/* Header */}
       <div className="sim-card-header">
@@ -353,9 +308,7 @@ function SimMatchCard({
           <span className="sim-team" style={{ color: colors.away }}>{match.awayTeam}</span>
         </div>
         <span className={`sim-phase sim-phase-${match.phase}`}>
-          {match.phase === 'open' ? 'DEPOSIT'
-            : match.phase === 'live' ? 'LIVE'
-            : 'SETTLED'}
+          {match.phase === 'open' ? 'DEPOSIT' : match.phase === 'live' ? 'LIVE' : 'SETTLED'}
         </span>
       </div>
 
@@ -378,7 +331,7 @@ function SimMatchCard({
         </div>
       </div>
 
-      {/* Momentum bar (only during live) */}
+      {/* Momentum bar */}
       {match.phase === 'live' && (
         <div className="sim-momentum">
           <div className="sim-mom-bar">
@@ -393,21 +346,15 @@ function SimMatchCard({
         </div>
       )}
 
-      {/* Events feed */}
+      {/* Events */}
       <div className="sim-events">
-        {recentEvents.length === 0 && match.phase === 'live' && (
-          <div className="sim-ev-empty">⏳ Match starting...</div>
-        )}
-        {recentEvents.length === 0 && match.phase === 'open' && (
-          <div className="sim-ev-empty">💵 Deposit on your team</div>
-        )}
-        {recentEvents.length === 0 && match.phase === 'settled' && (
-          <div className="sim-ev-empty">🏁 Full time</div>
-        )}
+        {recentEvents.length === 0 && match.phase === 'live' && <div className="sim-ev-empty">⏳ Match starting...</div>}
+        {recentEvents.length === 0 && match.phase === 'open' && <div className="sim-ev-empty">💵 Deposit on your team</div>}
+        {recentEvents.length === 0 && match.phase === 'settled' && <div className="sim-ev-empty">🏁 Full time</div>}
         {recentEvents.map((ev, i) => {
           const meta = EVENT_META[ev.type] || { icon: '•', label: ev.type };
           const isHome = ev.team === 'home';
-          const min = Math.floor((ev as any).minute / 2) + 1;
+          const min = Math.floor(ev.minute / 2) + 1;
           return (
             <div key={`${ev.minute}-${i}`} className={`sim-ev ${isHome ? 'sim-ev-home' : 'sim-ev-away'}`}>
               <span className="sim-ev-min">{min}&apos;</span>
@@ -431,23 +378,16 @@ function SimMatchCard({
                 {match.awayTeam}
               </button>
             </div>
-            {hasRealPool && !isConnected && (
-              <div className="sim-deposit-hint">Connect wallet to deposit real OKB</div>
-            )}
-            {!hasRealPool && (
-              <div className="sim-deposit-hint sim-deposit-hint-mock">Mock mode — no real OKB</div>
-            )}
+            {hasRealPool && !isConnected && <div className="sim-deposit-hint">Connect wallet to deposit real OKB</div>}
+            {!hasRealPool && <div className="sim-deposit-hint sim-deposit-hint-mock">Mock mode — no real OKB</div>}
           </>
         )}
-        {match.phase === 'settled' && matchWinner && !claimed.has(`${match.id}-${matchWinner}`) && (
+        {match.phase === 'settled' && matchWinner && (
           <div className="sim-claim-row">
             <button className="sim-claim-btn" onClick={handleClaim}>
               🏆 Claim {matchWinner === 'home' ? match.homeTeam : match.awayTeam}
             </button>
           </div>
-        )}
-        {match.phase === 'settled' && claimed.has(`${match.id}-${matchWinner}`) && (
-          <div className="sim-claimed-badge">✅ Claimed</div>
         )}
         {match.phase === 'settled' && !hasDeposit && (
           <div className="sim-claimed-badge">No deposits placed</div>
