@@ -40,17 +40,14 @@ export interface SimState {
 }
 
 /* ─── 5 Match Pairings (cycling) ─── */
-const ZERO = '0x0000000000000000000000000000000000000000'; // native OKB
-const USDT = '0x9e29b3aada05bf2d2c827af80bd28dc0b9b4fb0c';
-const USDC = '0xcb8bf24c6ce16ad21d707c9505421a17f2bec79d';
 const USDG = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
 
 const MATCHES = [
-  { id: 'sim-1', home: 'Nigeria', away: 'Brazil', token: ZERO, label: 'OKB' },
-  { id: 'sim-2', home: 'Argentina', away: 'France', token: USDT, label: 'USDT' },
-  { id: 'sim-3', home: 'England', away: 'Germany', token: USDC, label: 'USDC' },
+  { id: 'sim-1', home: 'Nigeria', away: 'Brazil', token: USDG, label: 'USDg' },
+  { id: 'sim-2', home: 'Argentina', away: 'France', token: USDG, label: 'USDg' },
+  { id: 'sim-3', home: 'England', away: 'Germany', token: USDG, label: 'USDg' },
   { id: 'sim-4', home: 'Portugal', away: 'Spain', token: USDG, label: 'USDg' },
-  { id: 'sim-5', home: 'Morocco', away: 'Senegal', token: ZERO, label: 'OKB' },
+  { id: 'sim-5', home: 'Morocco', away: 'Senegal', token: USDG, label: 'USDg' },
 ];
 
 const PHASE_DURATION = {

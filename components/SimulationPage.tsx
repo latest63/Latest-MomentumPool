@@ -95,16 +95,14 @@ export default function SimulationPage() {
     }
   }, [state?.match?.phase, state?.match?.round]);
 
-  const handleRealDeposit = useCallback(async (team: TeamSide, poolAddress: string, tokenAddress: string) => {
+  const handleRealDeposit = useCallback(async (team: TeamSide, poolAddress: string) => {
     if (!isConnected || !address) { alert('Connect your wallet first'); return; }
-    const isNative = tokenAddress === '0x0000000000000000000000000000000000000000';
     try {
       await writeContractAsync({
         address: poolAddress as `0x${string}`,
         abi: POOL_ABI,
         functionName: 'deposit',
-        args: [team === 'home' ? 0 : 1, isNative ? BigInt(0) : BigInt('1000000')], // 0 for native (uses msg.value), 1 USDT for ERC20
-        value: isNative ? BigInt('1000000000000000') : BigInt(0), // 0.001 OKB
+        args: [team === 'home' ? 0 : 1, BigInt('1000000')], // 1 USDg (6 decimals)
       });
     } catch (err: any) { alert(err?.message || 'Deposit failed'); }
   }, [address, isConnected, writeContractAsync]);
@@ -150,6 +148,23 @@ export default function SimulationPage() {
             <ConnectWallet />
             <span className="sim-round-badge">Round {totalCycles}</span>
           </div>
+        </div>
+
+        {/* Token info banner */}
+        <div className="sim-token-banner">
+          <span className="sim-token-icon">🪙</span>
+          <div className="sim-token-info">
+            <strong>Accepted Token:</strong> USDg (
+            <code title="0xa78e2baabaf5c4f36b7fc394725deb68d332eec1">0xa78e2...eec1</code>)
+          </div>
+          <a
+            href="https://www.okx.com/xlayer/faucet"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sim-faucet-link"
+          >
+            🚰 X Layer Faucet
+          </a>
         </div>
 
         {!match ? (
@@ -256,7 +271,7 @@ function SimMatchCard({
 }: {
   match: SimMatch;
   isConnected: boolean;
-  onRealDeposit: (team: TeamSide, poolAddress: string, tokenAddress: string) => void;
+  onRealDeposit: (team: TeamSide, poolAddress: string) => void;
   onRealClaim: (poolAddress: string, team: TeamSide) => void;
   whistleType: 'start' | 'end' | null;
 }) {
@@ -285,7 +300,7 @@ function SimMatchCard({
   };
 
   const handleDeposit = (team: TeamSide) => {
-    if (hasRealPool && isConnected) onRealDeposit(team, match.poolAddress!, match.tokenAddress || '0x0000000000000000000000000000000000000000');
+    if (hasRealPool && isConnected) onRealDeposit(team, match.poolAddress!);
     else fetch('/api/sim/deposit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ team, amount: 0.001 }) });
   };
 
@@ -379,8 +394,8 @@ function SimMatchCard({
                 {match.awayTeam}
               </button>
             </div>
-            {hasRealPool && !isConnected && <div className="sim-deposit-hint">Connect wallet to deposit real OKB</div>}
-            {!hasRealPool && <div className="sim-deposit-hint sim-deposit-hint-mock">Mock mode — no real OKB</div>}
+            {hasRealPool && !isConnected && <div className="sim-deposit-hint">Connect wallet to deposit real USDg</div>}
+            {!hasRealPool && <div className="sim-deposit-hint sim-deposit-hint-mock">Mock mode — no real pool</div>}
           </>
         )}
         {match.phase === 'settled' && matchWinner && (
