@@ -359,6 +359,7 @@ export default function ArenaPage() {
               <li><strong>Win the Pool</strong> — The team with more momentum when the match settles splits the pot</li>
             </ol>
             <p className="how-footnote">
+              <img src="/assets/usdg-logo.png" alt="USDg" className="how-token-icon" />
               Token: <strong>USDg</strong> on X Layer testnet (chain 195).
               Use the <strong>Get Test Token</strong> button to claim from the faucet.
             </p>
