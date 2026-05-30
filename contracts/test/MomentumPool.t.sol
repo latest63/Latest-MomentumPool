@@ -23,7 +23,7 @@ contract MomentumPoolTest is Test {
         halfEnd = block.timestamp + 60 minutes;
 
         address poolAddr = factory.createPool(
-            "match_123", 1, "Nigeria", "Brazil",
+            "match_123", 1, "Nigeria", "Brazil", address(0),
             depositDeadline, halfEnd
         );
         pool = MomentumPool(payable(poolAddr));
@@ -42,7 +42,7 @@ contract MomentumPoolTest is Test {
 
     function test_Deposit() public {
         vm.prank(userA);
-        pool.deposit{value: 1 ether}(0);
+        pool.deposit{value: 1 ether}(0, 0);
 
         (uint256 home, uint256 away) = pool.getPoolTotals();
         assertEq(home, 1 ether);
@@ -51,10 +51,10 @@ contract MomentumPoolTest is Test {
 
     function test_DepositBothTeams() public {
         vm.prank(userA);
-        pool.deposit{value: 2 ether}(0);
+        pool.deposit{value: 2 ether}(0, 0);
 
         vm.prank(userB);
-        pool.deposit{value: 1 ether}(1);
+        pool.deposit{value: 1 ether}(1, 0);
 
         (uint256 home, uint256 away) = pool.getPoolTotals();
         assertEq(home, 2 ether);
@@ -66,15 +66,15 @@ contract MomentumPoolTest is Test {
 
         vm.prank(userA);
         vm.expectRevert("Deposit window closed");
-        pool.deposit{value: 1 ether}(0);
+        pool.deposit{value: 1 ether}(0, 0);
     }
 
     function test_SettleAndWithdraw() public {
         vm.prank(userA);
-        pool.deposit{value: 2 ether}(0);
+        pool.deposit{value: 2 ether}(0, 0);
 
         vm.prank(userB);
-        pool.deposit{value: 1 ether}(1);
+        pool.deposit{value: 1 ether}(1, 0);
 
         skip(61 minutes);
 
@@ -91,10 +91,10 @@ contract MomentumPoolTest is Test {
 
     function test_CancelOnTie() public {
         vm.prank(userA);
-        pool.deposit{value: 1 ether}(0);
+        pool.deposit{value: 1 ether}(0, 0);
 
         vm.prank(userB);
-        pool.deposit{value: 1 ether}(1);
+        pool.deposit{value: 1 ether}(1, 0);
 
         skip(61 minutes);
 
@@ -109,10 +109,10 @@ contract MomentumPoolTest is Test {
 
     function test_WithdrawNothingIfLost() public {
         vm.prank(userA);
-        pool.deposit{value: 1 ether}(1);
+        pool.deposit{value: 1 ether}(1, 0);
 
         vm.prank(userB);
-        pool.deposit{value: 2 ether}(0);
+        pool.deposit{value: 2 ether}(0, 0);
 
         skip(61 minutes);
 

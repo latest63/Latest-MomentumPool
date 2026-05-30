@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useSwitchChain } from 'wagmi';
+import { useAccount, useSwitchChain, useWriteContract } from 'wagmi';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
+import { POOL_ABI } from '@/lib/pool-abi';
 
 /* ─── Types ─── */
 interface SimEvent {
@@ -67,6 +68,24 @@ const FLAGS: Record<string, string> = {
   Morocco:   'https://flagcdn.com/w80/ma.png',
   Senegal:   'https://flagcdn.com/w80/sn.png',
 };
+
+/* ─── Token config ─── */
+const USDG_TOKEN = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
+const USDG_DECIMALS = 6;
+
+/** Minimal ERC20 approve ABI */
+const ERC20_APPROVE = [
+  {
+    name: 'approve',
+    type: 'function',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+] as const;
 
 /* ─── All 5 matchups static data ─── */
 const MATCH_BY_ID: Record<string, { homeTeam: string; awayTeam: string }> = {
@@ -143,6 +162,7 @@ export default function ArenaPage() {
   const [depositAmount, setDepositAmount] = useState('0.001');
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
 
   // Sync live/settled/upcoming state from engine
   useEffect(() => {
@@ -195,17 +215,33 @@ export default function ArenaPage() {
     }
     const parsed = parseFloat(depositAmount);
     if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
+    if (!match?.poolAddress) return alert('No pool deployed for this match yet');
+
+    const amount = BigInt(Math.floor(parsed * 10 ** USDG_DECIMALS));
+    const teamId = team === 'home' ? 0 : 1;
+
     try {
-      const res = await fetch('/api/sim/deposit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team, amount: parsed }),
+      // Step 1: Approve USDG
+      alert('Step 1/2: Approving USDG...');
+      await writeContractAsync({
+        address: USDG_TOKEN as `0x${string}`,
+        abi: ERC20_APPROVE,
+        functionName: 'approve',
+        args: [match.poolAddress as `0x${string}`, amount],
       });
-      const data = await res.json();
-      if (data.ok) alert(`Deposited ${depositAmount} USDG on ${match?.homeTeam ?? ''} vs ${match?.awayTeam ?? ''}`);
-      else alert('Deposit failed — not in deposit phase');
-    } catch {
-      alert('Deposit failed');
+
+      // Step 2: Deposit
+      alert('Step 2/2: Depositing...');
+      await writeContractAsync({
+        address: match.poolAddress as `0x${string}`,
+        abi: POOL_ABI,
+        functionName: 'deposit',
+        args: [teamId, amount],
+      });
+
+      alert(`✅ Deposited ${depositAmount} USDG on ${match.homeTeam} vs ${match.awayTeam}`);
+    } catch (err: any) {
+      alert(err?.message || 'Transaction failed');
     }
   };
 
