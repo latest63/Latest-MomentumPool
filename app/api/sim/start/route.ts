@@ -17,17 +17,8 @@ export async function POST() {
     }
   };
 
-  // Auto-deploy a pool when a new match starts
-  engine.onNewMatch = async (matchId, homeTeam, awayTeam, tokenAddress) => {
-    try {
-      const addr = await deployPool(matchId, homeTeam, awayTeam, tokenAddress);
-      console.log(`[sim] Deployed pool for ${matchId} (${homeTeam} vs ${awayTeam}): ${addr}`);
-      return addr;
-    } catch (err) {
-      console.warn(`[sim] Deploy failed for ${matchId}, proceeding mock:`, err);
-      return null;
-    }
-  };
+  // Lazy deploy — pool is only deployed when first user deposits
+  // engine.onNewMatch intentionally NOT set — deploy happens on-demand in handleDeposit
 
   engine.start();
 
