@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useSwitchChain, useWriteContract } from 'wagmi';
+import { useAccount, useSwitchChain, useWalletClient } from 'wagmi';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
@@ -164,7 +164,7 @@ export default function ArenaPage() {
   const [depositAmount, setDepositAmount] = useState('0.001');
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
-  const { writeContractAsync } = useWriteContract();
+  const { data: walletClient } = useWalletClient();
 
   // Sync live/settled/upcoming state from engine
   useEffect(() => {
@@ -244,23 +244,27 @@ export default function ArenaPage() {
     const amount = BigInt(Math.floor(parsed * 10 ** USDG_DECIMALS));
     const teamId = team === 'home' ? 0 : 1;
 
+    if (!walletClient) return toast('Wallet not ready — reconnect and try again', 'error');
+
     try {
       // Step 1: Approve USDG
       toast('Step 1/2: Approving USDG...', 'info');
-      await writeContractAsync({
+      const approveHash = await walletClient!.writeContract({
         address: USDG_TOKEN as `0x${string}`,
         abi: ERC20_APPROVE,
         functionName: 'approve',
         args: [poolAddr as `0x${string}`, amount],
+        account: address as `0x${string}`,
       });
 
       // Step 2: Deposit
       toast('Step 2/2: Depositing...', 'info');
-      await writeContractAsync({
+      const depositHash = await walletClient!.writeContract({
         address: poolAddr as `0x${string}`,
         abi: POOL_ABI,
         functionName: 'deposit',
         args: [teamId, amount],
+        account: address as `0x${string}`,
       });
 
       toast(`✅ Deposited ${depositAmount} USDG on ${match!.homeTeam} vs ${match!.awayTeam}`, 'success');
