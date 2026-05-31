@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getEngine } from '@/lib/sim-engine';
-import { deployPool, settlePool } from '@/lib/sim-relayer';
+import { settlePool } from '@/lib/sim-relayer';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,17 +17,8 @@ export async function POST() {
     }
   };
 
-  // Auto-deploy contract when a new match starts
-  engine.onNewMatch = async (matchId, homeTeam, awayTeam, tokenAddress) => {
-    try {
-      const addr = await deployPool(matchId, homeTeam, awayTeam, tokenAddress);
-      console.log(`[sim] Deployed pool for ${matchId}: ${addr}`);
-      return addr;
-    } catch (err) {
-      console.error(`[sim] Deploy failed for ${matchId}:`, err);
-      return null;
-    }
-  };
+  // Lazy deploy — pool is deployed on first user deposit via frontend
+  engine.onNewMatch = null;
 
   engine.start();
 

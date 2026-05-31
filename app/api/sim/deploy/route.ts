@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deployPool } from '@/lib/sim-relayer';
+import { getEngine } from '@/lib/sim-engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'matchId, homeTeam, awayTeam required' }, { status: 400 });
     }
     const poolAddress = await deployPool(matchId, homeTeam, awayTeam, tokenAddress);
+
+    // Register the pool address on the engine so state polling picks it up
+    const engine = getEngine();
+    engine.setPoolAddress(poolAddress);
+
     return NextResponse.json({ ok: true, poolAddress });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

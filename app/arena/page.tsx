@@ -217,7 +217,29 @@ export default function ArenaPage() {
     }
     const parsed = parseFloat(depositAmount);
     if (isNaN(parsed) || parsed <= 0) return toast('Enter a valid amount', 'warning');
-    if (!match?.poolAddress) return toast('No pool deployed for this match yet', 'error');
+
+    // Lazy deploy — deploy pool on first deposit if not already deployed
+    let poolAddr = match?.poolAddress ?? null;
+    if (!poolAddr) {
+      toast('Deploying pool contract — one sec...', 'info');
+      try {
+        const res = await fetch('/api/sim/deploy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            matchId: match!.id,
+            homeTeam: match!.homeTeam,
+            awayTeam: match!.awayTeam,
+            tokenAddress: USDG_TOKEN,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Deploy failed');
+        poolAddr = data.poolAddress;
+      } catch (err: any) {
+        return toast(err?.message || 'Failed to deploy pool', 'error');
+      }
+    }
 
     const amount = BigInt(Math.floor(parsed * 10 ** USDG_DECIMALS));
     const teamId = team === 'home' ? 0 : 1;
@@ -229,19 +251,19 @@ export default function ArenaPage() {
         address: USDG_TOKEN as `0x${string}`,
         abi: ERC20_APPROVE,
         functionName: 'approve',
-        args: [match.poolAddress as `0x${string}`, amount],
+        args: [poolAddr as `0x${string}`, amount],
       });
 
       // Step 2: Deposit
       toast('Step 2/2: Depositing...', 'info');
       await writeContractAsync({
-        address: match.poolAddress as `0x${string}`,
+        address: poolAddr as `0x${string}`,
         abi: POOL_ABI,
         functionName: 'deposit',
         args: [teamId, amount],
       });
 
-      toast(`✅ Deposited ${depositAmount} USDG on ${match.homeTeam} vs ${match.awayTeam}`, 'success');
+      toast(`✅ Deposited ${depositAmount} USDG on ${match!.homeTeam} vs ${match!.awayTeam}`, 'success');
     } catch (err: any) {
       toast(err?.message || 'Transaction failed', 'error');
     }
