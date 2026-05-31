@@ -301,9 +301,10 @@ export class SimEngine {
     const homeProb = this.match.momentumHome / 100;
     const team: TeamSide = Math.random() < homeProb ? 'home' : 'away';
 
+    // All events contribute points to the score, not just goals
     if (roll < 4 * lateBonus) {
-      // ⚽ GOAL!
-      this.match.score[team]++;
+      // ⚽ GOAL — +3 points
+      this.match.score[team] += 3;
       this.match.events.push({ minute, type: 'goal', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       if (Math.random() < 0.25 && !this.goalCluster) {
         this.goalCluster = 1;
@@ -311,21 +312,34 @@ export class SimEngine {
       }
       this.match.momentumHome += team === 'home' ? 12 : -12;
     } else if (roll < 10 * lateBonus) {
+      // 🟥 RED CARD — +2 to opponent
+      const opp: TeamSide = team === 'home' ? 'away' : 'home';
+      this.match.score[opp] += 2;
       this.match.events.push({ minute, type: 'red_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? -15 : 15;
     } else if (roll < 22 * lateBonus) {
+      // 🟨 YELLOW CARD — +1 to opponent
+      const opp: TeamSide = team === 'home' ? 'away' : 'home';
+      this.match.score[opp] += 1;
       this.match.events.push({ minute, type: 'yellow_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? -5 : 5;
     } else if (roll < 35 * lateBonus) {
+      // 🚩 CORNER — +1 to team
+      this.match.score[team] += 1;
       this.match.events.push({ minute, type: 'corner', team, player: '' });
       this.match.momentumHome += team === 'home' ? 1 : -1;
     } else if (roll < 55 * lateBonus) {
+      // 💥 WOODWORK — +1 to team
+      this.match.score[team] += 1;
       this.match.events.push({ minute, type: 'woodwork', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? 2 : -2;
     } else if (roll < 75 * lateBonus) {
+      // 🎯 SHOT ON TARGET — +1 to team
+      this.match.score[team] += 1;
       this.match.events.push({ minute, type: 'shot_on_target', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? 1.5 : -1.5;
     } else {
+      // FOUL — no points
       this.match.events.push({ minute, type: 'foul', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? -0.5 : 0.5;
     }
