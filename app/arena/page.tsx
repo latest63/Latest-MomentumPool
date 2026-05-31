@@ -8,6 +8,7 @@ import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
 import { POOL_ABI } from '@/lib/pool-abi';
+import { ToastProvider, useToast } from '@/components/Toast';
 
 /* ─── Types ─── */
 interface SimEvent {
@@ -136,6 +137,7 @@ function simToEventItems(events: SimEvent[]): EventItem[] {
 
 /* ═══════════════════════════════════════ PAGE ═══════════════════════════════════════ */
 export default function ArenaPage() {
+  const { toast } = useToast();
   const [state, setState] = useState<SimState | null>(null);
   const [matches, setMatches] = useState<MatchSummary[]>(
     () => MATCHUP_IDS.map(id => {
@@ -207,22 +209,22 @@ export default function ArenaPage() {
 
   /* ─── Deposit handler ─── */
   const handleDeposit = async (team: 'home' | 'away') => {
-    if (!isConnected) return alert('Connect your wallet first');
+    if (!isConnected) return toast('Connect your wallet first', 'warning');
     if (chainId !== 195) {
-      alert('Switch to X Layer testnet in your wallet');
+      toast('Switch to X Layer testnet in your wallet', 'warning');
       switchChain?.({ chainId: 195 });
       return;
     }
     const parsed = parseFloat(depositAmount);
-    if (isNaN(parsed) || parsed <= 0) return alert('Enter a valid amount');
-    if (!match?.poolAddress) return alert('No pool deployed for this match yet');
+    if (isNaN(parsed) || parsed <= 0) return toast('Enter a valid amount', 'warning');
+    if (!match?.poolAddress) return toast('No pool deployed for this match yet', 'error');
 
     const amount = BigInt(Math.floor(parsed * 10 ** USDG_DECIMALS));
     const teamId = team === 'home' ? 0 : 1;
 
     try {
       // Step 1: Approve USDG
-      alert('Step 1/2: Approving USDG...');
+      toast('Step 1/2: Approving USDG...', 'info');
       await writeContractAsync({
         address: USDG_TOKEN as `0x${string}`,
         abi: ERC20_APPROVE,
@@ -231,7 +233,7 @@ export default function ArenaPage() {
       });
 
       // Step 2: Deposit
-      alert('Step 2/2: Depositing...');
+      toast('Step 2/2: Depositing...', 'info');
       await writeContractAsync({
         address: match.poolAddress as `0x${string}`,
         abi: POOL_ABI,
@@ -239,34 +241,34 @@ export default function ArenaPage() {
         args: [teamId, amount],
       });
 
-      alert(`✅ Deposited ${depositAmount} USDG on ${match.homeTeam} vs ${match.awayTeam}`);
+      toast(`✅ Deposited ${depositAmount} USDG on ${match.homeTeam} vs ${match.awayTeam}`, 'success');
     } catch (err: any) {
-      alert(err?.message || 'Transaction failed');
+      toast(err?.message || 'Transaction failed', 'error');
     }
   };
 
   /* ─── Loading state ─── */
   if (isFirstLoad) {
     return (
-      <>
+      <ToastProvider>
         <Nav />
         <div className="main-content" style={{ textAlign: 'center', padding: '80px 20px', color: '#666' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>⚽</div>
           <p>Starting matches...</p>
         </div>
-      </>
+      </ToastProvider>
     );
   }
 
   if (!match) {
     return (
-      <>
+      <ToastProvider>
         <Nav />
         <div className="main-content" style={{ textAlign: 'center', padding: '80px 20px', color: '#666' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
           <p>Preparing next match...</p>
         </div>
-      </>
+      </ToastProvider>
     );
   }
 
@@ -281,7 +283,7 @@ export default function ArenaPage() {
   const phasePct = Math.min(100, (match.phaseElapsed / phaseMax) * 100);
 
   return (
-    <>
+    <ToastProvider>
       <Nav />
       <div className="main-content">
         <div className="match-selector">
@@ -435,6 +437,6 @@ export default function ArenaPage() {
           </div>
         </div>
       )}
-    </>
+    </ToastProvider>
   );
 }
