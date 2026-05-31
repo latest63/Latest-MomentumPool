@@ -1,7 +1,7 @@
 /**
  * Server-side pool deployment & settlement using viem + owner key.
  */
-import { createWalletClient, http, decodeEventLog, getAddress } from 'viem';
+import { createWalletClient, createPublicClient, http, decodeEventLog, getAddress } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { FACTORY_ABI, POOL_ABI } from '@/lib/pool-abi';
 
@@ -12,11 +12,15 @@ const xLayer = {
   rpcUrls: { default: { http: ['https://testrpc.xlayer.tech'] } },
 } as const;
 
-function getClient() {
+function getClients() {
   const pk = process.env.PRIVATE_KEY;
   if (!pk) throw new Error('PRIVATE_KEY not configured');
   const account = privateKeyToAccount(pk as `0x${string}`);
-  return createWalletClient({ account, chain: xLayer, transport: http() });
+  const transport = http();
+  return {
+    wallet: createWalletClient({ account, chain: xLayer, transport }),
+    public: createPublicClient({ chain: xLayer, transport }),
+  };
 }
 
 /** address(0) = native OKB */
@@ -35,19 +39,19 @@ export async function deployPool(
   const factoryAddr = process.env.NEXT_PUBLIC_POOL_FACTORY;
   if (!factoryAddr) throw new Error('POOL_FACTORY not configured');
 
-  const client = getClient();
+  const { wallet, public: publicClient } = getClients();
   const now = BigInt(Math.floor(Date.now() / 1000));
   const depositDeadline = now + BigInt(600);  // 10 min deposit window
   const halfEnd = now + BigInt(1200);          // 20 min total match
 
-  const hash = await client.writeContract({
+  const hash = await wallet.writeContract({
     address: getAddress(factoryAddr),
     abi: FACTORY_ABI,
     functionName: 'createPool',
     args: [matchId, 1, homeTeam, awayTeam, getAddress(tokenAddress), depositDeadline, halfEnd],
   });
 
-  const receipt = await (client as any).waitForTransactionReceipt({ hash });
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
   for (const log of receipt.logs) {
     try {
@@ -70,16 +74,16 @@ export async function settlePool(
   homeScore: number,
   awayScore: number,
 ): Promise<{ action: string; txHash: string }> {
-  const client = getClient();
+  const { wallet } = getClients();
   const isTie = homeScore === awayScore;
 
   const hash = await (isTie
-    ? client.writeContract({
+    ? wallet.writeContract({
         address: getAddress(poolAddress),
         abi: POOL_ABI,
         functionName: 'cancel',
       })
-    : client.writeContract({
+    : wallet.writeContract({
         address: getAddress(poolAddress),
         abi: POOL_ABI,
         functionName: 'settle',
