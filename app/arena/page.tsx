@@ -210,9 +210,9 @@ export default function ArenaPage() {
   /* ─── Deposit handler ─── */
   const handleDeposit = async (team: 'home' | 'away') => {
     if (!isConnected) return toast('Connect your wallet first', 'warning');
-    if (chainId !== 195) {
+    if (chainId !== 1952) {
       toast('Switch to X Layer testnet in your wallet', 'warning');
-      switchChain?.({ chainId: 195 });
+      switchChain?.({ chainId: 1952 });
       return;
     }
     const parsed = parseFloat(depositAmount);
