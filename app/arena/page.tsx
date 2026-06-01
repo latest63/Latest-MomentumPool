@@ -252,13 +252,13 @@ export default function ArenaPage() {
       console.log('[deposit] chainId:', chainId, 'address:', address);
       console.log('[deposit] USDG token:', USDG_TOKEN);
 
-      // Pre-flight RPC check
+      // Pre-flight RPC check (via proxy)
       try {
-        const resp = await fetch('https://testrpc.xlayer.tech', {
+        const resp = await fetch('/api/rpc', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(10000),
         });
         const data = await resp.json();
         console.log('[deposit] RPC health:', data.result ? 'OK' : 'FAIL', data);

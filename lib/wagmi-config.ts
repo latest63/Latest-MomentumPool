@@ -7,8 +7,8 @@ const xLayer = {
   name: 'X Layer Testnet',
   nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://testrpc.xlayer.tech'] },
-    public: { http: ['https://testrpc.xlayer.tech'] },
+    default: { http: ['https://momentum-pool.vercel.app/api/rpc'] },
+    public: { http: ['https://momentum-pool.vercel.app/api/rpc'] },
   },
   blockExplorers: {
     default: { name: 'OKX Explorer', url: 'https://www.okx.com/explorer/xlayer-test' },
