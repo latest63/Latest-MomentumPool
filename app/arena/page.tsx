@@ -177,6 +177,7 @@ export default function ArenaPage() {
     address: state?.match?.poolAddress as `0x${string}` | undefined,
     functionName: 'getPoolTotals',
     args: [],
+    chainId: 1952,
     query: {
       enabled: !!state?.match?.poolAddress,
       refetchInterval: 5_000,
@@ -189,6 +190,7 @@ export default function ArenaPage() {
     address: state?.match?.poolAddress as `0x${string}` | undefined,
     functionName: 'state',
     args: [],
+    chainId: 1952,
     query: {
       enabled: !!state?.match?.poolAddress,
       refetchInterval: 5_000,
@@ -201,6 +203,7 @@ export default function ArenaPage() {
     address: state?.match?.poolAddress as `0x${string}` | undefined,
     functionName: 'winnerTeamId',
     args: [],
+    chainId: 1952,
     query: {
       enabled: !!state?.match?.poolAddress,
       refetchInterval: 5_000,
@@ -209,7 +212,9 @@ export default function ArenaPage() {
 
   const poolPhaseLabel = onChainPoolState !== undefined
     ? ['Open', 'Live', 'Settled', 'Cancelled'][Number(onChainPoolState)] || 'Unknown'
-    : null;
+    : state?.match?.poolAddress
+      ? ({ open: 'Open', live: 'Live', settled: 'Settled' } as Record<string, string>)[match.phase] || null
+      : null;
   const isPoolSettled = onChainPoolState !== undefined && Number(onChainPoolState) === 2;
   const isPoolCancelled = onChainPoolState !== undefined && Number(onChainPoolState) === 3;
   const isPoolLive = onChainPoolState !== undefined && Number(onChainPoolState) === 1;
