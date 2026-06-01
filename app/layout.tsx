@@ -52,6 +52,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${bebasNeue.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body>
+        {/* Preload cup image for fast claim animation */}
+        <img src="/assets/worldcup.png" alt="" style={{ display: 'none' }} />
         {/* Unified background — same across all pages */}
         <div className="color-bg">
           <div className="bg-blob bg-blob-1" /><div className="bg-blob bg-blob-2" />
