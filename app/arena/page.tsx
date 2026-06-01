@@ -103,7 +103,7 @@ const MATCH_BY_ID: Record<string, { homeTeam: string; awayTeam: string }> = {
 const MATCHUP_IDS = ['sim-1', 'sim-2', 'sim-3', 'sim-4', 'sim-5'];
 
 /* ─── Phase helpers ─── */
-const PHASE_DURATION = { open: 120, live: 120, settled: 15 };
+const PHASE_DURATION = { open: 3600, live: 5400, settled: 3600 };
 
 const PHASE_LABEL: Record<string, string> = {
   open: 'DEPOSIT',

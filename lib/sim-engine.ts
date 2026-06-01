@@ -63,9 +63,9 @@ const MATCHES = [
 ];
 
 const PHASE_DURATION = {
-  open: 120,   // 2 min deposit window
-  live: 120,   // 2 min live action
-  settled: 15, // 15s settlement display
+  open: 3600,   // 1hr deposit window (before match)
+  live: 5400,   // 90min match (45 + 45)
+  settled: 3600, // 1hr cooldown before next match
 };
 
 /* ─── Player name pools ─── */
@@ -317,10 +317,10 @@ export class SimEngine {
     this.eventTimer -= 1;
     if (this.eventTimer > 0) return;
 
-    this.eventTimer = randomInt(1, 5);
+    this.eventTimer = randomInt(60, 240); // event every 1-4 min (real football pace)
 
     const minute = this.match.phaseElapsed;
-    const lateBonus = minute > PHASE_DURATION.live - 30 ? 1.5 : 1.0;
+    const lateBonus = minute > PHASE_DURATION.live - 600 ? 1.5 : 1.0; // stoppage time boost last 10min
     const roll = Math.random() * 100;
     const homeProb = this.match.momentumHome / 100;
     const team: TeamSide = Math.random() < homeProb ? 'home' : 'away';

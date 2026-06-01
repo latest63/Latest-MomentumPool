@@ -41,8 +41,8 @@ export async function deployPool(
 
   const { wallet, public: publicClient } = getClients();
   const now = BigInt(Math.floor(Date.now() / 1000));
-  const depositDeadline = now + BigInt(120);  // 2 min deposit window (matches sim open phase)
-  const halfEnd = now + BigInt(250);          // ~4 min total match (+10s buffer for block timestamp lag)
+  const depositDeadline = now + BigInt(3600); // 1hr deposit window (pre-match)
+  const halfEnd = now + BigInt(9000);          // 1hr + 90min = 2.5hr total (deposit + full match)
 
   const hash = await wallet.writeContract({
     address: getAddress(factoryAddr),
