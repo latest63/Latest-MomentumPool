@@ -7,6 +7,9 @@ export const dynamic = 'force-dynamic';
 export async function POST() {
   const engine = getEngine();
 
+  // Restore from Supabase on Vercel cold starts (skip pool deploy if state exists)
+  const restored = await engine.initFromSupabase();
+
   // Auto-settle when a match ends — retries with backoff for block timestamp lag
   engine.onSettle = async (_matchId, winner, homeScore, awayScore, poolAddress) => {
     for (let attempt = 0; attempt < 5; attempt++) {

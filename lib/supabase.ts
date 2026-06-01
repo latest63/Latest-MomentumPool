@@ -56,3 +56,54 @@ export async function getDeployedPools(): Promise<DeployedPoolRow[]> {
     return [];
   }
 }
+
+/** Ensure engine_state table exists (safe to call repeatedly). */
+async function ensureEngineStateTable(): Promise<void> {
+  if (!DATABASE_URL) return;
+  try {
+    const db = getPool();
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS engine_state (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+  } catch (err) {
+    console.error('[supabase] engine_state table creation failed:', (err as Error).message);
+  }
+}
+
+/** Persist engine state to Supabase (upsert single row keyed "main"). */
+export async function saveEngineState(value: string): Promise<void> {
+  if (!DATABASE_URL) return;
+  try {
+    await ensureEngineStateTable();
+    const db = getPool();
+    await db.query(
+      `INSERT INTO engine_state (key, value, updated_at)
+       VALUES ('main', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+      [value],
+    );
+  } catch (err) {
+    console.error('[supabase] engine_state save failed:', (err as Error).message);
+  }
+}
+
+/** Load engine state from Supabase. Returns null if not found or on error. */
+export async function loadEngineState(): Promise<string | null> {
+  if (!DATABASE_URL) return null;
+  try {
+    await ensureEngineStateTable();
+    const db = getPool();
+    const result = await db.query<{ value: string }>(
+      'SELECT value FROM engine_state WHERE key = $1',
+      ['main'],
+    );
+    return result.rows[0]?.value ?? null;
+  } catch (err) {
+    console.error('[supabase] engine_state load failed:', (err as Error).message);
+    return null;
+  }
+}

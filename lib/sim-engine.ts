@@ -53,6 +53,7 @@ export interface DeployedPool {
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { saveEngineState, loadEngineState } from '@/lib/supabase';
 
 const STATE_FILE = path.resolve(process.cwd(), 'data/engine-state.json');
 const POOLS_FILE = path.resolve(process.cwd(), 'data/known-pools.json');
@@ -126,12 +127,27 @@ export class SimEngine {
   public onNewMatch: ((matchId: string, homeTeam: string, awayTeam: string, tokenAddress: string) => Promise<string | null>) | null = null;
 
   constructor() {
-    // Try to restore from saved state — survives server restarts
+    // Try to restore from saved file — survives local/VPS restarts
     if (!this.loadState()) {
       this.fillQueue();
       this.advanceToNext();
     }
     this.start(); // auto-run from server start — match doesn't wait
+  }
+
+  /** Load state from Supabase — call after construction for Vercel serverless. */
+  async initFromSupabase(): Promise<boolean> {
+    try {
+      const raw = await loadEngineState();
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.match) {
+          this.restoreFromData(saved);
+          return true;
+        }
+      }
+    } catch { /* silence */ }
+    return false;
   }
 
   private fillQueue() {
@@ -180,7 +196,7 @@ export class SimEngine {
     }
   }
 
-  /* ─── Persistence: survive server restarts ─── */
+  /* ─── Persistence: survive server restarts (Supabase + local file) ─── */
   private saveState() {
     try {
       const data = JSON.stringify({
@@ -195,7 +211,10 @@ export class SimEngine {
         deployedPools: this.deployedPools,
         savedAt: Date.now(),
       });
+      // Local file (VPS / local dev fallback)
       fs.writeFileSync(STATE_FILE, data, 'utf-8');
+      // Supabase (Vercel serverless — survives cold starts)
+      saveEngineState(data).catch(() => {});
     } catch (e) {
       // fail silently — persistence is best-effort
     }
@@ -207,21 +226,23 @@ export class SimEngine {
       const raw = fs.readFileSync(STATE_FILE, 'utf-8');
       const saved = JSON.parse(raw);
       if (!saved.match) return false;
-
-      // Restore match state
-      this.match = saved.match;
-      this.queue = saved.queue || [];
-      this.matchIndex = saved.matchIndex ?? 0;
-      this.totalMatches = saved.totalMatches ?? 0;
-      this.round = saved.round ?? 1;
-      this.tickCount = saved.tickCount ?? 0;
-      this.eventTimer = saved.eventTimer ?? 0;
-      this.goalCluster = saved.goalCluster ?? 0;
-      this.deployedPools = saved.deployedPools || [];
+      this.restoreFromData(saved);
       return true;
     } catch {
       return false;
     }
+  }
+
+  private restoreFromData(saved: any) {
+    this.match = saved.match;
+    this.queue = saved.queue || [];
+    this.matchIndex = saved.matchIndex ?? 0;
+    this.totalMatches = saved.totalMatches ?? 0;
+    this.round = saved.round ?? 1;
+    this.tickCount = saved.tickCount ?? 0;
+    this.eventTimer = saved.eventTimer ?? 0;
+    this.goalCluster = saved.goalCluster ?? 0;
+    this.deployedPools = saved.deployedPools || [];
   }
 
   start() {
@@ -340,20 +361,55 @@ export class SimEngine {
   private tick() {
     if (!this.match) return;
     this.tickCount++;
-    this.match.phaseElapsed = Math.floor((Date.now() - this.match.phaseStartedAt) / 1000);
 
-    switch (this.match.phase) {
-      case 'open':
-        if (this.match.phaseElapsed >= PHASE_DURATION.open) this.transitionToLive();
-        break;
-      case 'live':
-        this.simulateEvents();
-        if (this.match.phaseElapsed >= PHASE_DURATION.live) this.transitionToSettled();
-        break;
-      case 'settled':
-        if (this.match.phaseElapsed >= PHASE_DURATION.settled) this.restartCycle();
-        break;
+    // Compute total wall-clock time since this match began
+    const totalElapsed = Math.floor((Date.now() - (this.match.phaseStartedAt || Date.now())) / 1000);
+
+    // Determine correct phase from wall-clock — catches up immediately after cold start
+    if (totalElapsed >= PHASE_DURATION.open + PHASE_DURATION.live + PHASE_DURATION.settled) {
+      // Full cycle elapsed → advance to next match
+      this.restartCycle();
+      this.saveState();
+      return;
     }
+
+    if (totalElapsed >= PHASE_DURATION.open + PHASE_DURATION.live) {
+      // Should be in settled phase
+      if (this.match.phase !== 'settled') {
+        // Auto-settle if pool exists and not yet settled
+        if (this.match.poolAddress && !this.match.settledOnChain && this.onSettle) {
+          this.match.settledOnChain = true;
+          const winner: TeamSide =
+            this.match.score.home > this.match.score.away ? 'home'
+            : this.match.score.away > this.match.score.home ? 'away'
+            : Math.random() < 0.5 ? 'home' : 'away';
+          this.onSettle(this.match.id, winner, this.match.score.home, this.match.score.away, this.match.poolAddress);
+        }
+        this.match.phase = 'settled';
+        this.match.phaseStartedAt = Date.now() - (totalElapsed - PHASE_DURATION.open - PHASE_DURATION.live) * 1000;
+      }
+      this.match.phaseElapsed = Math.floor((Date.now() - this.match.phaseStartedAt) / 1000);
+    } else if (totalElapsed >= PHASE_DURATION.open) {
+      // Should be in live phase
+      if (this.match.phase !== 'live') {
+        // If transitioning from open, run auto-settle if pool exists
+        if (this.match.phase === 'open' && this.match.poolAddress && !this.match.settledOnChain && this.onSettle) {
+          // already past settle — skip auto-settle for catch-up
+        }
+        this.match.phase = 'live';
+        this.match.phaseStartedAt = Date.now() - (totalElapsed - PHASE_DURATION.open) * 1000;
+        this.match.momentumHome = 50 + (Math.random() * 20 - 10);
+        this.match.momentumHome = Math.max(20, Math.min(80, this.match.momentumHome));
+        this.eventTimer = 0;
+      }
+      this.match.phaseElapsed = Math.floor((Date.now() - this.match.phaseStartedAt) / 1000);
+      this.simulateEvents();
+    } else {
+      // Still in open phase
+      this.match.phase = 'open';
+      this.match.phaseElapsed = totalElapsed;
+    }
+
     this.saveState(); // persist after every tick — timer survives restarts
   }
 
