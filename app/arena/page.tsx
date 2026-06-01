@@ -247,8 +247,50 @@ export default function ArenaPage() {
     if (!walletClient) return toast('Wallet not ready — reconnect and try again', 'error');
 
     try {
+      // Debug: log what we're about to do
+      console.log('[deposit] poolAddr:', poolAddr, 'amount:', amount.toString(), 'team:', team);
+      console.log('[deposit] chainId:', chainId, 'address:', address);
+      console.log('[deposit] USDG token:', USDG_TOKEN);
+
+      // Pre-flight RPC check
+      try {
+        const resp = await fetch('https://testrpc.xlayer.tech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
+          signal: AbortSignal.timeout(5000),
+        });
+        const data = await resp.json();
+        console.log('[deposit] RPC health:', data.result ? 'OK' : 'FAIL', data);
+      } catch (rpcErr) {
+        console.error('[deposit] RPC UNREACHABLE from browser:', rpcErr);
+        toast('⚠ RPC unreachable from your browser — try a different network or VPN', 'error');
+        return;
+      }
+
+      // Step 0: Add USDG token to MetaMask so it's not "Unknown"
+      toast('Adding USDG token to wallet...', 'info');
+      try {
+        await window.ethereum?.request({
+          method: 'wallet_watchAsset',
+          params: [{
+            type: 'ERC20',
+            options: {
+              address: USDG_TOKEN,
+              symbol: 'USDG',
+              decimals: USDG_DECIMALS,
+              image: '',
+            },
+          }],
+        });
+      } catch (_) {
+        // Non-fatal if wallet doesn't support watchAsset
+        console.log('[deposit] watchAsset skipped or failed');
+      }
+
       // Step 1: Approve USDG
       toast('Step 1/2: Approving USDG...', 'info');
+      console.log('[deposit] sending approve tx...');
       const approveHash = await walletClient!.writeContract({
         address: USDG_TOKEN as `0x${string}`,
         abi: ERC20_APPROVE,
@@ -256,9 +298,11 @@ export default function ArenaPage() {
         args: [poolAddr as `0x${string}`, amount],
         account: address as `0x${string}`,
       });
+      console.log('[deposit] approve tx sent:', approveHash);
 
       // Step 2: Deposit
       toast('Step 2/2: Depositing...', 'info');
+      console.log('[deposit] sending deposit tx...');
       const depositHash = await walletClient!.writeContract({
         address: poolAddr as `0x${string}`,
         abi: POOL_ABI,
@@ -266,10 +310,13 @@ export default function ArenaPage() {
         args: [teamId, amount],
         account: address as `0x${string}`,
       });
+      console.log('[deposit] deposit tx sent:', depositHash);
 
       toast(`✅ Deposited ${depositAmount} USDG on ${match!.homeTeam} vs ${match!.awayTeam}`, 'success');
     } catch (err: any) {
-      toast(err?.message || 'Transaction failed', 'error');
+      console.error('[deposit] FULL ERROR:', err);
+      const msg = err?.message || err?.code || String(err);
+      toast(`❌ ${msg}`, 'error');
     }
   };
 
