@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { publicClient } from '@/lib/chain-client';
 import { POOL_ABI } from '@/lib/pool-abi';
+import { getDeployedPools } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,19 +51,35 @@ export async function GET(req: NextRequest) {
         }));
     }
   } catch (err) {
-    console.error('[pools/user-positions] on-chain pool list failed, trying engine fallback:', (err as Error).message);
-    // Fallback: engine's in-memory deployedPools
+    console.error('[pools/user-positions] on-chain pool list failed:', (err as Error).message);
+
+    // Fallback: Supabase
     try {
-      const { getEngine } = await import('@/lib/sim-engine');
-      const state = getEngine().getState();
-      pools = state.deployedPools.map(p => ({
-        poolAddress: p.poolAddress.toLowerCase(),
-        matchId: p.matchId,
-        homeTeam: p.homeTeam,
-        awayTeam: p.awayTeam,
-      }));
-    } catch {
-      return NextResponse.json({ error: 'No pool sources available', positions: [] }, { status: 500 });
+      const rows = await getDeployedPools();
+      if (rows.length > 0) {
+        pools = rows.map(r => ({
+          poolAddress: r.pool_address.toLowerCase(),
+          matchId: r.match_id,
+          homeTeam: r.home_team,
+          awayTeam: r.away_team,
+        }));
+      }
+    } catch {}
+
+    // Last resort: engine's in-memory deployedPools
+    if (pools.length === 0) {
+      try {
+        const { getEngine } = await import('@/lib/sim-engine');
+        const state = getEngine().getState();
+        pools = state.deployedPools.map(p => ({
+          poolAddress: p.poolAddress.toLowerCase(),
+          matchId: p.matchId,
+          homeTeam: p.homeTeam,
+          awayTeam: p.awayTeam,
+        }));
+      } catch {
+        return NextResponse.json({ error: 'No pool sources available', positions: [] }, { status: 500 });
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deployPool } from '@/lib/sim-relayer';
 import { getEngine } from '@/lib/sim-engine';
+import { insertDeployedPool } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,9 @@ export async function POST(req: NextRequest) {
     // Register the pool address on the engine so state polling picks it up
     const engine = getEngine();
     engine.setPoolAddress(poolAddress);
+
+    // Persist to Supabase (fire-and-forget — on-chain query is primary)
+    insertDeployedPool(poolAddress, matchId, homeTeam, awayTeam, tokenAddress || '').catch(() => {});
 
     return NextResponse.json({ ok: true, poolAddress });
   } catch (err) {

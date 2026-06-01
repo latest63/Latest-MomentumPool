@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { publicClient } from '@/lib/chain-client';
 import { FACTORY_ABI } from '@/lib/pool-abi';
+import { getDeployedPools } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,22 @@ export async function GET() {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[pools/list] on-chain query failed:', msg);
 
-    // Fallback: try engine in-memory deployedPools
+    // Fallback: try Supabase
+    try {
+      const rows = await getDeployedPools();
+      if (rows.length > 0) {
+        const pools: DeployedPool[] = rows.map(r => ({
+          poolAddress: r.pool_address.toLowerCase(),
+          matchId: r.match_id,
+          homeTeam: r.home_team,
+          awayTeam: r.away_team,
+          tokenAddress: r.token_address.toLowerCase(),
+        }));
+        return NextResponse.json({ pools, source: 'supabase-fallback' });
+      }
+    } catch {}
+
+    // Last resort: try engine in-memory deployedPools
     try {
       const { getEngine } = await import('@/lib/sim-engine');
       const engine = getEngine();
