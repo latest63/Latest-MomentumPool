@@ -517,10 +517,10 @@ export default function ArenaPage() {
             <button className="how-modal-close" onClick={() => setShowHowItWorks(false)}>✕</button>
             <h3>How it Works</h3>
             <ol className="how-steps">
-              <li><strong>Pick a Match</strong> — 5 World Cup matchups cycle one at a time</li>
-              <li><strong>Deposit Phase (2 min)</strong> — Enter your amount and pick a side. Timer counts down.</li>
-              <li><strong>Live Phase (2 min)</strong> — Watch random events (goals, cards, corners) swing the momentum bar in real time</li>
-              <li><strong>Settlement</strong> — The team with more momentum wins. Winners split the pot. Next match starts immediately.</li>
+              <li><strong>Pick a Match</strong> — 5 World Cup matchups cycle one at a time through real football-length phases</li>
+              <li><strong>Deposit Phase (1hr)</strong> — Enter your amount and pick a side. Timer counts down. On-chain pool auto-deploys at match start.</li>
+              <li><strong>Match Phase (90min)</strong> — Watch random events (goals, cards, corners) swing the momentum bar in real time. Last 10min = stoppage-time boost.</li>
+              <li><strong>Settlement</strong> — Match ends. The team with more points wins. Winners split the pot on-chain. Cooldown 1hr before next match.</li>
             </ol>
             <p className="how-footnote">
               Use the <strong>Get Test Token</strong> button to claim USDG from the faucet.
