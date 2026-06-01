@@ -96,7 +96,7 @@ export default function PositionsPage() {
       <div className="main-content">
         <div className="page-header">
           <h1>Your Positions</h1>
-          <p className="page-subtitle">Active deposits and winnings across all pool matches</p>
+          <p className="page-subtitle" style={{ fontWeight: 700, color: '#fff' }}>Active deposits and winnings across all pool matches</p>
         </div>
 
         {!isConnected ? (

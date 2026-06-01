@@ -28,9 +28,10 @@ export async function GET(req: NextRequest) {
 
   const addr = address.toLowerCase() as `0x${string}`;
 
-  // Import factory and pool list dynamically (reuses the list endpoint logic)
+  // Import factory and pool list dynamically
   let pools: { poolAddress: string; matchId: string; homeTeam: string; awayTeam: string }[] = [];
 
+  // Source 1: On-chain PoolCreated events
   try {
     const { FACTORY_ABI } = await import('@/lib/pool-abi');
     const FACTORY = process.env.NEXT_PUBLIC_POOL_FACTORY || '';
@@ -54,8 +55,10 @@ export async function GET(req: NextRequest) {
     }
   } catch (err) {
     console.error('[pools/user-positions] on-chain pool list failed:', (err as Error).message);
+  }
 
-    // Fallback: Supabase
+  // Source 2: Supabase fallback
+  if (pools.length === 0) {
     try {
       const rows = await getDeployedPools();
       if (rows.length > 0) {
@@ -66,22 +69,24 @@ export async function GET(req: NextRequest) {
           awayTeam: r.away_team,
         }));
       }
-    } catch {}
+    } catch {
+      console.error('[pools/user-positions] Supabase fallback failed');
+    }
+  }
 
-    // Last resort: engine's in-memory deployedPools
-    if (pools.length === 0) {
-      try {
-        const { getEngine } = await import('@/lib/sim-engine');
-        const state = getEngine().getState();
-        pools = state.deployedPools.map(p => ({
-          poolAddress: p.poolAddress.toLowerCase(),
-          matchId: p.matchId,
-          homeTeam: p.homeTeam,
-          awayTeam: p.awayTeam,
-        }));
-      } catch {
-        return NextResponse.json({ error: 'No pool sources available', positions: [] }, { status: 500 });
-      }
+  // Source 3: Engine in-memory deployedPools (last resort)
+  if (pools.length === 0) {
+    try {
+      const { getEngine } = await import('@/lib/sim-engine');
+      const state = getEngine().getState();
+      pools = state.deployedPools.map(p => ({
+        poolAddress: p.poolAddress.toLowerCase(),
+        matchId: p.matchId,
+        homeTeam: p.homeTeam,
+        awayTeam: p.awayTeam,
+      }));
+    } catch {
+      return NextResponse.json({ error: 'No pool sources available', positions: [] }, { status: 500 });
     }
   }
 
