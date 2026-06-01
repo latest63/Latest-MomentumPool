@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useSwitchChain, useWalletClient } from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
+import { encodeFunctionData } from 'viem';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
@@ -164,7 +165,6 @@ export default function ArenaPage() {
   const [depositAmount, setDepositAmount] = useState('0.001');
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
-  const { data: walletClient } = useWalletClient();
 
   // Sync live/settled/upcoming state from engine
   useEffect(() => {
@@ -244,79 +244,55 @@ export default function ArenaPage() {
     const amount = BigInt(Math.floor(parsed * 10 ** USDG_DECIMALS));
     const teamId = team === 'home' ? 0 : 1;
 
-    if (!walletClient) return toast('Wallet not ready — reconnect and try again', 'error');
+    const ethereum = (window as any).ethereum;
+    if (!ethereum) return toast('No wallet found — install MetaMask', 'error');
 
     try {
-      // Debug: log what we're about to do
-      console.log('[deposit] poolAddr:', poolAddr, 'amount:', amount.toString(), 'team:', team);
-      console.log('[deposit] chainId:', chainId, 'address:', address);
-      console.log('[deposit] USDG token:', USDG_TOKEN);
+      // Debug
+      console.log('[deposit] poolAddr:', poolAddr, 'amount:', amount.toString(), 'team:', team, 'chainId:', chainId, 'address:', address);
 
-      // Pre-flight RPC check (via proxy)
-      try {
-        const resp = await fetch('/api/rpc', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
-          signal: AbortSignal.timeout(10000),
-        });
-        const data = await resp.json();
-        console.log('[deposit] RPC health:', data.result ? 'OK' : 'FAIL', data);
-      } catch (rpcErr) {
-        console.error('[deposit] RPC UNREACHABLE from browser:', rpcErr);
-        toast('⚠ RPC unreachable from your browser — try a different network or VPN', 'error');
-        return;
-      }
-
-      // Step 0: Add USDG token to MetaMask so it's not "Unknown"
-      toast('Adding USDG token to wallet...', 'info');
-      try {
-        await window.ethereum?.request({
-          method: 'wallet_watchAsset',
-          params: [{
-            type: 'ERC20',
-            options: {
-              address: USDG_TOKEN,
-              symbol: 'USDG',
-              decimals: USDG_DECIMALS,
-              image: '',
-            },
-          }],
-        });
-      } catch (_) {
-        // Non-fatal if wallet doesn't support watchAsset
-        console.log('[deposit] watchAsset skipped or failed');
-      }
-
-      // Step 1: Approve USDG
+      // Step 1: Approve USDG (raw eth_sendTransaction, no wagmi/viem abstraction)
       toast('Step 1/2: Approving USDG...', 'info');
-      console.log('[deposit] sending approve tx...');
-      const approveHash = await walletClient!.writeContract({
-        address: USDG_TOKEN as `0x${string}`,
+      const approveData = encodeFunctionData({
         abi: ERC20_APPROVE,
         functionName: 'approve',
         args: [poolAddr as `0x${string}`, amount],
-        account: address as `0x${string}`,
       });
-      console.log('[deposit] approve tx sent:', approveHash);
+      console.log('[deposit] sending approve via window.ethereum...');
+      const approveHash: string = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: address,
+          to: USDG_TOKEN,
+          data: approveData,
+          chainId: '0x7a0', // 1952
+        }],
+      });
+      console.log('[deposit] approve tx:', approveHash);
 
-      // Step 2: Deposit
+      // Step 2: Deposit into pool (raw eth_sendTransaction)
       toast('Step 2/2: Depositing...', 'info');
-      console.log('[deposit] sending deposit tx...');
-      const depositHash = await walletClient!.writeContract({
-        address: poolAddr as `0x${string}`,
+      const depositData = encodeFunctionData({
         abi: POOL_ABI,
         functionName: 'deposit',
         args: [teamId, amount],
-        account: address as `0x${string}`,
       });
-      console.log('[deposit] deposit tx sent:', depositHash);
+      console.log('[deposit] sending deposit via window.ethereum...');
+      const depositHash: string = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: address,
+          to: poolAddr,
+          data: depositData,
+          chainId: '0x7a0', // 1952
+        }],
+      });
+      console.log('[deposit] deposit tx:', depositHash);
 
       toast(`✅ Deposited ${depositAmount} USDG on ${match!.homeTeam} vs ${match!.awayTeam}`, 'success');
     } catch (err: any) {
-      console.error('[deposit] FULL ERROR:', err);
-      const msg = err?.message || err?.code || String(err);
-      toast(`❌ ${msg}`, 'error');
+      console.error('[deposit] ERROR:', err);
+      toast(`❌ ${err?.message || err?.code || 'Transaction failed'}`, 'error');
     }
   };
 
