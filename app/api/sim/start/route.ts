@@ -36,9 +36,10 @@ export async function POST() {
 
   engine.start();
 
-  // Deploy pool for the current match right now (engine starts before onNewMatch is set)
+  // Deploy pool for the current match if not already deployed or pending
   const currentState = engine.getState();
-  if (currentState.match && !currentState.match.poolAddress && currentState.match.phase === 'open') {
+  const alreadyDeployed = currentState.match && (currentState.deployedPools || []).some(p => p.matchId === currentState.match!.id);
+  if (currentState.match && !currentState.match.poolAddress && !alreadyDeployed && currentState.match.phase === 'open') {
     deployPool(
       currentState.match.id,
       currentState.match.homeTeam,

@@ -271,39 +271,20 @@ export default function ArenaPage() {
     const parsed = parseFloat(depositAmount);
     if (isNaN(parsed) || parsed <= 0) return toast('Enter a valid amount', 'warning');
 
-    // Lazy deploy — deploy pool on first deposit if not already deployed
-    let poolAddr = match?.poolAddress ?? null;
+    // Pool is deployed automatically when the match starts — wait if still deploying
+    const poolAddr = match?.poolAddress ?? null;
     if (!poolAddr) {
-      toast('Deploying pool contract — one sec...', 'info');
-      try {
-        const res = await fetch('/api/sim/deploy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            matchId: match!.id,
-            homeTeam: match!.homeTeam,
-            awayTeam: match!.awayTeam,
-            tokenAddress: USDG_TOKEN,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Deploy failed');
-        poolAddr = data.poolAddress;
-      } catch (err: any) {
-        return toast(err?.message || 'Failed to deploy pool', 'error');
-      }
+      return toast('Pool contract is being deployed — wait a moment and try again', 'warning');
     }
 
     const amount = BigInt(Math.floor(parsed * 10 ** USDG_DECIMALS));
     const teamId = team === 'home' ? 0 : 1;
 
     try {
-      // Debug
       console.log('[deposit] poolAddr:', poolAddr, 'amount:', amount.toString(), 'team:', team, 'chainId:', chainId, 'address:', address);
 
       // Step 1: Approve USDG (wagmi writeContractAsync)
       toast('Step 1/2: Approving USDG...', 'info');
-      console.log('[deposit] sending approve...');
       const approveHash: string = await writeContractAsync({
         abi: ERC20_APPROVE,
         address: USDG_TOKEN as `0x${string}`,
@@ -314,7 +295,6 @@ export default function ArenaPage() {
 
       // Step 2: Deposit into pool (wagmi writeContractAsync)
       toast('Step 2/2: Depositing...', 'info');
-      console.log('[deposit] sending deposit...');
       const depositHash: string = await writeContractAsync({
         abi: POOL_ABI,
         address: poolAddr as `0x${string}`,
