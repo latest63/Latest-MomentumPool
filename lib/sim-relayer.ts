@@ -9,7 +9,7 @@ const xLayer = {
   id: 1952,
   name: 'X Layer Testnet',
   nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
-  rpcUrls: { default: { http: ['https://xlayertestrpc.okx.com'] } },
+  rpcUrls: { default: { http: ['https://testrpc.xlayer.tech'] } },
 } as const;
 
 function getClients() {

@@ -7,8 +7,8 @@ const xLayer = {
   name: 'X Layer Testnet',
   nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://xlayertestrpc.okx.com'] },
-    public: { http: ['https://xlayertestrpc.okx.com'] },
+    default: { http: ['https://testrpc.xlayer.tech'] },
+    public: { http: ['https://testrpc.xlayer.tech'] },
   },
   blockExplorers: {
     default: { name: 'OKX Explorer', url: 'https://www.okx.com/explorer/xlayer-test' },
