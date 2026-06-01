@@ -187,7 +187,9 @@ export class SimEngine {
     const existingGoals = sameMatch ? { ...this.match!.goals } : { home: 0, away: 0 };
     const existingMomentum = sameMatch ? this.match!.momentumHome : 50;
 
-    const poolAddr = this.poolRegistry.get(pairing.id) || null;
+    // Check for today's pool in registry (keyed by matchId + date)
+    const todayKey = `${pairing.id}-${new Date().toISOString().slice(0, 10)}`;
+    const poolAddr = this.poolRegistry.get(todayKey) || null;
 
     // Trigger auto-settle if moving into settled phase
     if (phase === 'settled' && !sameMatch && poolAddr && this.onSettle) {
@@ -223,12 +225,13 @@ export class SimEngine {
       this.goalCluster = 0;
     }
 
-    // Trigger pool deploy if needed (only when entering open phase for the first time)
+    // Trigger pool deploy if needed (deploy fresh each day — timestamps are per-occurrence)
     if (phase === 'open' && !poolAddr && this.deployPoolForMatch) {
       this.deployPoolForMatch(pairing.id, pairing.home, pairing.away, pairing.token).then(addr => {
         if (addr && this.match && this.match.id === pairing.id) {
           this.match.poolAddress = addr;
-          this.poolRegistry.set(pairing.id, addr);
+          const todayKey = `${pairing.id}-${new Date().toISOString().slice(0, 10)}`;
+          this.poolRegistry.set(todayKey, addr);
           this.deployedPools.push({
             poolAddress: addr,
             matchId: pairing.id,
@@ -419,10 +422,14 @@ export async function loadPoolRegistry(): Promise<void> {
     const rows = await getDeployedPools();
     const engine = getEngine();
     const deployed: DeployedPool[] = [];
+    const today = new Date().toISOString().slice(0, 10);
     for (const row of rows) {
       const poolAddr = row.pool_address.toLowerCase();
-      if (!engine.poolRegistry.has(row.match_id)) {
-        engine.poolRegistry.set(row.match_id, poolAddr);
+      const createdDate = new Date(row.created_at).toISOString().slice(0, 10);
+      const key = `${row.match_id}-${createdDate}`;
+      // Registry: key by matchId+date to avoid redeploying today
+      if (!engine.poolRegistry.has(key)) {
+        engine.poolRegistry.set(key, poolAddr);
       }
       deployed.push({
         poolAddress: poolAddr,
@@ -432,6 +439,15 @@ export async function loadPoolRegistry(): Promise<void> {
         tokenAddress: row.token_address,
         deployedAt: new Date(row.created_at).getTime(),
       });
+    }
+    // Also check the deployedPools array for today's pools
+    const existingDeployed = engine['deployedPools'] as DeployedPool[] || [];
+    for (const p of existingDeployed) {
+      const d = new Date(p.deployedAt).toISOString().slice(0, 10);
+      const key = `${p.matchId}-${d}`;
+      if (!engine.poolRegistry.has(key)) {
+        engine.poolRegistry.set(key, p.poolAddress);
+      }
     }
     engine['deployedPools'] = deployed;
   } catch { /* silence */ }
