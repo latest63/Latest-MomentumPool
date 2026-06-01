@@ -104,6 +104,23 @@ export async function GET(req: NextRequest) {
     } catch {}
   }
 
+  // Source 5: Current engine match pool address (works on Vercel serverless)
+  if (pools.length === 0) {
+    try {
+      const { getEngine } = await import('@/lib/sim-engine');
+      const state = getEngine().getState();
+      if (state.match?.poolAddress) {
+        const m = state.match;
+        pools.push({
+          poolAddress: m.poolAddress!.toLowerCase(),
+          matchId: m.id,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+        });
+      }
+    } catch {}
+  }
+
   if (pools.length === 0) {
     return NextResponse.json({ positions: [] });
   }

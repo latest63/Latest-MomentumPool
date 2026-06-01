@@ -67,16 +67,29 @@ export async function GET() {
       const { getEngine } = await import('@/lib/sim-engine');
       const engine = getEngine();
       const state = engine.getState();
-      const pools = state.deployedPools.map(p => ({
-        poolAddress: p.poolAddress.toLowerCase(),
-        matchId: p.matchId,
-        homeTeam: p.homeTeam,
-        awayTeam: p.awayTeam,
-        tokenAddress: p.tokenAddress.toLowerCase(),
-      }));
-      return NextResponse.json({ pools, source: 'engine-fallback' });
-    } catch {
-      return NextResponse.json({ error: msg, pools: [] }, { status: 500 });
-    }
+      // First try deployedPools array
+      if (state.deployedPools.length > 0) {
+        const pools = state.deployedPools.map(p => ({
+          poolAddress: p.poolAddress.toLowerCase(),
+          matchId: p.matchId,
+          homeTeam: p.homeTeam,
+          awayTeam: p.awayTeam,
+          tokenAddress: p.tokenAddress.toLowerCase(),
+        }));
+        return NextResponse.json({ pools, source: 'engine-fallback' });
+      }
+      // Fallback: current match pool address
+      if (state.match?.poolAddress) {
+        const m = state.match;
+        const pools = [{
+          poolAddress: m.poolAddress!.toLowerCase(),
+          matchId: m.id,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+          tokenAddress: m.tokenAddress.toLowerCase(),
+        }];
+        return NextResponse.json({ pools, source: 'engine-current-match' });
+      }
+    } catch {}
   }
 }
