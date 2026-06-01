@@ -51,6 +51,11 @@ export interface DeployedPool {
   deployedAt: number;
 }
 
+import * as fs from 'fs';
+import * as path from 'path';
+
+const STATE_FILE = path.resolve(process.cwd(), 'data/engine-state.json');
+
 /* ─── 5 Match Pairings (cycling) ─── */
 const USDG = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
 
@@ -120,8 +125,11 @@ export class SimEngine {
   public onNewMatch: ((matchId: string, homeTeam: string, awayTeam: string, tokenAddress: string) => Promise<string | null>) | null = null;
 
   constructor() {
-    this.fillQueue();
-    this.advanceToNext();
+    // Try to restore from saved state — survives server restarts
+    if (!this.loadState()) {
+      this.fillQueue();
+      this.advanceToNext();
+    }
     this.start(); // auto-run from server start — match doesn't wait
   }
 
@@ -168,6 +176,50 @@ export class SimEngine {
       }).catch(err => {
         console.error(`[sim] Failed to deploy pool for ${pairing.id}:`, err);
       });
+    }
+  }
+
+  /* ─── Persistence: survive server restarts ─── */
+  private saveState() {
+    try {
+      const data = JSON.stringify({
+        match: this.match,
+        queue: this.queue,
+        matchIndex: this.matchIndex,
+        totalMatches: this.totalMatches,
+        round: this.round,
+        tickCount: this.tickCount,
+        eventTimer: this.eventTimer,
+        goalCluster: this.goalCluster,
+        deployedPools: this.deployedPools,
+        savedAt: Date.now(),
+      });
+      fs.writeFileSync(STATE_FILE, data, 'utf-8');
+    } catch (e) {
+      // fail silently — persistence is best-effort
+    }
+  }
+
+  private loadState(): boolean {
+    try {
+      if (!fs.existsSync(STATE_FILE)) return false;
+      const raw = fs.readFileSync(STATE_FILE, 'utf-8');
+      const saved = JSON.parse(raw);
+      if (!saved.match) return false;
+
+      // Restore match state
+      this.match = saved.match;
+      this.queue = saved.queue || [];
+      this.matchIndex = saved.matchIndex ?? 0;
+      this.totalMatches = saved.totalMatches ?? 0;
+      this.round = saved.round ?? 1;
+      this.tickCount = saved.tickCount ?? 0;
+      this.eventTimer = saved.eventTimer ?? 0;
+      this.goalCluster = saved.goalCluster ?? 0;
+      this.deployedPools = saved.deployedPools || [];
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -274,6 +326,7 @@ export class SimEngine {
         if (this.match.phaseElapsed >= PHASE_DURATION.settled) this.restartCycle();
         break;
     }
+    this.saveState(); // persist after every tick — timer survives restarts
   }
 
   private transitionToLive() {
