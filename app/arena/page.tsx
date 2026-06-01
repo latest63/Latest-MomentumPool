@@ -431,6 +431,11 @@ export default function ArenaPage() {
             <div className="pool-info-header">
               <img src="/assets/usdg-logo.png" alt="USDG" className="pool-info-logo" />
               Pool Info
+              {state?.match?.poolAddress && (
+                <span style={{ fontSize: 10, color: '#888', marginLeft: 'auto', fontFamily: 'monospace' }}>
+                  {state.match.poolAddress.slice(0, 10)}...
+                </span>
+              )}
             </div>
             <div className="pool-deposit">
               {poolPhaseLabel && (state?.match?.poolAddress) && (

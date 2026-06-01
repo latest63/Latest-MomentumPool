@@ -90,6 +90,20 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Source 4: Persistent known-pools file (survives restarts)
+  if (pools.length === 0) {
+    try {
+      const { getAllKnownPools } = await import('@/lib/sim-engine');
+      const known = getAllKnownPools();
+      pools = known.map(p => ({
+        poolAddress: p.poolAddress.toLowerCase(),
+        matchId: p.matchId,
+        homeTeam: p.homeTeam,
+        awayTeam: p.awayTeam,
+      }));
+    } catch {}
+  }
+
   if (pools.length === 0) {
     return NextResponse.json({ positions: [] });
   }

@@ -55,6 +55,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const STATE_FILE = path.resolve(process.cwd(), 'data/engine-state.json');
+const POOLS_FILE = path.resolve(process.cwd(), 'data/known-pools.json');
 
 /* ─── 5 Match Pairings (cycling) ─── */
 const USDG = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
@@ -285,6 +286,33 @@ export class SimEngine {
         tokenAddress: this.match.tokenAddress,
         deployedAt: Date.now(),
       });
+      // Persist to known-pools file (survives restarts)
+      this.saveKnownPool(address);
+    }
+  }
+
+  /* ─── Persist pool address to known-pools file ─── */
+  private saveKnownPool(address: string) {
+    if (!this.match) return;
+    try {
+      let known = [];
+      if (fs.existsSync(POOLS_FILE)) {
+        known = JSON.parse(fs.readFileSync(POOLS_FILE, 'utf-8'));
+      }
+      // Only add if not already present
+      if (!known.some((p: any) => p.poolAddress.toLowerCase() === address.toLowerCase())) {
+        known.push({
+          poolAddress: address.toLowerCase(),
+          matchId: this.match.id,
+          homeTeam: this.match.homeTeam,
+          awayTeam: this.match.awayTeam,
+          tokenAddress: this.match.tokenAddress.toLowerCase(),
+          deployedAt: Date.now(),
+        });
+        fs.writeFileSync(POOLS_FILE, JSON.stringify(known, null, 2), 'utf-8');
+      }
+    } catch (e) {
+      // best-effort
     }
   }
 
@@ -438,4 +466,14 @@ export function getEngine(): SimEngine {
     (globalThis as any).__simEngine = new SimEngine();
   }
   return (globalThis as any).__simEngine;
+}
+
+/** Read all known pools from the persistent file (survives restarts) */
+export function getAllKnownPools(): DeployedPool[] {
+  try {
+    if (fs.existsSync(POOLS_FILE)) {
+      return JSON.parse(fs.readFileSync(POOLS_FILE, 'utf-8'));
+    }
+  } catch {}
+  return [];
 }
