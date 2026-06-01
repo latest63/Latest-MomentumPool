@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useSwitchChain } from 'wagmi';
-import { encodeFunctionData } from 'viem';
+import { useAccount, useSwitchChain, useWriteContract } from 'wagmi';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
@@ -165,6 +164,7 @@ export default function ArenaPage() {
   const [depositAmount, setDepositAmount] = useState('0.001');
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
 
   // Sync live/settled/upcoming state from engine
   useEffect(() => {
@@ -244,48 +244,29 @@ export default function ArenaPage() {
     const amount = BigInt(Math.floor(parsed * 10 ** USDG_DECIMALS));
     const teamId = team === 'home' ? 0 : 1;
 
-    const ethereum = (window as any).ethereum;
-    if (!ethereum) return toast('No wallet found — install MetaMask', 'error');
-
     try {
       // Debug
       console.log('[deposit] poolAddr:', poolAddr, 'amount:', amount.toString(), 'team:', team, 'chainId:', chainId, 'address:', address);
 
-      // Step 1: Approve USDG (raw eth_sendTransaction, no wagmi/viem abstraction)
+      // Step 1: Approve USDG (wagmi writeContractAsync)
       toast('Step 1/2: Approving USDG...', 'info');
-      const approveData = encodeFunctionData({
+      console.log('[deposit] sending approve...');
+      const approveHash: string = await writeContractAsync({
         abi: ERC20_APPROVE,
+        address: USDG_TOKEN as `0x${string}`,
         functionName: 'approve',
         args: [poolAddr as `0x${string}`, amount],
       });
-      console.log('[deposit] sending approve via window.ethereum...');
-      const approveHash: string = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: address,
-          to: USDG_TOKEN,
-          data: approveData,
-          chainId: '0x7a0', // 1952
-        }],
-      });
       console.log('[deposit] approve tx:', approveHash);
 
-      // Step 2: Deposit into pool (raw eth_sendTransaction)
+      // Step 2: Deposit into pool (wagmi writeContractAsync)
       toast('Step 2/2: Depositing...', 'info');
-      const depositData = encodeFunctionData({
+      console.log('[deposit] sending deposit...');
+      const depositHash: string = await writeContractAsync({
         abi: POOL_ABI,
+        address: poolAddr as `0x${string}`,
         functionName: 'deposit',
         args: [teamId, amount],
-      });
-      console.log('[deposit] sending deposit via window.ethereum...');
-      const depositHash: string = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: address,
-          to: poolAddr,
-          data: depositData,
-          chainId: '0x7a0', // 1952
-        }],
       });
       console.log('[deposit] deposit tx:', depositHash);
 
