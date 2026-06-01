@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useSwitchChain, useWriteContract } from 'wagmi';
+import { useAccount, useSwitchChain, useWriteContract, useReadContract } from 'wagmi';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
@@ -166,6 +166,18 @@ export default function ArenaPage() {
   const { switchChain } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
 
+  // Read on-chain pool totals when a pool address exists
+  const { data: poolTotals } = useReadContract({
+    abi: POOL_ABI,
+    address: state?.match?.poolAddress as `0x${string}` | undefined,
+    functionName: 'getPoolTotals',
+    args: [],
+    query: {
+      enabled: !!state?.match?.poolAddress,
+      refetchInterval: 5_000,
+    },
+  });
+
   // Sync live/settled/upcoming state from engine
   useEffect(() => {
     if (!state?.match) {
@@ -308,7 +320,11 @@ export default function ArenaPage() {
   const awayFlag = FLAGS[awayTeam] || '';
   const momentumData = simToMomentum(match);
   const eventItems = simToEventItems(match.events);
-  const totalPool = match.deposits.home + match.deposits.away;
+
+  // On-chain pool totals (fall back to sim engine deposits while loading)
+  const homeAmount = poolTotals ? Number(poolTotals[0]) / 10 ** USDG_DECIMALS : match.deposits.home;
+  const awayAmount = poolTotals ? Number(poolTotals[1]) / 10 ** USDG_DECIMALS : match.deposits.away;
+  const totalPool = homeAmount + awayAmount;
   const phaseMax = PHASE_DURATION[match.phase] || 120;
   const phasePct = Math.min(100, (match.phaseElapsed / phaseMax) * 100);
 
@@ -389,7 +405,7 @@ export default function ArenaPage() {
               <div className="pool-deposit-teams">
                 <div className="pool-deposit-team">
                   <span className="pool-deposit-team-name">{homeTeam}</span>
-                  <span className="pool-deposit-amount">{match.deposits.home.toFixed(4)} USDG</span>
+                  <span className="pool-deposit-amount">{homeAmount.toFixed(4)} USDG</span>
                   <button
                     className="pool-deposit-btn"
                     onClick={() => handleDeposit('home')}
@@ -401,7 +417,7 @@ export default function ArenaPage() {
                 <div className="pool-deposit-divider" />
                 <div className="pool-deposit-team">
                   <span className="pool-deposit-team-name">{awayTeam}</span>
-                  <span className="pool-deposit-amount">{match.deposits.away.toFixed(4)} USDG</span>
+                  <span className="pool-deposit-amount">{awayAmount.toFixed(4)} USDG</span>
                   <button
                     className="pool-deposit-btn"
                     onClick={() => handleDeposit('away')}
