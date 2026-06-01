@@ -6,7 +6,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useLoading } from '@/components/LoadingOverlay';
 import confetti from 'canvas-confetti';
 
-const POOL_ADDRESS = process.env.NEXT_PUBLIC_POOL_ADDRESS || '0x04DA66A885F7C1e52F984e7eFC013393AEEAA2df';
+/* ─── Token config (same as arena page) ─── */
+const USDG_DECIMALS = 6;
 
 const POOL_ABI = [
   {
@@ -62,22 +63,6 @@ const POOL_ABI = [
 const STATE_LABELS = ['Open', 'Live', 'Settled', 'Cancelled'];
 const STATE_CLASSES = ['state-open', 'state-live', 'state-settled', 'state-cancelled'];
 
-interface PoolInfo {
-  address: string;
-  homeTeam: string;
-  awayTeam: string;
-  label: string;
-}
-
-const KNOWN_POOLS: PoolInfo[] = [
-  {
-    address: POOL_ADDRESS.toLowerCase(),
-    homeTeam: 'Brazil',
-    awayTeam: 'Nigeria',
-    label: 'Brazil vs Nigeria',
-  },
-];
-
 export default function PositionsPage() {
   const { address, isConnected } = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
@@ -87,44 +72,66 @@ export default function PositionsPage() {
   const [showCup, setShowCup] = useState(false);
   const hasFired = useRef(false);
 
+  // ── Fetch current match pool address from sim engine ──
+  const [simState, setSimState] = useState<{ match?: { poolAddress?: string; homeTeam?: string; awayTeam?: string; id?: string; phase?: string } } | null>(null);
+  useEffect(() => {
+    fetch('/api/sim/state')
+      .then(r => r.json())
+      .then(d => setSimState(d))
+      .catch(() => {});
+    const iv = setInterval(() => {
+      fetch('/api/sim/state')
+        .then(r => r.json())
+        .then(d => setSimState(d))
+        .catch(() => {});
+    }, 5_000);
+    return () => clearInterval(iv);
+  }, []);
+
   useEffect(() => { setLoading(isPending || claiming); }, [isPending, claiming, setLoading]);
 
-  // Resolve pool info (could expand to multiple pools later)
-  const pool = KNOWN_POOLS[0];
+  // Current pool address from the live match
+  const poolAddress = simState?.match?.poolAddress ?? null;
+  const homeTeam = simState?.match?.homeTeam ?? '—';
+  const awayTeam = simState?.match?.awayTeam ?? '—';
+  const matchLabel = `${homeTeam} vs ${awayTeam}`;
 
-  // Read deposit data
+  // Read deposit data on the current pool
   const { data: deposits, refetch: refetchDeposits } = useReadContract({
-    address: POOL_ADDRESS as `0x${string}`,
+    address: poolAddress as `0x${string}` | undefined,
     abi: POOL_ABI,
     functionName: 'getUserDeposit',
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
+    query: { enabled: !!address && !!poolAddress },
   });
 
   const { data: stateRaw } = useReadContract({
-    address: POOL_ADDRESS as `0x${string}`,
+    address: poolAddress as `0x${string}` | undefined,
     abi: POOL_ABI,
     functionName: 'state',
+    query: { enabled: !!poolAddress },
   });
 
   const { data: hasClaimed } = useReadContract({
-    address: POOL_ADDRESS as `0x${string}`,
+    address: poolAddress as `0x${string}` | undefined,
     abi: POOL_ABI,
     functionName: 'claimed',
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
+    query: { enabled: !!address && !!poolAddress },
   });
 
   const { data: winnerId } = useReadContract({
-    address: POOL_ADDRESS as `0x${string}`,
+    address: poolAddress as `0x${string}` | undefined,
     abi: POOL_ABI,
     functionName: 'winnerTeamId',
+    query: { enabled: !!poolAddress },
   });
 
   const { data: poolTotals, refetch: refetchTotals } = useReadContract({
-    address: POOL_ADDRESS as `0x${string}`,
+    address: poolAddress as `0x${string}` | undefined,
     abi: POOL_ABI,
     functionName: 'getPoolTotals',
+    query: { enabled: !!poolAddress },
   });
 
   const poolState = stateRaw !== undefined ? Number(stateRaw) : -1;
@@ -132,7 +139,7 @@ export default function PositionsPage() {
   const depos1 = deposits ? Number(deposits[1]) : 0;
   const totalDeposit = depos0 + depos1;
   const teamPicked = depos0 > 0 ? 0 : depos1 > 0 ? 1 : -1;
-  const teamLabel = teamPicked === 0 ? pool.homeTeam : teamPicked === 1 ? pool.awayTeam : null;
+  const teamLabel = teamPicked === 0 ? homeTeam : teamPicked === 1 ? awayTeam : null;
 
   const isSettled = poolState === 2;
   const isCancelled = poolState === 3;
@@ -153,8 +160,8 @@ export default function PositionsPage() {
     setClaimError('');
     try {
       await writeContractAsync({
-        address: POOL_ADDRESS as `0x${string}`,
         abi: POOL_ABI,
+        address: poolAddress as `0x${string}`,
         functionName: 'withdraw',
       });
       await refetchDeposits();
@@ -183,6 +190,12 @@ export default function PositionsPage() {
             <h3>Connect your wallet</h3>
             <p>Connect to view your positions and claim winnings</p>
           </div>
+        ) : !poolAddress ? (
+          <div className="empty-state">
+            <span className="empty-icon">📭</span>
+            <h3>No active match</h3>
+            <p>Wait for a match to start in the Arena</p>
+          </div>
         ) : totalDeposit === 0 ? (
           <div className="empty-state">
             <span className="empty-icon">📭</span>
@@ -193,7 +206,7 @@ export default function PositionsPage() {
           <div className="positions-list">
             <div className={`position-card ${STATE_CLASSES[poolState] || ''}`}>
               <div className="position-header">
-                <span className="position-match">{pool.label}</span>
+                <span className="position-match">{matchLabel}</span>
                 <span className={`position-state ${STATE_CLASSES[poolState] || ''}`}>
                   {STATE_LABELS[poolState] || 'Unknown'}
                 </span>
@@ -202,7 +215,7 @@ export default function PositionsPage() {
               <div className="position-details">
                 <div className="position-row">
                   <span className="pos-label">Your deposit</span>
-                  <span className="pos-value">{totalDeposit / 1e18} OKB</span>
+                  <span className="pos-value">{(totalDeposit / 10 ** USDG_DECIMALS).toFixed(4)} USDG</span>
                 </div>
                 <div className="position-row">
                   <span className="pos-label">Team</span>
@@ -212,7 +225,7 @@ export default function PositionsPage() {
                   <div className="position-row">
                     <span className="pos-label">Pool total</span>
                     <span className="pos-value">
-                      {Number(poolTotals[0]) / 1e18 + Number(poolTotals[1]) / 1e18} OKB
+                      {(Number(poolTotals[0]) / 10 ** USDG_DECIMALS + Number(poolTotals[1]) / 10 ** USDG_DECIMALS).toFixed(4)} USDG
                     </span>
                   </div>
                 )}
@@ -220,7 +233,7 @@ export default function PositionsPage() {
                   <div className="position-row">
                     <span className="pos-label">Winner</span>
                     <span className={`pos-value pos-winner`}>
-                      {Number(winnerId) === 0 ? pool.homeTeam : pool.awayTeam} 🏆
+                      {Number(winnerId) === 0 ? homeTeam : awayTeam} 🏆
                     </span>
                   </div>
                 )}
