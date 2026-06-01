@@ -183,6 +183,37 @@ export default function ArenaPage() {
     },
   });
 
+  // Read on-chain pool state (0=Open, 1=Live, 2=Settled, 3=Cancelled)
+  const { data: onChainPoolState } = useReadContract({
+    abi: POOL_ABI,
+    address: state?.match?.poolAddress as `0x${string}` | undefined,
+    functionName: 'state',
+    args: [],
+    query: {
+      enabled: !!state?.match?.poolAddress,
+      refetchInterval: 5_000,
+    },
+  });
+
+  // Read on-chain winner
+  const { data: onChainWinnerId } = useReadContract({
+    abi: POOL_ABI,
+    address: state?.match?.poolAddress as `0x${string}` | undefined,
+    functionName: 'winnerTeamId',
+    args: [],
+    query: {
+      enabled: !!state?.match?.poolAddress,
+      refetchInterval: 5_000,
+    },
+  });
+
+  const poolPhaseLabel = onChainPoolState !== undefined
+    ? ['Open', 'Live', 'Settled', 'Cancelled'][Number(onChainPoolState)] || 'Unknown'
+    : null;
+  const isPoolSettled = onChainPoolState !== undefined && Number(onChainPoolState) === 2;
+  const isPoolCancelled = onChainPoolState !== undefined && Number(onChainPoolState) === 3;
+  const isPoolLive = onChainPoolState !== undefined && Number(onChainPoolState) === 1;
+
   // Sync live/settled/upcoming state from engine
   useEffect(() => {
     if (!state?.match) {
@@ -408,6 +439,18 @@ export default function ArenaPage() {
               Pool Info
             </div>
             <div className="pool-deposit">
+              {poolPhaseLabel && (state?.match?.poolAddress) && (
+                <div className="pool-state-row">
+                  <span className="pool-total-label">Pool</span>
+                  <span className={`pool-state-badge pool-state-${poolPhaseLabel.toLowerCase()}`}>
+                    {poolPhaseLabel}
+                    {isPoolSettled && onChainWinnerId !== undefined && (
+                      <> — {Number(onChainWinnerId) === 0 ? homeTeam : awayTeam} wins</>
+                    )}
+                    {isPoolCancelled && ' — Cancelled'}
+                  </span>
+                </div>
+              )}
               <div className="pool-total-row">
                 <span className="pool-total-label">Total Pool</span>
                 <span className="pool-total-amount">{totalPool.toFixed(4)} USDG</span>

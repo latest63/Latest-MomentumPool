@@ -1,4 +1,4 @@
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, type PublicClient } from 'viem';
 
 /** X Layer Testnet */
 const X_LAYER = {
@@ -8,7 +8,7 @@ const X_LAYER = {
   rpcUrls: { default: { http: ['https://testrpc.xlayer.tech'] } },
 } as const;
 
-export const publicClient = createPublicClient({
+export const publicClient: PublicClient = createPublicClient({
   chain: X_LAYER,
   transport: http(),
 });

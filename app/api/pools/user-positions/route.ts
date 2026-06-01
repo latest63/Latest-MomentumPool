@@ -35,10 +35,12 @@ export async function GET(req: NextRequest) {
     const { FACTORY_ABI } = await import('@/lib/pool-abi');
     const FACTORY = process.env.NEXT_PUBLIC_POOL_FACTORY || '';
     if (FACTORY) {
+      const latest = await publicClient.getBlockNumber();
+      const fromBlock = latest > 100n ? latest - 100n : 0n;
       const logs = await publicClient.getLogs({
         address: FACTORY as `0x${string}`,
         event: FACTORY_ABI.find(e => e.name === 'PoolCreated') as any,
-        fromBlock: BigInt(0),
+        fromBlock,
         toBlock: 'latest',
       });
       pools = logs

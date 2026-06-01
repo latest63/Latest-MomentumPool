@@ -1481,6 +1481,44 @@ body {
   flex-shrink: 0;
 }
 
+/* ─── On-chain pool state badge ─── */
+.pool-state-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-glass);
+}
+.pool-state-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.pool-state-open {
+  background: #1a3a1a;
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+.pool-state-live {
+  background: #3a2a1a;
+  color: #ff9800;
+  border: 1px solid #ff9800;
+}
+.pool-state-settled {
+  background: #1a1a3a;
+  color: #48dbfb;
+  border: 1px solid #48dbfb;
+}
+.pool-state-cancelled {
+  background: #3a1a1a;
+  color: #ff4444;
+  border: 1px solid #ff4444;
+}
+
 /* ─── Total Pool row ─── */
 .pool-total-row {
   display: flex;

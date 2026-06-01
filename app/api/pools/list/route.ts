@@ -22,10 +22,13 @@ export async function GET() {
   }
 
   try {
+    const latest = await publicClient.getBlockNumber();
+    // X Layer RPC limits getLogs to 100 blocks — query recent blocks
+    const fromBlock = latest > 100n ? latest - 100n : 0n;
     const logs = await publicClient.getLogs({
       address: FACTORY as `0x${string}`,
       event: FACTORY_ABI.find(e => e.name === 'PoolCreated') as any,
-      fromBlock: BigInt(0),
+      fromBlock,
       toBlock: 'latest',
     });
 
