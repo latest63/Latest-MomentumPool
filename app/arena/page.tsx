@@ -213,7 +213,7 @@ export default function ArenaPage() {
   const poolPhaseLabel = onChainPoolState !== undefined
     ? ['Open', 'Live', 'Settled', 'Cancelled'][Number(onChainPoolState)] || 'Unknown'
     : state?.match?.poolAddress
-      ? ({ open: 'Open', live: 'Live', settled: 'Settled' } as Record<string, string>)[match.phase] || null
+      ? ({ open: 'Open', live: 'Live', settled: 'Settled' } as Record<string, string>)[state.match.phase] || null
       : null;
   const isPoolSettled = onChainPoolState !== undefined && Number(onChainPoolState) === 2;
   const isPoolCancelled = onChainPoolState !== undefined && Number(onChainPoolState) === 3;
