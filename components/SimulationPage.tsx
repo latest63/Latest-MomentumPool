@@ -334,16 +334,16 @@ function SimMatchCard({
         <span className="sim-timer-label">{formatTime(phaseTime)}</span>
       </div>
 
-      {/* Scoreboard */}
+      {/* Scoreboard — big number = goals, points shown below */}
       <div className="sim-scoreboard">
-        <div className={`sim-score-team ${match.phase === 'settled' && match.score.home > match.score.away ? 'sim-score-winner' : ''}`}>
+        <div className={`sim-score-team ${match.phase === 'settled' && match.goals.home > match.goals.away ? 'sim-score-winner' : ''}`}>
           <span className="sim-score-name">{match.homeTeam}</span>
-          <span className="sim-score-num">{match.score.home}</span>
+          <span className="sim-score-num">{match.goals.home}</span>
         </div>
         <div className="sim-score-divider">:</div>
-        <div className={`sim-score-team ${match.phase === 'settled' && match.score.away > match.score.home ? 'sim-score-winner' : ''}`}>
+        <div className={`sim-score-team ${match.phase === 'settled' && match.goals.away > match.goals.home ? 'sim-score-winner' : ''}`}>
           <span className="sim-score-name">{match.awayTeam}</span>
-          <span className="sim-score-num">{match.score.away}</span>
+          <span className="sim-score-num">{match.goals.away}</span>
         </div>
       </div>
 

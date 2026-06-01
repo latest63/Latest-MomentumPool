@@ -21,7 +21,8 @@ export interface SimMatch {
   phase: SimPhase;
   phaseElapsed: number;
   phaseStartedAt: number; // Date.now() when current phase began — enables wall-clock timing
-  score: { home: number; away: number };
+  score: { home: number; away: number }; // points from all events
+  goals: { home: number; away: number }; // actual goal count
   events: SimEvent[];
   momentumHome: number; // 0-100 (home's momentum share)
   deposits: { home: number; away: number };
@@ -146,6 +147,7 @@ export class SimEngine {
       phaseElapsed: 0,
       phaseStartedAt: Date.now(),
       score: { home: 0, away: 0 },
+      goals: { home: 0, away: 0 },
       events: [],
       momentumHome: 50,
       deposits: { home: 0, away: 0 },
@@ -327,6 +329,7 @@ export class SimEngine {
     if (roll < 4 * lateBonus) {
       // ⚽ GOAL — +3 points
       this.match.score[team] += 3;
+      this.match.goals[team] += 1;
       this.match.events.push({ minute, type: 'goal', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       if (Math.random() < 0.25 && !this.goalCluster) {
         this.goalCluster = 1;

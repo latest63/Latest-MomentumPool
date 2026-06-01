@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
 import { useAccount, useSwitchChain, useWriteContract, useReadContract } from 'wagmi';
+import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
 import TeamLogo from '@/components/TeamLogo';
@@ -25,6 +26,7 @@ interface SimMatch {
   phase: 'open' | 'live' | 'settled';
   phaseElapsed: number;
   score: { home: number; away: number };
+  goals: { home: number; away: number };
   events: SimEvent[];
   momentumHome: number;
   deposits: { home: number; away: number };
@@ -119,6 +121,8 @@ function simToMomentum(match: SimMatch): MomentumData {
   return {
     homeScore: match.score.home,
     awayScore: match.score.away,
+    homeGoals: match.goals.home,
+    awayGoals: match.goals.away,
     homeTeam: match.homeTeam,
     awayTeam: match.awayTeam,
     half: match.phase === 'live' ? '2ND' : match.phase === 'open' ? '1ST' : 'FT',
@@ -138,6 +142,7 @@ function simToEventItems(events: SimEvent[]): EventItem[] {
 /* ═══════════════════════════════════════ PAGE ═══════════════════════════════════════ */
 export default function ArenaPage() {
   const { toast } = useToast();
+  const { setLoading } = useLoading();
   const [state, setState] = useState<SimState | null>(null);
   const [matches, setMatches] = useState<MatchSummary[]>(
     () => MATCHUP_IDS.map(id => {
@@ -215,6 +220,11 @@ export default function ArenaPage() {
     const interval = setInterval(poll, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Show loading overlay while first state hasn't arrived
+  useEffect(() => {
+    setLoading(!state);
+  }, [state, setLoading]);
 
   const match = state?.match ?? null;
   const isFirstLoad = !state;

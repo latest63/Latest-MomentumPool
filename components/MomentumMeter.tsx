@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 
 /* ─── Types ─── */
 export interface MomentumData {
-  homeScore: number;
+  homeScore: number;   // points
   awayScore: number;
+  homeGoals: number;   // actual goal count
+  awayGoals: number;
   homeTeam: string;
   awayTeam: string;
   half: string;
@@ -76,8 +78,12 @@ export function MomentumBar({ data, loading, homeTeam = '', awayTeam = '', actua
     );
   }
 
-  const total = Math.abs(data.homeScore) + Math.abs(data.awayScore) || 1;
-  const homePct = (data.homeScore / total) * 100 || 50;
+  const displayHomeScore = actualHomeScore ?? data.homeScore;
+  const displayAwayScore = actualAwayScore ?? data.awayScore;
+  const homeGoals = actualHomeScore !== undefined ? Math.floor(actualHomeScore / 3) : data.homeGoals;
+  const awayGoals = actualAwayScore !== undefined ? Math.floor(actualAwayScore / 3) : data.awayGoals;
+  const total = Math.abs(displayHomeScore) + Math.abs(displayAwayScore) || 1;
+  const homePct = (displayHomeScore / total) * 100 || 50;
   const showActual = actualHomeScore !== undefined && actualAwayScore !== undefined;
 
   return (
@@ -85,29 +91,27 @@ export function MomentumBar({ data, loading, homeTeam = '', awayTeam = '', actua
       <div className="wc-teams">
         <div className="wc-left">
           <span className="wc-name">{data.homeTeam}</span>
-          <span className="wc-score">{showActual ? actualHomeScore : data.homeScore}</span>
+          <span className="wc-score">{showActual ? homeGoals : data.homeGoals}</span>
         </div>
         <span className="wc-half-badge">{data.half} HALF</span>
         <div className="wc-right">
-          <span className="wc-score">{showActual ? actualAwayScore : data.awayScore}</span>
+          <span className="wc-score">{showActual ? awayGoals : data.awayGoals}</span>
           <span className="wc-name">{data.awayTeam}</span>
         </div>
       </div>
-      {showActual && (
-        <div className="wc-points">
-          <span>{data.homeScore} pts</span>
-          <span>{data.awayScore} pts</span>
-        </div>
-      )}
+      <div className="wc-points">
+        <span>{displayHomeScore} pts</span>
+        <span>{displayAwayScore} pts</span>
+      </div>
       <div className="wc-track">
         <div className="wc-fill" style={{ width: `${homePct}%` }} />
         <div className="wc-fill wc-fill-away" style={{ width: `${100 - homePct}%` }} />
         <div className="wc-divider" />
       </div>
       <div className="wc-dom">
-        {data.homeScore > data.awayScore
+        {homeGoals > awayGoals
           ? `${data.homeTeam} Leading`
-          : data.awayScore > data.homeScore
+          : awayGoals > homeGoals
             ? `${data.awayTeam} Leading`
             : 'Level'}
       </div>
