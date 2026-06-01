@@ -4,6 +4,7 @@
 import { createWalletClient, createPublicClient, http, decodeEventLog, getAddress } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { FACTORY_ABI, POOL_ABI } from '@/lib/pool-abi';
+import { insertDeployedPool } from '@/lib/supabase';
 
 const xLayer = {
   id: 1952,
@@ -57,7 +58,16 @@ export async function deployPool(
     try {
       const event = decodeEventLog({ abi: FACTORY_ABI, data: log.data, topics: log.topics });
       if (event.eventName === 'PoolCreated') {
-        return event.args.pool as string;
+        const poolAddr = event.args.pool as string;
+        // Persist to Supabase so Vercel serverless can discover it
+        insertDeployedPool(
+          poolAddr.toLowerCase(),
+          matchId,
+          homeTeam,
+          awayTeam,
+          tokenAddress.toLowerCase(),
+        ).catch(err => console.error('[relayer] supabase insert failed:', (err as Error).message));
+        return poolAddr;
       }
     } catch { /* skip non-event logs */ }
   }
