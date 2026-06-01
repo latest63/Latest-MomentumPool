@@ -164,7 +164,7 @@ export default function ArenaPage() {
       };
     })
   );
-  const [selected, setSelected] = useState('sim-1');
+  const [selected, setSelected] = useState<string | null>(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [depositAmount, setDepositAmount] = useState('0.001');
   const { address, isConnected, chainId } = useAccount();
@@ -244,7 +244,11 @@ export default function ArenaPage() {
     const poll = async () => {
       try {
         const res = await fetch('/api/sim/state');
-        if (res.ok) setState(await res.json());
+        if (res.ok) {
+          const data = await res.json();
+          setState(data);
+          if (data.match?.id) setSelected(data.match.id);
+        }
       } catch {}
     };
     poll();
@@ -362,7 +366,7 @@ export default function ArenaPage() {
           </div>
           <MatchCarousel
             matches={matches}
-            selected={selected}
+            selected={selected ?? 'sim-1'}
             onSelect={(id) => { playSelect(); setSelected(id); }}
           />
         </div>
