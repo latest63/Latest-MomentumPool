@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════
-   Momentum Pool — Simulation Engine
-   1 match at a time, cycles through 5 pairings
+   Momentum Pool — Schedule-Based Engine
+   5 matches on a fixed UTC schedule, cycling daily
+   Phase is computed from wall clock — cold starts have zero impact
    ═══════════════════════════════════════════════════ */
 
 export type SimPhase = 'open' | 'live' | 'settled';
@@ -20,23 +21,23 @@ export interface SimMatch {
   awayTeam: string;
   phase: SimPhase;
   phaseElapsed: number;
-  phaseStartedAt: number; // Date.now() when current phase began — enables wall-clock timing
-  score: { home: number; away: number }; // points from all events
-  goals: { home: number; away: number }; // actual goal count
+  phaseStartedAt: number;
+  score: { home: number; away: number };
+  goals: { home: number; away: number };
   events: SimEvent[];
-  momentumHome: number; // 0-100 (home's momentum share)
+  momentumHome: number;
   deposits: { home: number; away: number };
   round: number;
   poolAddress: string | null;
-  tokenAddress: string; // address(0) = native OKB
+  tokenAddress: string;
   settledOnChain: boolean;
 }
 
 export interface SimState {
   match: SimMatch | null;
   nextUp: { id: string; homeTeam: string; awayTeam: string } | null;
-  matchIndex: number; // 0-4 which of the 5 pairings is current
-  totalMatches: number; // how many matches played this cycle
+  matchIndex: number;
+  totalMatches: number;
   tick: number;
   running: boolean;
   deployedPools: DeployedPool[];
@@ -51,200 +52,199 @@ export interface DeployedPool {
   deployedAt: number;
 }
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { saveEngineState, loadEngineState } from '@/lib/supabase';
-
-const STATE_FILE = path.resolve(process.cwd(), 'data/engine-state.json');
-const POOLS_FILE = path.resolve(process.cwd(), 'data/known-pools.json');
-
-/* ─── 5 Match Pairings (cycling) ─── */
-const USDG = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
-
-const MATCHES = [
-  { id: 'sim-1', home: 'Nigeria', away: 'Brazil', token: USDG, label: 'USDg' },
-  { id: 'sim-2', home: 'Argentina', away: 'France', token: USDG, label: 'USDg' },
-  { id: 'sim-3', home: 'England', away: 'Germany', token: USDG, label: 'USDg' },
-  { id: 'sim-4', home: 'Portugal', away: 'Spain', token: USDG, label: 'USDg' },
-  { id: 'sim-5', home: 'Morocco', away: 'Senegal', token: USDG, label: 'USDg' },
-];
-
-const PHASE_DURATION = {
-  open: 3600,   // 1hr deposit window (before match)
-  live: 5400,   // 90min match (45 + 45)
-  settled: 3600, // 1hr cooldown before next match
-};
-
 /* ─── Player name pools ─── */
-const FIRST_NAMES = [
-  'A.', 'B.', 'C.', 'D.', 'E.', 'F.', 'G.', 'H.', 'I.', 'J.',
-  'K.', 'L.', 'M.', 'N.', 'O.', 'P.', 'R.', 'S.', 'T.', 'V.',
-];
-
+const FIRST_NAMES = ['A.','B.','C.','D.','E.','F.','G.','H.','I.','J.','K.','L.','M.','N.','O.','P.','R.','S.','T.','V.'];
 const SURNAMES: Record<string, string[]> = {
-  Nigeria: ['Osimhen', 'Lookman', 'Iwobi', 'Ndidi', 'Aina', 'Bassey', 'Chukwueze', 'Onyeka', 'Ekwah', 'Onana', 'Moses', 'Yusuf'],
-  Brazil: ['Silva', 'Jesus', 'Neymar', 'Raphinha', 'Casemiro', 'Marcos', 'Vinicius', 'Rodrygo', 'Martins', 'Gomes', 'Alves', 'Luiz'],
-  Argentina: ['Messi', 'Martinez', 'Fernandez', 'MacAllister', 'Alvarez', 'Romero', 'Tagliafico', 'Molina', 'Paredes', 'Correa', 'Palacios'],
-  France: ['Mbappe', 'Griezmann', 'Tchouameni', 'Camavinga', 'Dembélé', 'Upamecano', 'Hernandez', 'Pavard', 'Kante', 'Thuram', 'Kolo Muani'],
-  England: ['Kane', 'Bellingham', 'Rice', 'Saka', 'Foden', 'Rashford', 'Stones', 'Walker', 'Pickford', 'Palmer', 'Alexander-Arnold'],
-  Germany: ['Havertz', 'Musiala', 'Wirtz', 'Kimmich', 'Sané', 'Gündogan', 'Schlotterbeck', 'Tah', 'Andrich', 'Fuellkrug', 'Raum'],
-  Portugal: ['Ronaldo', 'Fernandes', 'Leão', 'Silva', 'Dias', 'Cancelo', 'Neves', 'Palhinha', 'Sá', 'Jota', 'Nuno', 'Félix'],
-  Spain: ['Yamal', 'Williams', 'Olmo', 'Rodri', 'Ruiz', 'Laporte', 'Carvajal', 'Navas', 'Simón', 'Oyarzabal', 'Merino'],
-  Morocco: ['Hakimi', 'Amrabat', 'Ziyech', 'En-Nesyri', 'Saïss', 'Bounou', 'El-Hannous', 'Chair', 'Abde', 'Harit', 'Dari'],
-  Senegal: ['Mané', 'Sarr', 'Diallo', 'Gueye', 'Koulibaly', 'Mendy', 'Leão', 'Diagne', 'Jakobs', 'Ndiaye', 'Camara'],
+  Nigeria: ['Osimhen','Lookman','Iwobi','Ndidi','Aina','Bassey','Chukwueze','Onyeka','Ekwah','Onana','Moses','Yusuf'],
+  Brazil: ['Silva','Jesus','Neymar','Raphinha','Casemiro','Marcos','Vinicius','Rodrygo','Martins','Gomes','Alves','Luiz'],
+  Argentina: ['Messi','Martinez','Fernandez','MacAllister','Alvarez','Romero','Tagliafico','Molina','Paredes','Correa','Palacios'],
+  France: ['Mbappe','Griezmann','Tchouameni','Camavinga','Dembélé','Upamecano','Hernandez','Pavard','Kante','Thuram','Kolo Muani'],
+  England: ['Kane','Bellingham','Rice','Saka','Foden','Rashford','Stones','Walker','Pickford','Palmer','Alexander-Arnold'],
+  Germany: ['Havertz','Musiala','Wirtz','Kimmich','Sané','Gündogan','Schlotterbeck','Tah','Andrich','Fuellkrug','Raum'],
+  Portugal: ['Ronaldo','Fernandes','Leão','Silva','Dias','Cancelo','Neves','Palhinha','Sá','Jota','Nuno','Félix'],
+  Spain: ['Yamal','Williams','Olmo','Rodri','Ruiz','Laporte','Carvajal','Navas','Simón','Oyarzabal','Merino'],
+  Morocco: ['Hakimi','Amrabat','Ziyech','En-Nesyri','Saïss','Bounou','El-Hannous','Chair','Abde','Harit','Dari'],
+  Senegal: ['Mané','Sarr','Diallo','Gueye','Koulibaly','Mendy','Leão','Diagne','Jakobs','Ndiaye','Camara'],
 };
 
 function getRandomPlayer(team: string): string {
   const surnames = SURNAMES[team] || SURNAMES['Nigeria'];
   const fn = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-  const sn = surnames[Math.floor(Math.random() * surnames.length)];
-  return `${fn}${sn}`;
+  return `${fn}${surnames[Math.floor(Math.random() * surnames.length)]}`;
+}
+function randomInt(min: number, max: number): number { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+/* ─── 5 Match Pairings ─── */
+const USDG = '0xa78e2baabaf5c4f36b7fc394725deb68d332eec1';
+
+const MATCHES = [
+  { id: 'sim-1', home: 'Nigeria', away: 'Brazil', token: USDG },
+  { id: 'sim-2', home: 'Argentina', away: 'France', token: USDG },
+  { id: 'sim-3', home: 'England', away: 'Germany', token: USDG },
+  { id: 'sim-4', home: 'Portugal', away: 'Spain', token: USDG },
+  { id: 'sim-5', home: 'Morocco', away: 'Senegal', token: USDG },
+];
+
+/* ─── Fixed UTC schedule (daily cycling) ───
+   Each slot = 3.5 hours: 1hr deposit + 1.5hr match + 1hr cooldown
+   First match deposit opens at 00:00 UTC each day          */
+const MATCH_DURATION = 3.5 * 3600; // 3.5 hours per match slot
+const OPEN_DURATION   = 3600;      // 1hr deposit window
+const LIVE_DURATION   = 5400;      // 1.5hr match
+const SETTLED_DURATION = 3600;     // 1hr cooldown
+
+function getScheduleForDay(dayTs: number) {
+  // dayTs = midnight UTC of some day
+  return MATCHES.map((m, i) => ({
+    ...m,
+    depositStart: dayTs + i * MATCH_DURATION * 1000,
+    kickoff:      dayTs + (i * MATCH_DURATION + OPEN_DURATION) * 1000,
+    matchEnd:     dayTs + (i * MATCH_DURATION + OPEN_DURATION + LIVE_DURATION) * 1000,
+    slotEnd:      dayTs + (i + 1) * MATCH_DURATION * 1000,
+  }));
 }
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/* ─── Engine: one match at a time ─── */
+/* ══════════════════════════════════════════════════
+   Engine — schedule-driven, no tick loop needed
+   ══════════════════════════════════════════════════ */
 export class SimEngine {
   private match: SimMatch | null = null;
-  private queue: typeof MATCHES = [];
   private matchIndex = 0;
   private totalMatches = 0;
   private round = 1;
-  private tickCount = 0;
-  private intervalId: ReturnType<typeof setInterval> | null = null;
   private running = false;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
   private deployedPools: DeployedPool[] = [];
-
-  /* per-match event timing */
   private eventTimer = 0;
   private goalCluster = 0;
 
   /* Real contract integration */
   public onSettle: ((matchId: string, winner: TeamSide, homeScore: number, awayScore: number, poolAddress: string) => void) | null = null;
-  /* Called when a new real match is about to start — should return the pool address */
+  public deployPoolForMatch: ((matchId: string, homeTeam: string, awayTeam: string, token: string) => Promise<string | null>) | null = null;
+  /** Pre-loaded pool addresses from Supabase / on-chain — keyed by matchId */
+  public poolRegistry: Map<string, string> = new Map();
+  /** Pre-loaded pool addresses — aliased for backward compat */
   public onNewMatch: ((matchId: string, homeTeam: string, awayTeam: string, tokenAddress: string) => Promise<string | null>) | null = null;
 
   constructor() {
-    // Try to restore from saved file — survives local/VPS restarts
-    if (!this.loadState()) {
-      this.fillQueue();
-      this.advanceToNext();
-    }
-    this.start(); // auto-run from server start — match doesn't wait
+    this.syncFromSchedule();
+    this.start();
   }
 
-  /** Load state from Supabase — call after construction for Vercel serverless. */
-  async initFromSupabase(): Promise<boolean> {
-    try {
-      const raw = await loadEngineState();
-      if (raw) {
-        const saved = JSON.parse(raw);
-        if (saved.match) {
-          this.restoreFromData(saved);
-          return true;
-        }
+  /* ─── Schedule computation ─── */
+  private getCurrentSlot(): { idx: number; depositStart: number; kickoff: number; matchEnd: number; slotEnd: number } | null {
+    const now = Date.now();
+    const midnight = new Date(Date.UTC(
+      new Date(now).getUTCFullYear(),
+      new Date(now).getUTCMonth(),
+      new Date(now).getUTCDate(),
+    )).getTime();
+
+    // Check today's slots
+    for (let i = 0; i < 5; i++) {
+      const depositStart = midnight + i * MATCH_DURATION * 1000;
+      const kickoff = midnight + (i * MATCH_DURATION + OPEN_DURATION) * 1000;
+      const matchEnd = midnight + (i * MATCH_DURATION + OPEN_DURATION + LIVE_DURATION) * 1000;
+      const slotEnd = midnight + (i + 1) * MATCH_DURATION * 1000;
+      if (now >= depositStart && now < slotEnd) {
+        return { idx: i, depositStart, kickoff, matchEnd, slotEnd };
       }
-    } catch { /* silence */ }
-    return false;
-  }
-
-  private fillQueue() {
-    if (this.queue.length === 0) {
-      this.queue = [...MATCHES];
     }
+    return null; // between last slot and midnight — gap
   }
 
-  private advanceToNext() {
-    this.fillQueue();
-    if (this.queue.length === 0) return;
+  /** Sync match state from the wall-clock schedule */
+  private syncFromSchedule(): boolean {
+    const slot = this.getCurrentSlot();
+    if (!slot) {
+      this.match = null;
+      this.matchIndex = -1;
+      return false;
+    }
 
-    const pairing = this.queue.shift()!;
-    this.matchIndex = MATCHES.findIndex(m => m.id === pairing.id);
-    this.totalMatches++;
+    const now = Date.now();
+    const pairing = MATCHES[slot.idx];
+    const phase: SimPhase = now < slot.kickoff ? 'open'
+      : now < slot.matchEnd ? 'live'
+      : 'settled';
+
+    // Check if we already have the right match
+    if (this.match && this.match.id === pairing.id && this.match.phase === phase) {
+      // Same match and phase — just update elapsed
+      this.match.phaseElapsed = Math.floor((now - this.match.phaseStartedAt) / 1000);
+      return true;
+    }
+
+    // New match or phase change
+    const phaseStartedAt = phase === 'open' ? slot.depositStart
+      : phase === 'live' ? slot.kickoff
+      : slot.matchEnd;
+
+    // Preserve events if same match but new phase
+    const sameMatch = !!(this.match && this.match.id === pairing.id);
+    const existingEvents = sameMatch ? this.match!.events : [];
+    const existingScore = sameMatch ? { ...this.match!.score } : { home: 0, away: 0 };
+    const existingGoals = sameMatch ? { ...this.match!.goals } : { home: 0, away: 0 };
+    const existingMomentum = sameMatch ? this.match!.momentumHome : 50;
+
+    const poolAddr = this.poolRegistry.get(pairing.id) || null;
+
+    // Trigger auto-settle if moving into settled phase
+    if (phase === 'settled' && !sameMatch && poolAddr && this.onSettle) {
+      const winner: TeamSide =
+        existingScore.home > existingScore.away ? 'home'
+        : existingScore.away > existingScore.home ? 'away'
+        : Math.random() < 0.5 ? 'home' : 'away';
+      this.onSettle(pairing.id, winner, existingScore.home, existingScore.away, poolAddr);
+    }
 
     this.match = {
       id: pairing.id,
       homeTeam: pairing.home,
       awayTeam: pairing.away,
-      phase: 'open',
-      phaseElapsed: 0,
-      phaseStartedAt: Date.now(),
-      score: { home: 0, away: 0 },
-      goals: { home: 0, away: 0 },
-      events: [],
-      momentumHome: 50,
+      phase,
+      phaseElapsed: Math.floor((now - phaseStartedAt) / 1000),
+      phaseStartedAt,
+      score: existingScore,
+      goals: existingGoals,
+      events: existingEvents,
+      momentumHome: existingMomentum,
       deposits: { home: 0, away: 0 },
       round: this.round,
-      poolAddress: null,
+      poolAddress: poolAddr,
       tokenAddress: pairing.token,
-      settledOnChain: false,
+      settledOnChain: phase === 'settled',
     };
-    this.eventTimer = 0;
-    this.goalCluster = 0;
 
-    // Auto-deploy pool (all matches use real pools now)
-    if (this.onNewMatch) {
-      this.onNewMatch(pairing.id, pairing.home, pairing.away, pairing.token).then(addr => {
+    this.matchIndex = slot.idx;
+    if (!sameMatch) {
+      this.totalMatches++;
+      this.eventTimer = 0;
+      this.goalCluster = 0;
+    }
+
+    // Trigger pool deploy if needed (only when entering open phase for the first time)
+    if (phase === 'open' && !poolAddr && this.deployPoolForMatch) {
+      this.deployPoolForMatch(pairing.id, pairing.home, pairing.away, pairing.token).then(addr => {
         if (addr && this.match && this.match.id === pairing.id) {
           this.match.poolAddress = addr;
+          this.poolRegistry.set(pairing.id, addr);
+          this.deployedPools.push({
+            poolAddress: addr,
+            matchId: pairing.id,
+            homeTeam: pairing.home,
+            awayTeam: pairing.away,
+            tokenAddress: pairing.token,
+            deployedAt: Date.now(),
+          });
         }
-      }).catch(err => {
-        console.error(`[sim] Failed to deploy pool for ${pairing.id}:`, err);
-      });
+      }).catch(err => console.error(`[sim] Pool deploy failed for ${pairing.id}:`, err));
     }
+
+    return true;
   }
 
-  /* ─── Persistence: survive server restarts (Supabase + local file) ─── */
-  private saveState() {
-    try {
-      const data = JSON.stringify({
-        match: this.match,
-        queue: this.queue,
-        matchIndex: this.matchIndex,
-        totalMatches: this.totalMatches,
-        round: this.round,
-        tickCount: this.tickCount,
-        eventTimer: this.eventTimer,
-        goalCluster: this.goalCluster,
-        deployedPools: this.deployedPools,
-        savedAt: Date.now(),
-      });
-      // Local file (VPS / local dev fallback)
-      fs.writeFileSync(STATE_FILE, data, 'utf-8');
-      // Supabase (Vercel serverless — survives cold starts)
-      saveEngineState(data).catch(() => {});
-    } catch (e) {
-      // fail silently — persistence is best-effort
-    }
-  }
-
-  private loadState(): boolean {
-    try {
-      if (!fs.existsSync(STATE_FILE)) return false;
-      const raw = fs.readFileSync(STATE_FILE, 'utf-8');
-      const saved = JSON.parse(raw);
-      if (!saved.match) return false;
-      this.restoreFromData(saved);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private restoreFromData(saved: any) {
-    this.match = saved.match;
-    this.queue = saved.queue || [];
-    this.matchIndex = saved.matchIndex ?? 0;
-    this.totalMatches = saved.totalMatches ?? 0;
-    this.round = saved.round ?? 1;
-    this.tickCount = saved.tickCount ?? 0;
-    this.eventTimer = saved.eventTimer ?? 0;
-    this.goalCluster = saved.goalCluster ?? 0;
-    this.deployedPools = saved.deployedPools || [];
-  }
-
+  /* ─── Lifecycle ─── */
   start() {
     if (this.running) return;
     this.running = true;
@@ -257,33 +257,52 @@ export class SimEngine {
     this.intervalId = null;
   }
 
-  reset() {
-    this.stop();
-    this.queue = [];
-    this.totalMatches = 0;
-    this.round = 1;
-    this.matchIndex = 0;
-    this.tickCount = 0;
-    this.match = null;
-    this.eventTimer = 0;
-    this.goalCluster = 0;
-    this.fillQueue();
-    this.advanceToNext();
+  /* ─── Tick — sync schedule + simulate live events ─── */
+  private tick() {
+    this.syncFromSchedule();
+    if (this.match && this.match.phase === 'live') {
+      this.match.phaseElapsed = Math.floor((Date.now() - this.match.phaseStartedAt) / 1000);
+      this.simulateEvents();
+    }
   }
 
+  /* ─── State ─── */
   getState(): SimState {
-    const nextPairing = this.queue[0] || null;
+    const now = Date.now();
+    const midnight = new Date(Date.UTC(
+      new Date(now).getUTCFullYear(),
+      new Date(now).getUTCMonth(),
+      new Date(now).getUTCDate(),
+    )).getTime();
+
+    // Find next upcoming match
+    let nextUp: { id: string; homeTeam: string; awayTeam: string } | null = null;
+    const slot = this.getCurrentSlot();
+    const nextIdx = slot ? (slot.idx + 1) % 5 : 0;
+    const nextMatch = MATCHES[nextIdx];
+    const nextStart = slot
+      ? midnight + (nextIdx < 5 ? nextIdx : 0) * MATCH_DURATION * 1000
+      : midnight; // no current match means next is match 0 at midnight
+
+    if (!slot) {
+      // In the gap — next match is midnight
+      nextUp = { id: MATCHES[0].id, homeTeam: MATCHES[0].home, awayTeam: MATCHES[0].away };
+    } else {
+      nextUp = { id: nextMatch.id, homeTeam: nextMatch.home, awayTeam: nextMatch.away };
+    }
+
     const match = this.match ? {
       ...this.match,
       phaseElapsed: Math.floor((Date.now() - this.match.phaseStartedAt) / 1000),
       events: this.match.events.slice(-50),
     } : null;
+
     return {
       match,
-      nextUp: nextPairing ? { id: nextPairing.id, homeTeam: nextPairing.home, awayTeam: nextPairing.away } : null,
+      nextUp,
       matchIndex: this.matchIndex,
       totalMatches: this.totalMatches,
-      tick: this.tickCount,
+      tick: 0,
       running: this.running,
       deployedPools: this.deployedPools,
     };
@@ -296,9 +315,27 @@ export class SimEngine {
     return true;
   }
 
+  /* ─── Claim (mock) ─── */
+  claim(team: TeamSide): { won: boolean; payout: number } | null {
+    if (!this.match || this.match.phase !== 'settled') return null;
+    const total = this.match.deposits.home + this.match.deposits.away;
+    if (total === 0) return { won: false, payout: 0 };
+    const winner: TeamSide =
+      this.match.score.home > this.match.score.away ? 'home'
+      : this.match.score.away > this.match.score.home ? 'away'
+      : Math.random() < 0.5 ? 'home' : 'away';
+    if (team !== winner) return { won: false, payout: 0 };
+    const myDeposit = this.match.deposits[team];
+    const opponentDeposit = this.match.deposits[team === 'home' ? 'away' : 'home'];
+    const share = total === 0 ? 0 : myDeposit / (myDeposit + opponentDeposit);
+    return { won: true, payout: total * 0.98 * share };
+  }
+
+  /* ─── Pool management ─── */
   setPoolAddress(address: string) {
     if (this.match) {
       this.match.poolAddress = address;
+      this.poolRegistry.set(this.match.id, address);
       this.deployedPools.push({
         poolAddress: address,
         matchId: this.match.id,
@@ -307,164 +344,25 @@ export class SimEngine {
         tokenAddress: this.match.tokenAddress,
         deployedAt: Date.now(),
       });
-      // Persist to known-pools file (survives restarts)
-      this.saveKnownPool(address);
     }
   }
 
-  /* ─── Persist pool address to known-pools file ─── */
-  private saveKnownPool(address: string) {
-    if (!this.match) return;
-    try {
-      let known = [];
-      if (fs.existsSync(POOLS_FILE)) {
-        known = JSON.parse(fs.readFileSync(POOLS_FILE, 'utf-8'));
-      }
-      // Only add if not already present
-      if (!known.some((p: any) => p.poolAddress.toLowerCase() === address.toLowerCase())) {
-        known.push({
-          poolAddress: address.toLowerCase(),
-          matchId: this.match.id,
-          homeTeam: this.match.homeTeam,
-          awayTeam: this.match.awayTeam,
-          tokenAddress: this.match.tokenAddress.toLowerCase(),
-          deployedAt: Date.now(),
-        });
-        fs.writeFileSync(POOLS_FILE, JSON.stringify(known, null, 2), 'utf-8');
-      }
-    } catch (e) {
-      // best-effort
-    }
-  }
-
-  /* ─── Claim (mock) ─── */
-  claim(team: TeamSide): { won: boolean; payout: number } | null {
-    if (!this.match || this.match.phase !== 'settled') return null;
-    const total = this.match.deposits.home + this.match.deposits.away;
-    if (total === 0) return { won: false, payout: 0 };
-
-    const winner: TeamSide =
-      this.match.score.home > this.match.score.away ? 'home'
-      : this.match.score.away > this.match.score.home ? 'away'
-      : Math.random() < 0.5 ? 'home' : 'away';
-
-    if (team !== winner) return { won: false, payout: 0 };
-
-    const myDeposit = this.match.deposits[team];
-    const opponentDeposit = this.match.deposits[team === 'home' ? 'away' : 'home'];
-    const share = total === 0 ? 0 : myDeposit / (myDeposit + opponentDeposit);
-    const payout = total * 0.98 * share;
-    return { won: true, payout };
-  }
-
-  /* ─── Main tick ─── */
-  private tick() {
-    if (!this.match) return;
-    this.tickCount++;
-
-    // Compute total wall-clock time since this match began
-    const totalElapsed = Math.floor((Date.now() - (this.match.phaseStartedAt || Date.now())) / 1000);
-
-    // Determine correct phase from wall-clock — catches up immediately after cold start
-    if (totalElapsed >= PHASE_DURATION.open + PHASE_DURATION.live + PHASE_DURATION.settled) {
-      // Full cycle elapsed → advance to next match
-      this.restartCycle();
-      this.saveState();
-      return;
-    }
-
-    if (totalElapsed >= PHASE_DURATION.open + PHASE_DURATION.live) {
-      // Should be in settled phase
-      if (this.match.phase !== 'settled') {
-        // Auto-settle if pool exists and not yet settled
-        if (this.match.poolAddress && !this.match.settledOnChain && this.onSettle) {
-          this.match.settledOnChain = true;
-          const winner: TeamSide =
-            this.match.score.home > this.match.score.away ? 'home'
-            : this.match.score.away > this.match.score.home ? 'away'
-            : Math.random() < 0.5 ? 'home' : 'away';
-          this.onSettle(this.match.id, winner, this.match.score.home, this.match.score.away, this.match.poolAddress);
-        }
-        this.match.phase = 'settled';
-        this.match.phaseStartedAt = Date.now() - (totalElapsed - PHASE_DURATION.open - PHASE_DURATION.live) * 1000;
-      }
-      this.match.phaseElapsed = Math.floor((Date.now() - this.match.phaseStartedAt) / 1000);
-    } else if (totalElapsed >= PHASE_DURATION.open) {
-      // Should be in live phase
-      if (this.match.phase !== 'live') {
-        // If transitioning from open, run auto-settle if pool exists
-        if (this.match.phase === 'open' && this.match.poolAddress && !this.match.settledOnChain && this.onSettle) {
-          // already past settle — skip auto-settle for catch-up
-        }
-        this.match.phase = 'live';
-        this.match.phaseStartedAt = Date.now() - (totalElapsed - PHASE_DURATION.open) * 1000;
-        this.match.momentumHome = 50 + (Math.random() * 20 - 10);
-        this.match.momentumHome = Math.max(20, Math.min(80, this.match.momentumHome));
-        this.eventTimer = 0;
-      }
-      this.match.phaseElapsed = Math.floor((Date.now() - this.match.phaseStartedAt) / 1000);
-      this.simulateEvents();
-    } else {
-      // Still in open phase
-      this.match.phase = 'open';
-      this.match.phaseElapsed = totalElapsed;
-    }
-
-    this.saveState(); // persist after every tick — timer survives restarts
-  }
-
-  private transitionToLive() {
-    if (!this.match) return;
-    this.match.phase = 'live';
-    this.match.phaseStartedAt = Date.now();
-    this.match.phaseElapsed = 0;
-    this.match.momentumHome = 50 + (Math.random() * 20 - 10);
-    this.match.momentumHome = clamp(this.match.momentumHome, 20, 80);
-    this.eventTimer = 0;
-  }
-
-  private transitionToSettled() {
-    if (!this.match) return;
-    this.match.phase = 'settled';
-    this.match.phaseStartedAt = Date.now();
-    this.match.phaseElapsed = 0;
-
-    // Auto-settle on-chain if pool attached
-    if (this.match.poolAddress && !this.match.settledOnChain && this.onSettle) {
-      this.match.settledOnChain = true;
-      const winner: TeamSide =
-        this.match.score.home > this.match.score.away ? 'home'
-        : this.match.score.away > this.match.score.home ? 'away'
-        : Math.random() < 0.5 ? 'home' : 'away';
-      this.onSettle(this.match.id, winner, this.match.score.home, this.match.score.away, this.match.poolAddress);
-    }
-  }
-
-  private restartCycle() {
-    this.advanceToNext();
-    // If queue wrapped around, increment round
-    const playedCount = this.totalMatches;
-    if (playedCount > 0 && playedCount % 5 === 0) this.round++;
-  }
-
-  /* ─── Event Generation ─── */
+  /* ═══════════════════════════════════════════
+     Event Generation (unchanged from original)
+     ═══════════════════════════════════════════ */
   private simulateEvents() {
     if (!this.match) return;
-
     this.eventTimer -= 1;
     if (this.eventTimer > 0) return;
-
-    this.eventTimer = randomInt(60, 240); // event every 1-4 min (real football pace)
+    this.eventTimer = randomInt(60, 240);
 
     const minute = this.match.phaseElapsed;
-    const lateBonus = minute > PHASE_DURATION.live - 600 ? 1.5 : 1.0; // stoppage time boost last 10min
+    const lateBonus = minute > LIVE_DURATION - 600 ? 1.5 : 1.0;
     const roll = Math.random() * 100;
     const homeProb = this.match.momentumHome / 100;
     const team: TeamSide = Math.random() < homeProb ? 'home' : 'away';
 
-    // All events contribute points to the score, not just goals
     if (roll < 4 * lateBonus) {
-      // ⚽ GOAL — +3 points
       this.match.score[team] += 3;
       this.match.goals[team] += 1;
       this.match.events.push({ minute, type: 'goal', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
@@ -474,46 +372,36 @@ export class SimEngine {
       }
       this.match.momentumHome += team === 'home' ? 12 : -12;
     } else if (roll < 10 * lateBonus) {
-      // 🟥 RED CARD — +2 to opponent
       const opp: TeamSide = team === 'home' ? 'away' : 'home';
       this.match.score[opp] += 2;
       this.match.events.push({ minute, type: 'red_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? -15 : 15;
     } else if (roll < 22 * lateBonus) {
-      // 🟨 YELLOW CARD — +1 to opponent
       const opp: TeamSide = team === 'home' ? 'away' : 'home';
       this.match.score[opp] += 1;
       this.match.events.push({ minute, type: 'yellow_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? -5 : 5;
     } else if (roll < 35 * lateBonus) {
-      // 🚩 CORNER — +1 to team
       this.match.score[team] += 1;
       this.match.events.push({ minute, type: 'corner', team, player: '' });
       this.match.momentumHome += team === 'home' ? 1 : -1;
     } else if (roll < 55 * lateBonus) {
-      // 💥 WOODWORK — +1 to team
       this.match.score[team] += 1;
       this.match.events.push({ minute, type: 'woodwork', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? 2 : -2;
     } else if (roll < 75 * lateBonus) {
-      // 🎯 SHOT ON TARGET — +1 to team
       this.match.score[team] += 1;
       this.match.events.push({ minute, type: 'shot_on_target', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? 1.5 : -1.5;
     } else {
-      // FOUL — no points
       this.match.events.push({ minute, type: 'foul', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
       this.match.momentumHome += team === 'home' ? -0.5 : 0.5;
     }
 
-    this.match.momentumHome = clamp(this.match.momentumHome, 0, 100);
+    this.match.momentumHome = Math.max(0, Math.min(100, this.match.momentumHome));
     this.match.momentumHome += (Math.random() - 0.5) * 2;
-    this.match.momentumHome = clamp(this.match.momentumHome, 5, 95);
+    this.match.momentumHome = Math.max(5, Math.min(95, this.match.momentumHome));
   }
-}
-
-function clamp(v: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, v));
 }
 
 /* ─── Singleton access ─── */
@@ -524,12 +412,27 @@ export function getEngine(): SimEngine {
   return (globalThis as any).__simEngine;
 }
 
-/** Read all known pools from the persistent file (survives restarts) */
-export function getAllKnownPools(): DeployedPool[] {
+/** Load pool addresses from Supabase into the engine registry */
+export async function loadPoolRegistry(): Promise<void> {
   try {
-    if (fs.existsSync(POOLS_FILE)) {
-      return JSON.parse(fs.readFileSync(POOLS_FILE, 'utf-8'));
+    const { getDeployedPools } = await import('@/lib/supabase');
+    const rows = await getDeployedPools();
+    const engine = getEngine();
+    const deployed: DeployedPool[] = [];
+    for (const row of rows) {
+      const poolAddr = row.pool_address.toLowerCase();
+      if (!engine.poolRegistry.has(row.match_id)) {
+        engine.poolRegistry.set(row.match_id, poolAddr);
+      }
+      deployed.push({
+        poolAddress: poolAddr,
+        matchId: row.match_id,
+        homeTeam: row.home_team,
+        awayTeam: row.away_team,
+        tokenAddress: row.token_address,
+        deployedAt: new Date(row.created_at).getTime(),
+      });
     }
-  } catch {}
-  return [];
+    engine['deployedPools'] = deployed;
+  } catch { /* silence */ }
 }

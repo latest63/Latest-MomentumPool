@@ -90,21 +90,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Source 4: Persistent known-pools file (survives restarts)
-  if (pools.length === 0) {
-    try {
-      const { getAllKnownPools } = await import('@/lib/sim-engine');
-      const known = getAllKnownPools();
-      pools = known.map(p => ({
-        poolAddress: p.poolAddress.toLowerCase(),
-        matchId: p.matchId,
-        homeTeam: p.homeTeam,
-        awayTeam: p.awayTeam,
-      }));
-    } catch {}
-  }
-
-  // Source 5: Current engine match pool address (works on Vercel serverless)
+  // Source 4: Engine current match pool address (primary fallback)
   if (pools.length === 0) {
     try {
       const { getEngine } = await import('@/lib/sim-engine');
