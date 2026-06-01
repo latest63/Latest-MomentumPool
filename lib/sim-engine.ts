@@ -85,13 +85,14 @@ const MATCHES = [
   { id: 'sim-5', home: 'Morocco', away: 'Senegal', token: USDG },
 ];
 
-/* ─── Fixed UTC schedule (daily cycling) ───
-   Each slot = 3.5 hours: 1hr deposit + 1.5hr match + 1hr cooldown
-   First match deposit opens at 00:00 UTC each day          */
-const MATCH_DURATION = 3.5 * 3600; // 3.5 hours per match slot
-const OPEN_DURATION   = 3600;      // 1hr deposit window
-const LIVE_DURATION   = 5400;      // 1.5hr match
-const SETTLED_DURATION = 3600;     // 1hr cooldown
+/* ─── Fixed UTC schedule (10hr cycle → 12 matches/day) ───
+   Each slot = 2 hours: 30min deposit + 60min match + 30min cooldown
+   5 matches × 2hr = 10hr cycle → 2.4× per day = 12 pools/day
+   No gaps — always a match running                              */
+const MATCH_DURATION = 2 * 3600;   // 2 hours per match slot
+const OPEN_DURATION   = 1800;      // 30min deposit window
+const LIVE_DURATION   = 3600;      // 60min match
+const SETTLED_DURATION = 1800;     // 30min cooldown
 
 function getScheduleForDay(dayTs: number) {
   // dayTs = midnight UTC of some day
@@ -140,17 +141,18 @@ export class SimEngine {
       new Date(now).getUTCDate(),
     )).getTime();
 
-    // Check today's slots
-    for (let i = 0; i < 5; i++) {
-      const depositStart = midnight + i * MATCH_DURATION * 1000;
-      const kickoff = midnight + (i * MATCH_DURATION + OPEN_DURATION) * 1000;
-      const matchEnd = midnight + (i * MATCH_DURATION + OPEN_DURATION + LIVE_DURATION) * 1000;
-      const slotEnd = midnight + (i + 1) * MATCH_DURATION * 1000;
-      if (now >= depositStart && now < slotEnd) {
-        return { idx: i, depositStart, kickoff, matchEnd, slotEnd };
-      }
-    }
-    return null; // between last slot and midnight — gap
+    const elapsed = now - midnight;
+    const slotMs = MATCH_DURATION * 1000;
+    const totalSlots = Math.floor((24 * 3600 * 1000) / slotMs); // 12
+    const slotNumber = Math.floor(elapsed / slotMs);
+    if (slotNumber >= totalSlots) return null;
+
+    const matchIdx = slotNumber % 5;
+    const depositStart = midnight + slotNumber * slotMs;
+    const kickoff = depositStart + OPEN_DURATION * 1000;
+    const matchEnd = kickoff + LIVE_DURATION * 1000;
+    const slotEnd = depositStart + slotMs;
+    return { idx: matchIdx, depositStart, kickoff, matchEnd, slotEnd };
   }
 
   /** Sync match state from the wall-clock schedule */
@@ -278,20 +280,15 @@ export class SimEngine {
       new Date(now).getUTCDate(),
     )).getTime();
 
-    // Find next upcoming match
+    // Find next upcoming match (always the next slot in the cycle)
     let nextUp: { id: string; homeTeam: string; awayTeam: string } | null = null;
     const slot = this.getCurrentSlot();
-    const nextIdx = slot ? (slot.idx + 1) % 5 : 0;
-    const nextMatch = MATCHES[nextIdx];
-    const nextStart = slot
-      ? midnight + (nextIdx < 5 ? nextIdx : 0) * MATCH_DURATION * 1000
-      : midnight; // no current match means next is match 0 at midnight
-
-    if (!slot) {
-      // In the gap — next match is midnight
-      nextUp = { id: MATCHES[0].id, homeTeam: MATCHES[0].home, awayTeam: MATCHES[0].away };
-    } else {
+    if (slot) {
+      const nextSlot = (slot.idx + 1) % 5;
+      const nextMatch = MATCHES[nextSlot];
       nextUp = { id: nextMatch.id, homeTeam: nextMatch.home, awayTeam: nextMatch.away };
+    } else {
+      nextUp = { id: MATCHES[0].id, homeTeam: MATCHES[0].home, awayTeam: MATCHES[0].away };
     }
 
     const match = this.match ? {
