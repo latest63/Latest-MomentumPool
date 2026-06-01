@@ -21,7 +21,7 @@ export const config = createConfig({
   chains: [xLayer],
   connectors: [
     injected(),
-    walletConnect({ projectId, showQrModal: false }),
+    walletConnect({ projectId, showQrModal: true }),
   ],
   transports: {
     [xLayer.id]: http(),

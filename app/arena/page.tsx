@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useSwitchChain, useWriteContract, useReadContract, useConnect, useConnectors } from 'wagmi';
+import { useAccount, useSwitchChain, useWriteContract, useReadContract } from 'wagmi';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
@@ -170,8 +170,6 @@ export default function ArenaPage() {
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
-  const { connect } = useConnect();
-  const connectors = useConnectors();
 
   // Read on-chain pool totals when a pool address exists
   const { data: poolTotals } = useReadContract({
@@ -269,10 +267,9 @@ export default function ArenaPage() {
   /* ─── Deposit handler ─── */
   const handleDeposit = async (team: 'home' | 'away') => {
     if (!isConnected) {
-      // Auto-connect wallet (triggers OKX Wallet / injected on desktop & mobile)
-      const injected = connectors.find(c => c.id === 'injected');
-      if (injected) connect({ connector: injected });
-      else toast('Connect your wallet first', 'warning');
+      // Open Web3Modal (shows wallet options + QR for mobile)
+      const { useWeb3Modal } = await import('@web3modal/wagmi/react');
+      useWeb3Modal().open();
       return;
     }
     if (chainId !== 1952) {
