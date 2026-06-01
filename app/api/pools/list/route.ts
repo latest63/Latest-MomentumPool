@@ -1,0 +1,63 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { publicClient } from '@/lib/chain-client';
+import { FACTORY_ABI } from '@/lib/pool-abi';
+
+export const dynamic = 'force-dynamic';
+
+const FACTORY = process.env.NEXT_PUBLIC_POOL_FACTORY || '';
+
+export type DeployedPool = {
+  poolAddress: string;
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  tokenAddress: string;
+};
+
+/** GET /api/pools/list — returns all pools deployed by the factory */
+export async function GET() {
+  if (!FACTORY) {
+    return NextResponse.json({ error: 'FACTORY not configured' }, { status: 500 });
+  }
+
+  try {
+    const logs = await publicClient.getLogs({
+      address: FACTORY as `0x${string}`,
+      event: FACTORY_ABI.find(e => e.name === 'PoolCreated') as any,
+      fromBlock: BigInt(0),
+      toBlock: 'latest',
+    });
+
+    const pools: DeployedPool[] = logs
+      .filter((l: any) => l.args?.pool)
+      .map((l: any) => ({
+        poolAddress: l.args.pool.toLowerCase(),
+        matchId: l.args.matchId || '',
+        homeTeam: l.args.homeTeam || '',
+        awayTeam: l.args.awayTeam || '',
+        tokenAddress: l.args.token ? l.args.token.toLowerCase() : '',
+      }));
+
+    return NextResponse.json({ pools });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[pools/list] on-chain query failed:', msg);
+
+    // Fallback: try engine in-memory deployedPools
+    try {
+      const { getEngine } = await import('@/lib/sim-engine');
+      const engine = getEngine();
+      const state = engine.getState();
+      const pools = state.deployedPools.map(p => ({
+        poolAddress: p.poolAddress.toLowerCase(),
+        matchId: p.matchId,
+        homeTeam: p.homeTeam,
+        awayTeam: p.awayTeam,
+        tokenAddress: p.tokenAddress.toLowerCase(),
+      }));
+      return NextResponse.json({ pools, source: 'engine-fallback' });
+    } catch {
+      return NextResponse.json({ error: msg, pools: [] }, { status: 500 });
+    }
+  }
+}

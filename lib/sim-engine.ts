@@ -38,6 +38,16 @@ export interface SimState {
   totalMatches: number; // how many matches played this cycle
   tick: number;
   running: boolean;
+  deployedPools: DeployedPool[];
+}
+
+export interface DeployedPool {
+  poolAddress: string;
+  matchId: string;
+  homeTeam: string;
+  awayTeam: string;
+  tokenAddress: string;
+  deployedAt: number;
 }
 
 /* ─── 5 Match Pairings (cycling) ─── */
@@ -97,6 +107,7 @@ export class SimEngine {
   private tickCount = 0;
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private running = false;
+  private deployedPools: DeployedPool[] = [];
 
   /* per-match event timing */
   private eventTimer = 0;
@@ -198,6 +209,7 @@ export class SimEngine {
       totalMatches: this.totalMatches,
       tick: this.tickCount,
       running: this.running,
+      deployedPools: this.deployedPools,
     };
   }
 
@@ -209,7 +221,17 @@ export class SimEngine {
   }
 
   setPoolAddress(address: string) {
-    if (this.match) this.match.poolAddress = address;
+    if (this.match) {
+      this.match.poolAddress = address;
+      this.deployedPools.push({
+        poolAddress: address,
+        matchId: this.match.id,
+        homeTeam: this.match.homeTeam,
+        awayTeam: this.match.awayTeam,
+        tokenAddress: this.match.tokenAddress,
+        deployedAt: Date.now(),
+      });
+    }
   }
 
   /* ─── Claim (mock) ─── */
