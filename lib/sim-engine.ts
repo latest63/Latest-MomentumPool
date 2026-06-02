@@ -253,13 +253,15 @@ export class SimEngine {
     const todayKey = `${pairing.id}-${new Date().toISOString().slice(0, 10)}`;
     const poolAddr = this.poolRegistry.get(todayKey) || null;
 
-    // Trigger auto-settle if moving into settled phase
-    if (phase === 'settled' && !sameMatch && poolAddr && this.onSettle) {
+    // Trigger auto-settle: either cold-start (new match already settled) or live→settled transition
+    const shouldSettle = phase === 'settled' && poolAddr && this.onSettle &&
+      (!sameMatch || this.match!.phase === 'live');
+    if (shouldSettle) {
       const winner: TeamSide =
         existingScore.home > existingScore.away ? 'home'
         : existingScore.away > existingScore.home ? 'away'
         : Math.random() < 0.5 ? 'home' : 'away';
-      this.onSettle(pairing.id, winner, existingScore.home, existingScore.away, poolAddr);
+      this.onSettle!(pairing.id, winner, existingScore.home, existingScore.away, poolAddr);
     }
 
     this.match = {
