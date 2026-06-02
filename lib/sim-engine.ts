@@ -54,26 +54,73 @@ export interface DeployedPool {
 
 import { saveMatchState, loadMatchState, MatchState } from '@/lib/supabase';
 
-/* ─── Player name pools ─── */
-const FIRST_NAMES = ['A.','B.','C.','D.','E.','F.','G.','H.','I.','J.','K.','L.','M.','N.','O.','P.','R.','S.','T.','V.'];
-const SURNAMES: Record<string, string[]> = {
-  Nigeria: ['Osimhen','Lookman','Iwobi','Ndidi','Aina','Bassey','Chukwueze','Onyeka','Ekwah','Onana','Moses','Yusuf'],
-  Brazil: ['Silva','Jesus','Neymar','Raphinha','Casemiro','Marcos','Vinicius','Rodrygo','Martins','Gomes','Alves','Luiz'],
-  Argentina: ['Messi','Martinez','Fernandez','MacAllister','Alvarez','Romero','Tagliafico','Molina','Paredes','Correa','Palacios'],
-  France: ['Mbappe','Griezmann','Tchouameni','Camavinga','Dembélé','Upamecano','Hernandez','Pavard','Kante','Thuram','Kolo Muani'],
-  England: ['Kane','Bellingham','Rice','Saka','Foden','Rashford','Stones','Walker','Pickford','Palmer','Alexander-Arnold'],
-  Germany: ['Havertz','Musiala','Wirtz','Kimmich','Sané','Gündogan','Schlotterbeck','Tah','Andrich','Fuellkrug','Raum'],
-  Portugal: ['Ronaldo','Fernandes','Leão','Silva','Dias','Cancelo','Neves','Palhinha','Sá','Jota','Nuno','Félix'],
-  Spain: ['Yamal','Williams','Olmo','Rodri','Ruiz','Laporte','Carvajal','Navas','Simón','Oyarzabal','Merino'],
-  Morocco: ['Hakimi','Amrabat','Ziyech','En-Nesyri','Saïss','Bounou','El-Hannous','Chair','Abde','Harit','Dari'],
-  Senegal: ['Mané','Sarr','Diallo','Gueye','Koulibaly','Mendy','Leão','Diagne','Jakobs','Ndiaye','Camara'],
+/* ─── Player name pools (last names for clean display) ─── */
+const PLAYERS: Record<string, string[]> = {
+  Nigeria: ['Osimhen','Lookman','Iwobi','Chukwueze','Boniface','Simon','Nwabali','Bassey','Ndidi','Onyeka','Aina','Yusuf'],
+  Brazil: ['Vinicius','Rodrygo','Raphinha','Neymar','Martinelli','Casemiro','Militao','Alisson','Paqueta','Guimaraes','Jesus','Endrick'],
+  Argentina: ['Messi','Alvarez','Martinez','Fernandez','MacAllister','Romero','Molina','Dybala','Di Maria','Paredes','De Paul','Garnacho'],
+  France: ['Mbappe','Griezmann','Dembele','Tchouameni','Camavinga','Kolo Muani','Thuram','Upamecano','Hernandez','Kante','Olise','Zaire-Emery'],
+  England: ['Kane','Bellingham','Saka','Foden','Rice','Palmer','Rashford','Stones','Alexander-Arnold','Gordon','Watkins','Grealish'],
+  Germany: ['Musiala','Wirtz','Havertz','Kimmich','Sane','Gundogan','Fullkrug','Tah','Raum','Andrich','Muller','Neuer'],
+  Portugal: ['Ronaldo','Fernandes','Leao','Bernardo','Dias','Jota','Neto','Vitinha','Palhinha','Cancelo','Conceicao','Ramos'],
+  Spain: ['Rodri','Yamal','Williams','Olmo','Morata','Ruiz','Pedri','Gavi','Carvajal','Oyarzabal','Merino','Cucurella'],
+  Morocco: ['Hakimi','Ziyech','En-Nesyri','Amrabat','Bounou','Saiss','Harit','Chair','El Khannouss','Mazraoui','Aguerd','Rahimi'],
+  Senegal: ['Mane','Sarr','Koulibaly','Gueye','Mendy','Diallo','Ndiaye','Jakobs','Diatta','Camara','Sarr Jr','Kouyate'],
 };
 
-function getRandomPlayer(team: string): string {
-  const surnames = SURNAMES[team] || SURNAMES['Nigeria'];
-  const fn = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-  return `${fn}${surnames[Math.floor(Math.random() * surnames.length)]}`;
+function pick(arr: string[]): string { return arr[Math.floor(Math.random() * arr.length)]; }
+function getPlayer(team: string): string {
+  const pool = PLAYERS[team] || PLAYERS['Nigeria'];
+  return pick(pool);
 }
+function coinFlip(): boolean { return Math.random() < 0.5; }
+
+/* ─── Team playstyle fingerprints (subtly bias event probabilities) ─── */
+type StyleKey = 'attack'|'flair'|'defense'|'cards'|'physical';
+const STYLE: Record<string, Record<StyleKey, number>> = {
+  Nigeria:  { attack: 1.25, flair: 1.10, defense: 0.85, cards: 0.8,  physical: 0.9 },
+  Brazil:   { attack: 1.30, flair: 1.40, defense: 0.70, cards: 0.75, physical: 0.8 },
+  Argentina:{ attack: 1.15, flair: 1.20, defense: 0.95, cards: 1.15, physical: 1.0 },
+  France:   { attack: 1.20, flair: 1.15, defense: 1.00, cards: 0.9,  physical: 1.1 },
+  England:  { attack: 1.10, flair: 0.90, defense: 1.05, cards: 1.2,  physical: 1.15 },
+  Germany:  { attack: 1.15, flair: 0.95, defense: 1.10, cards: 0.85, physical: 1.05 },
+  Portugal: { attack: 1.20, flair: 1.25, defense: 0.90, cards: 1.0,  physical: 0.95 },
+  Spain:    { attack: 1.10, flair: 1.30, defense: 1.00, cards: 0.75, physical: 0.8 },
+  Morocco:  { attack: 0.90, flair: 0.85, defense: 1.25, cards: 1.3,  physical: 1.25 },
+  Senegal:  { attack: 1.05, flair: 0.90, defense: 1.15, cards: 1.35, physical: 1.3 },
+};
+
+/* ─── Event type catalog (26 types) ───
+   Each: [baseWeight, scoreImpact, momentumShift, description template]
+   {player} and {team} are interpolated at generation time.              */
+const EVENT_CATALOG: [string, number, number, number, string][] = [
+  ['goal',               6.0,  10, +18, 'GOAL! {player} finds the net!'],
+  ['penalty_goal',       1.2,   8, +22, 'PENALTY! {player} converts!'],
+  ['header_goal',        2.5,  10, +16, 'HEADER! {player} rises highest!'],
+  ['free_kick_goal',     0.8,   9, +24, 'INCREDIBLE FREE KICK! {player} curls it in!'],
+  ['long_range_goal',    0.6,  10, +26, 'WHAT A STRIKE! {player} from distance!'],
+  ['own_goal',           0.4,  -8, -22, 'OWN GOAL! Disaster for {player}!'],
+  ['missed_penalty',     0.6,   0, -14, 'MISSED PENALTY! {player} skies it!'],
+  ['goal_disallowed',    0.5,   0,  -6, 'GOAL DISALLOWED! VAR rules it out!'],
+  ['woodwork',           4.0,   3,  +6, 'OFF THE POST! {player} inches away!'],
+  ['shot_on_target',     9.0,   1,  +3, '{player} forces a save from the keeper.'],
+  ['shot_off_target',    8.0,   0,  +1, '{player} drags it wide of the post.'],
+  ['big_chance_missed',  3.5,  -1,  -5, 'HUGE MISS! {player} should have scored!'],
+  ['great_save',         3.0,   0,  +7, 'INCREDIBLE SAVE to deny {player}!'],
+  ['save',               6.0,   0,  +3, 'Keeper gathers {player}\'s effort.'],
+  ['corner',             7.0,   0,  +1, 'Corner to {team}.'],
+  ['dangerous_cross',    5.0,   0,  +3, 'Dangerous ball in from {player}!'],
+  ['through_ball',       4.0,   0,  +3, 'Brilliant through ball by {player}!'],
+  ['counter_attack',     3.0,   0,  +5, 'Lightning counter led by {player}!'],
+  ['dribble',            5.0,   0,  +2, '{player} dances past two defenders!'],
+  ['offside',            4.0,   0,  -2, 'Flag up! {player} strayed offside.'],
+  ['yellow_card',        3.5,   0,  -5, 'Yellow card for {player}.'],
+  ['second_yellow',      0.5,   0, -20, 'SECOND YELLOW! {player} is off!'],
+  ['red_card',           1.0,   0, -22, 'RED CARD! {player} sent off!'],
+  ['foul',               8.0,   0,  -2, 'Foul by {player} — free kick.'],
+  ['injury',             1.5,   0,  -3, '{player} is down receiving treatment.'],
+  ['var_review',         1.0,   0,   0, 'VAR check in progress…'],
+] as const;
 function randomInt(min: number, max: number): number { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
 /* ─── 5 Match Pairings ─── */
@@ -119,7 +166,6 @@ export class SimEngine {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private deployedPools: DeployedPool[] = [];
   private eventTimer = 0;
-  private goalCluster = 0;
 
   /* Real contract integration */
   public onSettle: ((matchId: string, winner: TeamSide, homeScore: number, awayScore: number, poolAddress: string) => void) | null = null;
@@ -201,7 +247,7 @@ export class SimEngine {
     const existingEvents = sameMatch ? this.match!.events : [];
     const existingScore = sameMatch ? { ...this.match!.score } : { home: 0, away: 0 };
     const existingGoals = sameMatch ? { ...this.match!.goals } : { home: 0, away: 0 };
-    const existingMomentum = sameMatch ? this.match!.momentumHome : 50;
+    const existingMomentum = sameMatch ? this.match!.momentumHome : 35 + Math.random() * 30; // 35–65 initial
 
     // Check for today's pool in registry (keyed by matchId + date)
     const todayKey = `${pairing.id}-${new Date().toISOString().slice(0, 10)}`;
@@ -238,7 +284,6 @@ export class SimEngine {
     if (!sameMatch) {
       this.totalMatches++;
       this.eventTimer = 0;
-      this.goalCluster = 0;
     }
 
     // Trigger pool deploy if needed (deploy fresh each day — timestamps are per-occurrence)
@@ -397,53 +442,151 @@ export class SimEngine {
     }
   }
 
+  /* ─── Dynamic event generation — 26 types, match-state-aware, unpredictably varied ─── */
   private generateEvent() {
     if (!this.match) return;
     const minute = this.match.phaseElapsed;
-    const lateBonus = minute > LIVE_DURATION - 600 ? 1.5 : 1.0;
-    const roll = Math.random() * 100;
-    const homeProb = this.match.momentumHome / 100;
-    const team: TeamSide = Math.random() < homeProb ? 'home' : 'away';
+    const isLateMatch = minute > LIVE_DURATION - 600;   // last 10 min
+    const isStoppageTime = minute > LIVE_DURATION - 120; // last 2 min
+    const homeScore = this.match.score.home;
+    const awayScore = this.match.score.away;
+    const diff = homeScore - awayScore;
 
-    if (roll < 4 * lateBonus) {
-      this.match.score[team] += 3;
-      this.match.goals[team] += 1;
-      this.match.events.push({ minute, type: 'goal', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
-      if (Math.random() < 0.25 && !this.goalCluster) {
-        this.goalCluster = 1;
-        setTimeout(() => { this.goalCluster = 0; }, 8000);
+    // Determine which team is "attacking" based on current momentum + randomness
+    const homeWeight = this.match.momentumHome + (Math.random() * 20 - 10);
+    const team: TeamSide = homeWeight > 50 ? 'home' : 'away';
+
+    // Get playstyle modifiers for BOTH teams (events can come from either side)
+    const attackerStyle = STYLE[team === 'home' ? this.match.homeTeam : this.match.awayTeam] || STYLE['Nigeria'];
+    const defenderStyle = STYLE[team === 'home' ? this.match.awayTeam : this.match.homeTeam] || STYLE['Nigeria'];
+
+    // ── Context multipliers ──
+    const isAttackerHome = team === 'home';
+    const attackerDiff = isAttackerHome ? diff : -diff;
+    const isBehind = attackerDiff < 0;
+    const isAhead = attackerDiff > 10;
+    const isBlowout = Math.abs(diff) > 20;
+
+    // Build weighted event pool
+    const pool: { idx: number; weight: number }[] = [];
+    let totalWeight = 0;
+
+    for (let i = 0; i < EVENT_CATALOG.length; i++) {
+      const [type, baseW] = EVENT_CATALOG[i];
+      let w = baseW;
+
+      // ── Attacking team style modifiers ──
+      const isAttackingEvent = ['goal','penalty_goal','header_goal','free_kick_goal','long_range_goal','woodwork','shot_on_target','shot_off_target','big_chance_missed','dangerous_cross','through_ball','counter_attack','dribble'].includes(type);
+      const isDefensiveEvent = ['save','great_save','clearance','tackle','interception'].includes(type);
+      const isCardEvent = ['yellow_card','second_yellow','red_card'].includes(type);
+      const isFoulEvent = ['foul','injury'].includes(type);
+
+      if (isAttackingEvent) w *= attackerStyle.attack * attackerStyle.flair;
+      if (isDefensiveEvent) w *= defenderStyle.defense;
+      if (isCardEvent) w *= attackerStyle.cards;
+      if (isFoulEvent) w *= attackerStyle.physical * defenderStyle.physical;
+
+      // ── Match-situation modifiers ──
+      // Team behind → more attacking, more desperation
+      if (isBehind && isAttackingEvent) w *= 1.3 + Math.abs(attackerDiff) * 0.02;
+      if (isBehind) {
+        if (type === 'long_range_goal') w *= 1.5;
+        if (type === 'counter_attack') w *= 1.3;
       }
-      this.match.momentumHome += team === 'home' ? 12 : -12;
-    } else if (roll < 10 * lateBonus) {
-      const opp: TeamSide = team === 'home' ? 'away' : 'home';
-      this.match.score[opp] += 2;
-      this.match.events.push({ minute, type: 'red_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
-      this.match.momentumHome += team === 'home' ? -15 : 15;
-    } else if (roll < 22 * lateBonus) {
-      const opp: TeamSide = team === 'home' ? 'away' : 'home';
-      this.match.score[opp] += 1;
-      this.match.events.push({ minute, type: 'yellow_card', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
-      this.match.momentumHome += team === 'home' ? -5 : 5;
-    } else if (roll < 35 * lateBonus) {
-      this.match.score[team] += 1;
-      this.match.events.push({ minute, type: 'corner', team, player: '' });
-      this.match.momentumHome += team === 'home' ? 1 : -1;
-    } else if (roll < 55 * lateBonus) {
-      this.match.score[team] += 1;
-      this.match.events.push({ minute, type: 'woodwork', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
-      this.match.momentumHome += team === 'home' ? 2 : -2;
-    } else if (roll < 75 * lateBonus) {
-      this.match.score[team] += 1;
-      this.match.events.push({ minute, type: 'shot_on_target', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
-      this.match.momentumHome += team === 'home' ? 1.5 : -1.5;
-    } else {
-      this.match.events.push({ minute, type: 'foul', team, player: getRandomPlayer(team === 'home' ? this.match.homeTeam : this.match.awayTeam) });
-      this.match.momentumHome += team === 'home' ? -0.5 : 0.5;
+
+      // Team ahead → control the game, fewer risks
+      if (isAhead && isAttackingEvent) w *= 0.7;
+      if (isAhead && isDefensiveEvent) w *= 1.3;
+
+      // Blowout → chaos, cards, drama
+      if (isBlowout && isCardEvent) w *= 1.5;
+      if (isBlowout && type === 'red_card') w *= 2.0;
+      if (isBlowout && type === 'injury') w *= 1.4;
+
+      // Late match → everything amplified
+      if (isLateMatch) {
+        if (['goal','header_goal','penalty_goal'].includes(type)) w *= 1.4;
+        if (isCardEvent) w *= 1.3;
+        if (type === 'big_chance_missed') w *= 1.5;
+      }
+
+      // Stoppage time → maximum drama
+      if (isStoppageTime) {
+        if (['goal','free_kick_goal','long_range_goal','penalty_goal'].includes(type)) w *= 1.8;
+        if (type === 'goal_disallowed') w *= 2.0;
+        if (type === 'red_card') w *= 1.8;
+      }
+
+      // Rare events stay rare (but slightly more likely in drama moments)
+      if (['own_goal','missed_penalty','second_yellow','goal_disallowed'].includes(type)) {
+        if (!isLateMatch && !isBlowout) w *= 0.7;
+      }
+
+      w = Math.max(0.05, w); // never zero — any event is possible at any time
+      pool.push({ idx: i, weight: w });
+      totalWeight += w;
     }
 
-    this.match.momentumHome = Math.max(0, Math.min(100, this.match.momentumHome));
-    this.match.momentumHome += (Math.random() - 0.5) * 2;
+    // Weighted random pick
+    let roll = Math.random() * totalWeight;
+    let picked: (typeof EVENT_CATALOG)[number] = EVENT_CATALOG[0];
+    let eventIdx = 0;
+    for (const entry of pool) {
+      roll -= entry.weight;
+      if (roll <= 0) { picked = EVENT_CATALOG[entry.idx]; eventIdx = entry.idx; break; }
+      picked = EVENT_CATALOG[entry.idx]; eventIdx = entry.idx; // fallback
+    }
+
+    const [type, scoreImpact, momentumShift, descTemplate] = picked;
+
+    // ── Apply effects ──
+    // Score: additive per-event. Goals give big increments.
+    if (scoreImpact !== 0) {
+      this.match.score[team] += scoreImpact;
+      // own_goal gives score to opponent (handled by negative impact)
+      if (type === 'own_goal') {
+        const opp: TeamSide = team === 'home' ? 'away' : 'home';
+        this.match.score[opp] += Math.abs(scoreImpact);
+      }
+    }
+
+    // Goal tracking (actual goals, not score events)
+    const isGoalEvent = ['goal','penalty_goal','header_goal','free_kick_goal','long_range_goal'].includes(type);
+    if (isGoalEvent) {
+      this.match.goals[team] += 1;
+    }
+    if (type === 'own_goal') {
+      const opp: TeamSide = team === 'home' ? 'away' : 'home';
+      this.match.goals[opp] += 1;
+    }
+
+    // Momentum
+    let momentumChange = momentumShift;
+    // Randomize momentum shift for unpredictability
+    momentumChange += (Math.random() - 0.5) * 6;
+    if (isStoppageTime) momentumChange *= 1.3;
+    this.match.momentumHome += team === 'home' ? momentumChange : -momentumChange;
+
+    // Second yellow / red card → reduce player count effect on momentum
+    if (type === 'red_card' || type === 'second_yellow') {
+      const extraMomentumPenalty = randomInt(3, 8);
+      this.match.momentumHome += team === 'home' ? -extraMomentumPenalty : extraMomentumPenalty;
+    }
+
+    // Clamp momentum
     this.match.momentumHome = Math.max(5, Math.min(95, this.match.momentumHome));
+
+    // Natural momentum drift (biased toward 50)
+    this.match.momentumHome += (Math.random() - 0.5) * 3;
+    this.match.momentumHome = Math.max(5, Math.min(95, this.match.momentumHome));
+
+    // ── Build event ──
+    const eventTeam = team === 'home' ? this.match.homeTeam : this.match.awayTeam;
+    const desc = String(descTemplate)
+      .replace('{player}', getPlayer(eventTeam))
+      .replace('{team}', eventTeam);
+
+    this.match.events.push({ minute, type, team, player: getPlayer(eventTeam), description: desc } as any);
   }
 }
 
