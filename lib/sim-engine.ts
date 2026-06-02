@@ -52,6 +52,8 @@ export interface DeployedPool {
   deployedAt: number;
 }
 
+import { saveMatchState, loadMatchState, MatchState } from '@/lib/supabase';
+
 /* ─── Player name pools ─── */
 const FIRST_NAMES = ['A.','B.','C.','D.','E.','F.','G.','H.','I.','J.','K.','L.','M.','N.','O.','P.','R.','S.','T.','V.'];
 const SURNAMES: Record<string, string[]> = {
@@ -178,12 +180,24 @@ export class SimEngine {
     }
 
     // New match or phase change
+    const sameMatch = !!(this.match && this.match.id === pairing.id);
     const phaseStartedAt = phase === 'open' ? slot.depositStart
       : phase === 'live' ? slot.kickoff
       : slot.matchEnd;
 
+    // Load persisted events from Supabase for this match (fire-and-forget)
+    if (!sameMatch) {
+      loadMatchState(pairing.id).then(s => {
+        if (s && this.match && this.match.id === pairing.id) {
+          this.match.events = s.events as any[];
+          this.match.score = s.score;
+          this.match.goals = s.goals;
+          this.match.momentumHome = s.momentumHome;
+        }
+      }).catch(() => {});
+    }
+
     // Preserve events if same match but new phase
-    const sameMatch = !!(this.match && this.match.id === pairing.id);
     const existingEvents = sameMatch ? this.match!.events : [];
     const existingScore = sameMatch ? { ...this.match!.score } : { home: 0, away: 0 };
     const existingGoals = sameMatch ? { ...this.match!.goals } : { home: 0, away: 0 };
@@ -348,14 +362,43 @@ export class SimEngine {
   }
 
   /* ═══════════════════════════════════════════
-     Event Generation (unchanged from original)
+     Event Generation with catch-up + persistence
      ═══════════════════════════════════════════ */
   private simulateEvents() {
     if (!this.match) return;
+
+    // Catch-up: compute expected event count based on elapsed match time
+    const elapsedSinceLast = this.match.phaseElapsed - (this.match.events.length > 0
+      ? this.match.events[this.match.events.length - 1].minute
+      : 0);
+    const expectedNew = Math.floor(elapsedSinceLast / 80); // ~1 event per 80s average
+
+    // Generate any missing events (cold start catch-up)
+    for (let i = 0; i < expectedNew; i++) {
+      this.generateEvent();
+    }
+
+    // Normal per-tick event generation (rate-limited)
     this.eventTimer -= 1;
     if (this.eventTimer > 0) return;
     this.eventTimer = randomInt(60, 240);
 
+    this.generateEvent();
+
+    // Persist to Supabase after each new event (fire-and-forget)
+    if (this.match.events.length > 0) {
+      const state: MatchState = {
+        events: this.match.events.map(e => ({ minute: e.minute, type: e.type, team: e.team, player: e.player })),
+        score: { ...this.match.score },
+        goals: { ...this.match.goals },
+        momentumHome: this.match.momentumHome,
+      };
+      saveMatchState(this.match.id, state).catch(() => {});
+    }
+  }
+
+  private generateEvent() {
+    if (!this.match) return;
     const minute = this.match.phaseElapsed;
     const lateBonus = minute > LIVE_DURATION - 600 ? 1.5 : 1.0;
     const roll = Math.random() * 100;

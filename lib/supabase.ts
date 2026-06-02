@@ -107,3 +107,47 @@ export async function loadEngineState(): Promise<string | null> {
     return null;
   }
 }
+
+export type MatchState = {
+  events: { minute: number; type: string; team: string; player: string }[];
+  score: { home: number; away: number };
+  goals: { home: number; away: number };
+  momentumHome: number;
+};
+
+/** Persist match state (events + score + goals + momentum) to Supabase. */
+export async function saveMatchState(matchId: string, state: MatchState): Promise<void> {
+  if (!DATABASE_URL) return;
+  try {
+    await ensureEngineStateTable();
+    const db = getPool();
+    await db.query(
+      `INSERT INTO engine_state (key, value, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+      [`match-${matchId}`, JSON.stringify(state)],
+    );
+  } catch (err) {
+    console.error('[supabase] match_state save failed:', (err as Error).message);
+  }
+}
+
+/** Load match state from Supabase. Returns null if not found. */
+export async function loadMatchState(matchId: string): Promise<MatchState | null> {
+  if (!DATABASE_URL) return null;
+  try {
+    await ensureEngineStateTable();
+    const db = getPool();
+    const result = await db.query<{ value: string }>(
+      'SELECT value FROM engine_state WHERE key = $1',
+      [`match-${matchId}`],
+    );
+    if (result.rows[0]?.value) {
+      return JSON.parse(result.rows[0].value);
+    }
+    return null;
+  } catch (err) {
+    console.error('[supabase] match_state load failed:', (err as Error).message);
+    return null;
+  }
+}
