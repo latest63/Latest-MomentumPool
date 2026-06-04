@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
-import { getEngine, loadPoolRegistry } from '@/lib/sim-engine';
+import { NextRequest, NextResponse } from 'next/server';
+import { publicClient } from '@/lib/chain-client';
 import { FACTORY_ABI } from '@/lib/pool-abi';
 import { getDeployedPools } from '@/lib/supabase';
+import { getEngine, loadPoolRegistry } from '@/lib/sim-engine';
 
 export const dynamic = 'force-dynamic';
 
