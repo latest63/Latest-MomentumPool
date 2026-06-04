@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { publicClient } from '@/lib/chain-client';
+import { NextResponse } from 'next/server';
+import { getEngine, loadPoolRegistry } from '@/lib/sim-engine';
 import { FACTORY_ABI } from '@/lib/pool-abi';
 import { getDeployedPools } from '@/lib/supabase';
 
@@ -64,9 +64,9 @@ export async function GET() {
 
     // Last resort: try engine in-memory deployedPools
     try {
-      const { getEngine } = await import('@/lib/sim-engine');
-      const engine = getEngine();
-      const state = await engine.getState();
+      const { getEngine, loadPoolRegistry } = await import('@/lib/sim-engine');
+      await loadPoolRegistry();
+      const state = await getEngine().getState();
       // First try deployedPools array
       if (state.deployedPools.length > 0) {
         const pools = state.deployedPools.map(p => ({
