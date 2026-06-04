@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { MomentumBar, EventFeed, type MomentumData, type EventItem } from '@/components/MomentumMeter';
 import Nav from '@/components/Nav';
-import { useAccount, useSwitchChain, useWriteContract, useReadContract, usePublicClient } from 'wagmi';
+import { useAccount, useSwitchChain, useWriteContract, useReadContract } from 'wagmi';
 import { useLoading } from '@/components/LoadingOverlay';
 import { playSelect } from '@/lib/playSound';
 import MatchCarousel from '@/components/MatchCarousel';
@@ -170,7 +170,6 @@ export default function ArenaPage() {
   const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
-  const publicClient = usePublicClient();
 
   // Read on-chain pool totals when a pool address exists
   const { data: poolTotals } = useReadContract({
@@ -307,10 +306,6 @@ export default function ArenaPage() {
         args: [poolAddr as `0x${string}`, amount],
       });
       console.log('[deposit] approve tx:', approveHash);
-
-      // Wait for approve to confirm before sending deposit
-      toast('Waiting for approval confirmation...', 'info');
-      await publicClient!.waitForTransactionReceipt({ hash: approveHash as `0x${string}` });
 
       // Step 2: Deposit into pool (wagmi writeContractAsync)
       toast('Step 2/2: Depositing...', 'info');
