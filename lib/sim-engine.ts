@@ -170,6 +170,8 @@ export class SimEngine {
   /* Real contract integration */
   public onSettle: ((matchId: string, winner: TeamSide, homeScore: number, awayScore: number, poolAddress: string) => void) | null = null;
   public deployPoolForMatch: ((matchId: string, homeTeam: string, awayTeam: string, token: string) => Promise<string | null>) | null = null;
+  /** Tracks pending deploy so getState can await it on serverless */
+  private deployPromise: Promise<void> | null = null;
   /** Pre-loaded pool addresses from Supabase / on-chain — keyed by matchId */
   public poolRegistry: Map<string, string> = new Map();
   /** Pre-loaded pool addresses — aliased for backward compat */
@@ -289,22 +291,25 @@ export class SimEngine {
     }
 
     // Trigger pool deploy if needed (deploy fresh each day — timestamps are per-occurrence)
-    if (phase === 'open' && !poolAddr && this.deployPoolForMatch) {
-      this.deployPoolForMatch(pairing.id, pairing.home, pairing.away, pairing.token).then(addr => {
-        if (addr && this.match && this.match.id === pairing.id) {
-          this.match.poolAddress = addr;
-          const todayKey = `${pairing.id}-${new Date().toISOString().slice(0, 10)}`;
-          this.poolRegistry.set(todayKey, addr);
-          this.deployedPools.push({
-            poolAddress: addr,
-            matchId: pairing.id,
-            homeTeam: pairing.home,
-            awayTeam: pairing.away,
-            tokenAddress: pairing.token,
-            deployedAt: Date.now(),
-          });
-        }
-      }).catch(err => console.error(`[sim] Pool deploy failed for ${pairing.id}:`, err));
+    if (phase === 'open' && !poolAddr && this.deployPoolForMatch && !this.deployPromise) {
+      this.deployPromise = this.deployPoolForMatch(pairing.id, pairing.home, pairing.away, pairing.token)
+        .then(addr => {
+          if (addr && this.match && this.match.id === pairing.id) {
+            this.match.poolAddress = addr;
+            const todayKey = `${pairing.id}-${new Date().toISOString().slice(0, 10)}`;
+            this.poolRegistry.set(todayKey, addr);
+            this.deployedPools.push({
+              poolAddress: addr,
+              matchId: pairing.id,
+              homeTeam: pairing.home,
+              awayTeam: pairing.away,
+              tokenAddress: pairing.token,
+              deployedAt: Date.now(),
+            });
+          }
+        })
+        .catch(err => console.error(`[sim] Pool deploy failed for ${pairing.id}:`, err))
+        .finally(() => { this.deployPromise = null; });
     }
 
     return true;
@@ -333,13 +338,21 @@ export class SimEngine {
   }
 
   /* ─── State ─── */
-  getState(): SimState {
+  async getState(): Promise<SimState> {
     const now = Date.now();
     const midnight = new Date(Date.UTC(
       new Date(now).getUTCFullYear(),
       new Date(now).getUTCMonth(),
       new Date(now).getUTCDate(),
     )).getTime();
+
+    // Sync schedule on every poll — handles phase transitions + deploys on Vercel serverless
+    this.syncFromSchedule();
+
+    // If a deploy is in progress, await it so the pool address is available in the response
+    if (this.deployPromise) {
+      await this.deployPromise;
+    }
 
     // Find next upcoming match (always the next slot in the cycle)
     let nextUp: { id: string; homeTeam: string; awayTeam: string } | null = null;

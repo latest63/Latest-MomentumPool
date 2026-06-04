@@ -66,7 +66,7 @@ export async function GET() {
     try {
       const { getEngine } = await import('@/lib/sim-engine');
       const engine = getEngine();
-      const state = engine.getState();
+      const state = await engine.getState();
       // First try deployedPools array
       if (state.deployedPools.length > 0) {
         const pools = state.deployedPools.map(p => ({

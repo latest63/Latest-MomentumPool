@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
   if (pools.length === 0) {
     try {
       const { getEngine } = await import('@/lib/sim-engine');
-      const state = getEngine().getState();
+      const state = await getEngine().getState();
       pools = state.deployedPools.map(p => ({
         poolAddress: p.poolAddress.toLowerCase(),
         matchId: p.matchId,
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
   if (pools.length === 0) {
     try {
       const { getEngine } = await import('@/lib/sim-engine');
-      const state = getEngine().getState();
+      const state = await getEngine().getState();
       if (state.match?.poolAddress) {
         const m = state.match;
         pools.push({

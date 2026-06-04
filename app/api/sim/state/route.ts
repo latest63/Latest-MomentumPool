@@ -7,5 +7,5 @@ export async function GET() {
   if (!engine) {
     return NextResponse.json({ error: 'Engine not available' }, { status: 500 });
   }
-  return NextResponse.json(engine.getState());
+  return NextResponse.json(await engine.getState());
 }
