@@ -409,7 +409,8 @@ export class SimEngine {
   setPoolAddress(address: string) {
     if (this.match) {
       this.match.poolAddress = address;
-      this.poolRegistry.set(this.match.id, address);
+      const todayKey = `${this.match.id}-${new Date().toISOString().slice(0, 10)}`;
+      this.poolRegistry.set(todayKey, address);
       this.deployedPools.push({
         poolAddress: address,
         matchId: this.match.id,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getEngine } from '@/lib/sim-engine';
+import { getEngine, loadPoolRegistry } from '@/lib/sim-engine';
 import { deployPool, settlePool } from '@/lib/sim-relayer';
 import { insertDeployedPool } from '@/lib/supabase';
 
@@ -9,6 +9,9 @@ export async function GET() {
   if (!engine) {
     return NextResponse.json({ error: 'Engine not available' }, { status: 500 });
   }
+
+  // Load pool registry from Supabase so previously deployed pools are found
+  await loadPoolRegistry();
 
   // Ensure callbacks are set (Vercel serverless may cold-start without /api/sim/start)
   if (!engine.deployPoolForMatch) {
